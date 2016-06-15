@@ -4,7 +4,7 @@
 	"WorkdayStarts": 9,
 	"WorkdayEnds": 18,
 	"ShowWorkDay": true,
-	"WeekStartsOn": "Monday",
-	"DefaultTab": "Month",
+	"WeekStartsOn": 1,
+	"DefaultTab": 3,
 	"AllowReminders": true
 }
