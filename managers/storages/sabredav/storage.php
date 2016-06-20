@@ -73,7 +73,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	{
 		if (!$this->_initialized($iUserId)) {
 			$this->UserId = $iUserId;
-//			\Afterlogic\DAV\Server::getInstance()->setAccount($oAccount);
+//			\Afterlogic\DAV\Server::getInstance()->setAccount($iUserId);
 
 			$this->Principal = $this->getPrincipalInfo($iUserId);
 		}
@@ -108,14 +108,14 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 *
 	 * @return int
 	 */
-	public function getCalendarAccess($oAccount, $sCalendarId)
+	public function getCalendarAccess($iUserId, $sCalendarId)
 	{
 		$iResult = ECalendarPermission::Read;
-		$oCalendar = $this->getCalendar($oAccount, $sCalendarId);
+		$oCalendar = $this->getCalendar($iUserId, $sCalendarId);
 		if ($oCalendar) {
 			$iResult = $oCalendar->Shared ? $oCalendar->Access : ECalendarPermission::Write;
 		}
@@ -251,19 +251,19 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * 
 	 * @return array|null
 	 */
-	public function getTenantUser($oAccount)
+	public function getTenantUser($iUserId)
 	{
 		
 		// TODO:
 /*		if (!isset($this->TenantUser)) {
 			$sPrincipal = 'default_' . \Afterlogic\DAV\Constants::DAV_TENANT_PRINCIPAL;
-			if ($oAccount->IdTenant > 0) {
+			if ($iUserId->IdTenant > 0) {
 				$oApiTenantsMan = CApi::GetCoreManager('tenants');
-				$oTenant = $oApiTenantsMan ? $oApiTenantsMan->getTenantById($oAccount->IdTenant) : null;
+				$oTenant = $oApiTenantsMan ? $oApiTenantsMan->getTenantById($iUserId->IdTenant) : null;
 				if ($oTenant) {
 					$sPrincipal = $oTenant->Login . '_' . \Afterlogic\DAV\Constants::DAV_TENANT_PRINCIPAL;
 				}
@@ -277,14 +277,14 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * 
      * @return string
 	 */
-	public function getTenantAccount($oAccount)
+	public function getTenantAccount($iUserId)
 	{
 		$oTenantAccount = new CAccount(new CDomain());
-		$oTenantAccount->Email = $this->getTenantUser($oAccount);
+		$oTenantAccount->Email = $this->getTenantUser($iUserId);
 		$oTenantAccount->FriendlyName = \CApi::ClientI18N('CONTACTS/SHARED_TO_ALL', $oAccount);
 		
 		return $oTenantAccount;
@@ -329,14 +329,14 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * 
      * @return array
 	 */
-	public function GetCalendarNames($oAccount)
+	public function GetCalendarNames($iUserId)
 	{
 		$aCalendarNames = array();
-		$aCalendars = $this->getCalendars($oAccount);
+		$aCalendars = $this->getCalendars($iUserId);
 		if (is_array($aCalendars)) {
 			/* @var $oCalendar \CCalendar */
 			foreach ($aCalendars as $oCalendar) {
@@ -470,21 +470,21 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * 
 	 * @return bool
 	 */
-	public function deleteCalendar($oAccount, $sCalendarId)
+	public function deleteCalendar($iUserId, $sCalendarId)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 		if ($oUserCalendars->childExists($sCalendarId)) {
 			$oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
 			if ($oCalDAVCalendar) {
 				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
-					$this->unsubscribeCalendar($oAccount, $sCalendarId);
+					$this->unsubscribeCalendar($iUserId, $sCalendarId);
 				} else {
 					$oCalDAVCalendar->delete();
 				}
@@ -500,18 +500,18 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 */
-	public function clearAllCalendars($oAccount)
+	public function clearAllCalendars($iUserId)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		if (is_array($this->Principal) && count($this->Principal)) {
 			$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 			foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
 				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar) {
 					if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
-						//$this->unsubscribeCalendar($oAccount, $sCalendarId);
+						//$this->unsubscribeCalendar($iUserId, $sCalendarId);
 					} else {
 						$oCalDAVCalendar->delete();
 					}
@@ -521,38 +521,38 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 *
 	 * @return bool
 	 */
-	public function unsubscribeCalendar($oAccount, $sCalendarId)
+	public function unsubscribeCalendar($iUserId, $sCalendarId)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
-		$oCalendar = $this->getCalendar($oAccount, $sCalendarId);
+		$oCalendar = $this->getCalendar($iUserId, $sCalendarId);
 		if ($oCalendar) {
-			$this->getBackend()->updateShares($oCalendar->IntId, array(), array($oAccount->Email));
+			$this->getBackend()->updateShares($oCalendar->IntId, array(), array($iUserId->Email));
 		}
 
 		return true;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param array $aShares
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShares($oAccount, $sCalendarId, $aShares)
+	public function updateCalendarShares($iUserId, $sCalendarId, $aShares)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
-		$oCalendar = $this->getCalendar($oAccount, $sCalendarId);
+		$oCalendar = $this->getCalendar($iUserId, $sCalendarId);
 
 		if ($oCalendar) {
-			$aCalendarUsers = $this->getCalendarUsers($oAccount, $oCalendar);
+			$aCalendarUsers = $this->getCalendarUsers($iUserId, $oCalendar);
 			$aSharesEmails = array_map(function ($aItem) {
 				return $aItem['email'];
 			}, $aShares);
@@ -587,18 +587,18 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sUserId
 	 * @param int $iPerms
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShare($oAccount, $sCalendarId, $sUserId, $iPerms = ECalendarPermission::RemovePermission)
+	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPerms = ECalendarPermission::RemovePermission)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
-		$oCalendar = $this->getCalendar($oAccount, $sCalendarId);
+		$oCalendar = $this->getCalendar($iUserId, $sCalendarId);
 
 		if ($oCalendar) {
 			if (count($oCalendar->Principals) > 0) {
@@ -625,20 +625,20 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 *
 	 * @return bool
 	 */
-	public function deleteCalendarShares($oAccount, $sCalendarId)
+	public function deleteCalendarShares($iUserId, $sCalendarId)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
-		$oCalendar = $this->getCalendar($oAccount, $sCalendarId);
+		$oCalendar = $this->getCalendar($iUserId, $sCalendarId);
 
 		if ($oCalendar) {
 			if (count($oCalendar->Principals) > 0) {
-				$this->updateCalendarShares($oAccount, $sCalendarId, array());
+				$this->updateCalendarShares($iUserId, $sCalendarId, array());
 			}
 		}
 
@@ -646,29 +646,29 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param bool $bIsPublic Default value is **false**.
 	 * 
 	 * @return bool
 	 */
-	public function publicCalendar($oAccount, $sCalendarId, $bIsPublic = false)
+	public function publicCalendar($iUserId, $sCalendarId, $bIsPublic = false)
 	{
 		$iPermission = $bIsPublic ? \ECalendarPermission::Read : \ECalendarPermission::RemovePermission;
 		
-		return $this->updateCalendarShare($oAccount, $sCalendarId, $this->getPublicUser(), $iPermission);
+		return $this->updateCalendarShare($iUserId, $sCalendarId, $this->getPublicUser(), $iPermission);
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param CCalendar $oCalendar
 	 * 
 	 * @return array
 	 */
-	public function getCalendarUsers($oAccount, $oCalendar)
+	public function getCalendarUsers($iUserId, $oCalendar)
 	{
 		$aResult = array();
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		if ($oCalendar != null) {
 			$aShares = $this->getBackend()->getShares($oCalendar->IntId);
@@ -686,14 +686,14 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * 
 	 * @return string|bool
 	 */
-	public function exportCalendarToIcs($oAccount, $sCalendarId)
+	public function exportCalendarToIcs($iUserId, $sCalendarId)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$mResult = false;
 		$oCalendar = $this->getCalDAVCalendar($sCalendarId);
@@ -743,15 +743,15 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sTempFileName
 	 * 
 	 * @return mixed
 	 */
-	public function importToCalendarFromIcs($oAccount, $sCalendarId, $sTempFileName)
+	public function importToCalendarFromIcs($iUserId, $sCalendarId, $sTempFileName)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$mResult = false;
 		$oCalendar = $this->getCalDAVCalendar($sCalendarId);
@@ -824,29 +824,32 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param object $oCalendar
 	 * @param string $dStart
 	 * @param string $dEnd
 	 * 
 	 * @return array
 	 */
-	public function getEventsFromVCalendar($oAccount, $oCalendar, $oVCal, $dStart, $dEnd)
+	public function getEventsFromVCalendar($iUserId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand = true)
 	{
 		$oVCalOriginal = clone $oVCal;
 
-		$oVCal->expand(
-			\Sabre\VObject\DateTimeParser::parse($dStart), 
-			\Sabre\VObject\DateTimeParser::parse($dEnd)
-		);
+		if ($bExpand && $dStart !== null && $dEnd !== null)
+		{
+			$oVCal->expand(
+				\Sabre\VObject\DateTimeParser::parse($dStart), 
+				\Sabre\VObject\DateTimeParser::parse($dEnd)
+			);
+		}
 		
-		$aEvents = CalendarParser::parseEvent($oAccount, $oCalendar, $oVCal, $oVCalOriginal);
+		$aEvents = CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal);
 		
 		return $aEvents;
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param string $dStart
@@ -854,9 +857,9 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	 * 
 	 * @return array
 	 */
-	public function getExpandedEvent($oAccount, $sCalendarId, $sEventId, $dStart, $dEnd)
+	public function getExpandedEvent($iUserId, $sCalendarId, $sEventId, $dStart, $dEnd)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$mResult = array(
 			'Events' => array(),
@@ -869,7 +872,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 				$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
 
 				$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-				$mResult['Events'] = $this->getEventsFromVCalendar($oAccount, $oCalendar, $oVCal, $dStart, $dEnd);
+				$mResult['Events'] = $this->getEventsFromVCalendar($iUserId, $oCalendar, $oVCal, $dStart, $dEnd);
 				$mResult['CTag'] = $oCalendar->CTag;
 				$mResult['SyncToken'] = $oCalendar->SyncToken;
 			}
@@ -879,17 +882,17 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sEventId
 	 * @param array $aCalendars
 	 * 
 	 * @return array
 	 */
-	public function findEventInCalendars($oAccount,  $sEventId, $aCalendars)
+	public function findEventInCalendars($iUserId,  $sEventId, $aCalendars)
 	{
 		$aEventCalendarIds = array();
 		foreach (array_keys($aCalendars) as $sKey) {
-			if ($this->eventExists($oAccount, $sKey, $sEventId)) {
+			if ($this->eventExists($iUserId, $sKey, $sEventId)) {
 				$aEventCalendarIds[] = $sKey;
 			}
 		}
@@ -898,16 +901,16 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * 
 	 * @return bool
 	 */
-	public function eventExists($oAccount, $sCalendarId, $sEventId)
+	public function eventExists($iUserId, $sCalendarId, $sEventId)
 	{
 		$bResult = false;
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar && $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId) !== false) {
@@ -918,16 +921,16 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * 
 	 * @return array|bool
 	 */
-	public function getEvent($oAccount, $sCalendarId, $sEventId)
+	public function getEvent($iUserId, $sCalendarId, $sEventId)
 	{
 		$mResult = false;
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {		
@@ -952,6 +955,12 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	 */
 	public function getEventUrls($oCalendar, $dStart, $dEnd)
 	{
+		$aTimeRange = ($dStart !== null && $dEnd !== null) ? 
+				array(
+					'start' => \Sabre\VObject\DateTimeParser::parse($dStart),
+					'end' => \Sabre\VObject\DateTimeParser::parse($dEnd)
+				) : null;		
+		
 		return $oCalendar->calendarQuery(array(
 			'name' => 'VCALENDAR',
 			'comp-filters' => array(
@@ -960,10 +969,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 					'comp-filters' => array(),
 					'prop-filters' => array(),
 					'is-not-defined' => false,
-					'time-range' => array(
-						'start' => \Sabre\VObject\DateTimeParser::parse($dStart),
-						'end' => \Sabre\VObject\DateTimeParser::parse($dEnd),
-					),
+					'time-range' => $aTimeRange,
 				),
 			),
 			'prop-filters' => array(),
@@ -977,10 +983,60 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	 * @param string $sCalendarId
 	 * @param string $dStart
 	 * @param string $dEnd
+	 * @param bool $bGetData
 	 * 
 	 * @return array|bool
 	 */
-	public function getEvents($iUserId, $sCalendarId, $dStart, $dEnd)
+	public function getEventsInfo($iUserId, $sCalendarId, $dStart, $dEnd, $bGetData = false)
+	{
+		$aResult = array();
+		$this->init($iUserId);
+
+		$oCalendar = $this->getCalDAVCalendar($sCalendarId);
+		
+		if ($oCalendar)
+		{
+			$aUrls = $this->getEventUrls($oCalendar, $dStart, $dEnd);
+			
+			foreach ($aUrls as $sUrl)
+			{
+				if (isset($this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->Account->Email]))
+				{
+					$oEvent = $this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->Account->Email];
+				}
+				else
+				{
+					$oEvent = $oCalendar->getChild($sUrl);
+					$this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->Account->Email] = $oEvent;		
+				}
+
+				$aEventInfo = array(
+					'Url' => $sUrl,
+					'ETag' => $oEvent->getETag(),
+					'LastModified' => $oEvent->getLastModified()
+				);
+				if ($bGetData)
+				{
+					$aEventInfo['Data'] = $oEvent->get();
+				}
+				
+				$aResult[$oCalendar->getName()][] = $aEventInfo;
+			}
+		}
+		
+		return $aResult;
+	}
+
+	/**
+	 * @param int $iUserId
+	 * @param string $sCalendarId
+	 * @param string $dStart
+	 * @param string $dEnd
+	 * @param bool $bExpand
+	 * 
+	 * @return array|bool
+	 */
+	public function getEvents($iUserId, $sCalendarId, $dStart, $dEnd, $bExpand = true)
 	{
 		$this->init($iUserId);
 
@@ -1000,7 +1056,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 					$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserId] = $oCalDAVCalendarObject;		
 				}
 				$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
-				$aEvents = $this->getEventsFromVCalendar($iUserId, $oCalendar, $oVCal, $dStart, $dEnd);
+				$aEvents = $this->getEventsFromVCalendar($iUserId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
 				foreach (array_keys($aEvents) as $key) {
 					$aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
 				}
@@ -1012,16 +1068,16 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 * 
 	 * @return string|null
 	 */
-	public function createEvent($oAccount, $sCalendarId, $sEventId, $oVCal)
+	public function createEvent($iUserId, $sCalendarId, $sEventId, $oVCal)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
@@ -1041,16 +1097,16 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param string $sData
 	 * 
 	 * @return bool
 	 */
-	public function updateEventRaw($oAccount, $sCalendarId, $sEventId, $sData)
+	public function updateEventRaw($iUserId, $sCalendarId, $sEventId, $sData)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
@@ -1077,16 +1133,16 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param array $oVCal
 	 * 
 	 * @return bool
 	 */
-	public function updateEvent($oAccount, $sCalendarId, $sEventId, $oVCal)
+	public function updateEvent($iUserId, $sCalendarId, $sEventId, $oVCal)
 	{
- 		$this->init($oAccount);
+ 		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
@@ -1106,7 +1162,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sNewCalendarId
 	 * @param string $sEventId
@@ -1114,9 +1170,9 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	 *
 	 * @return bool
 	 */
-	public function moveEvent($oAccount, $sCalendarId, $sNewCalendarId, $sEventId, $sData)
+	public function moveEvent($iUserId, $sCalendarId, $sNewCalendarId, $sEventId, $sData)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
@@ -1141,15 +1197,15 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * 
 	 * @return bool
 	 */
-	public function deleteEvent($oAccount, $sCalendarId, $sEventId)
+	public function deleteEvent($iUserId, $sCalendarId, $sEventId)
 	{
-		$this->init($oAccount);
+		$this->init($iUserId);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
@@ -1168,6 +1224,35 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 		return false;
 	}
 	
+	/**
+	 * @param int $iUserId
+	 * @param string $sCalendarId
+	 * @param string $sEventUrl
+	 * 
+	 * @return bool
+	 */
+	public function deleteEventByUrl($iUserId, $sCalendarId, $sEventUrl)
+	{
+		$this->init($iUserId);
+
+		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+		if ($oCalDAVCalendar)
+		{
+			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+			if ($oCalendar->Access !== \ECalendarPermission::Read)
+			{
+				$oChild = $oCalDAVCalendar->getChild($sEventUrl);
+				$oChild->delete();
+
+				unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
+
+				return (string) ($oCalendar->CTag + 1);
+			}
+		}
+		
+		return false;
+	}
+
 	public function getReminders($start, $end)
 	{
 		return \Afterlogic\DAV\Backend::Reminders()->getReminders($start, $end);

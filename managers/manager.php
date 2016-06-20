@@ -38,17 +38,17 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Determines whether read/write or read-only permissions are set for accessing calendar from this account. 
 	 * 
-	 * @param CAccount $oAccount Account object 
+	 * @param int $iUserId Account object 
 	 * @param string $sCalendarId Calendar ID 
 	 * 
 	 * @return bool **ECalendarPermission::Write** or **ECalendarPermission::Read** accordingly.
 	 */
-	public function getCalendarAccess($oAccount, $sCalendarId)
+	public function getCalendarAccess($iUserId, $sCalendarId)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->getCalendarAccess($oAccount, $sCalendarId);
+			$oResult = $this->oStorage->getCalendarAccess($iUserId, $sCalendarId);
 		}
 		catch (Exception $oException)
 		{
@@ -102,19 +102,19 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Loads calendar.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $oUserId Account object
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return CCalendar|false $oCalendar
 	 */
-	public function getCalendar($oAccount, $sCalendarId)
+	public function getCalendar($oUserId, $sCalendarId)
 	{
 		$oCalendar = false;
 		try
 		{
-			$oCalendar = $this->oStorage->getCalendar($oAccount, $sCalendarId);
+			$oCalendar = $this->oStorage->getCalendar($oUserId, $sCalendarId);
 			if ($oCalendar) {
-				$oCalendar = $this->populateCalendarShares($oAccount, $oCalendar);
+				$oCalendar = $this->populateCalendarShares($oUserId, $oCalendar);
 			}
 		}
 		catch (Exception $oException)
@@ -126,24 +126,24 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param CCalendar $oCalendar
 	 *
 	 * @return CCalendar $oCalendar
 	 */
-	public function populateCalendarShares($oAccount, $oCalendar)
+	public function populateCalendarShares($iUserId, $oCalendar)
 	{
 		if (!$oCalendar->Shared || $oCalendar->Shared && 
-				$oCalendar->Access === \ECalendarPermission::Write || $oCalendar->IsCalendarOwner($oAccount)) {
+				$oCalendar->Access === \ECalendarPermission::Write || $oCalendar->IsCalendarOwner($iUserId)) {
 			$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
-			$aUsers = $this->getCalendarUsers($oAccount, $oCalendar);
+			$aUsers = $this->getCalendarUsers($iUserId, $oCalendar);
 
 			$aShares = array();
 			if ($aUsers && is_array($aUsers)) {
 				foreach ($aUsers as $aUser) {
 					if ($aUser['email'] === $this->GetPublicUser()) {
 						$oCalendar->IsPublic = true;
-					} else if ($aUser['email'] === $this->getTenantUser($oAccount)) {
+					} else if ($aUser['email'] === $this->getTenantUser($iUserId)) {
 						$oCalendar->SharedToAll = true;
 						$oCalendar->SharedToAllAccess = (int) $aUser['access'];
 					} else {
@@ -182,17 +182,17 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * (Aurora only) Returns list of user account the calendar was shared with.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param CCalendar $oCalendar Calendar object
 	 *
 	 * @return array|bool
 	 */
-	public function getCalendarUsers($oAccount, $oCalendar)
+	public function getCalendarUsers($iUserId, $oCalendar)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->getCalendarUsers($oAccount, $oCalendar);
+			$mResult = $this->oStorage->getCalendarUsers($iUserId, $oCalendar);
 		}
 		catch (Exception $oException)
 		{
@@ -264,13 +264,13 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Returns list of calendars for the account.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 *
 	 * @return array
 	 */
-	public function getUserCalendars($oAccount)
+	public function getUserCalendars($iUserId)
 	{
-		return $this->oStorage->getCalendars($oAccount);
+		return $this->oStorage->getCalendars($iUserId);
 	}
 
 	/**
@@ -409,19 +409,19 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Removes calendar from list of those shared with the specific account. [Aurora only.](http://dev.afterlogic.com/aurora)
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId Account object
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return bool
 	 */
-	public function unsubscribeCalendar($oAccount, $sCalendarId)
+	public function unsubscribeCalendar($iUserId, $sCalendarId)
 	{
 		$oResult = null;
-		if ($this->oApiCapabilityManager->isCalendarSharingSupported($oAccount))
+		if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId))
 		{
 			try
 			{
-				$oResult = $this->oStorage->unsubscribeCalendar($oAccount, $sCalendarId);
+				$oResult = $this->oStorage->unsubscribeCalendar($iUserId, $sCalendarId);
 			}
 			catch (Exception $oException)
 			{
@@ -435,7 +435,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * (Aurora only) Share or remove sharing calendar with all users.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param bool $bShareToAll If set to **true**, add sharing; if **false**, sharing is removed
 	 * @param int $iPermission Permissions set for the account. Accepted values:
@@ -445,22 +445,22 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShareToAll($oAccount, $sCalendarId, $bShareToAll, $iPermission)
+	public function updateCalendarShareToAll($iUserId, $sCalendarId, $bShareToAll, $iPermission)
 	{
-		$sUserId = $this->getTenantUser($oAccount);
+		$sUserId = $this->getTenantUser($iUserId);
 		$aShares[] = array(
 			'name' => $sUserId,
 			'email' => $sUserId,
 			'access' => $bShareToAll ? $iPermission : \ECalendarPermission::RemovePermission
 		);
 
-		return $this->updateCalendarShares($oAccount, $sCalendarId, $aShares);
+		return $this->updateCalendarShares($iUserId, $sCalendarId, $aShares);
 	}
 
 	/**
 	 * (Aurora only) Share or remove sharing calendar with the listed users.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param array $aShares Array defining list of users and permissions. Each array item needs to have the following keys:
 	 *		["email"] - email which denotes user the calendar is shared to;
@@ -468,13 +468,13 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShares($oAccount, $sCalendarId, $aShares)
+	public function updateCalendarShares($iUserId, $sCalendarId, $aShares)
 	{
 		$oResult = null;
-		if ($this->oApiCapabilityManager->isCalendarSharingSupported($oAccount)) {
+		if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId)) {
 			try
 			{
-				$oResult = $this->oStorage->updateCalendarShares($oAccount, $sCalendarId, $aShares);
+				$oResult = $this->oStorage->updateCalendarShares($iUserId, $sCalendarId, $aShares);
 			}
 			catch (Exception $oException)
 			{
@@ -488,18 +488,18 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Set/unset calendar as public.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param bool $bIsPublic If set to **true**, calendar is made public; if **false**, setting as public gets cancelled
 	 *
 	 * @return bool
 	 */
-	public function publicCalendar($oAccount, $sCalendarId, $bIsPublic = false)
+	public function publicCalendar($iUserId, $sCalendarId, $bIsPublic = false)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->publicCalendar($oAccount, $sCalendarId, $bIsPublic);
+			$oResult = $this->oStorage->publicCalendar($iUserId, $sCalendarId, $bIsPublic);
 		}
 		catch (Exception $oException)
 		{
@@ -512,18 +512,18 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * (Aurora only) Removes sharing calendar with the specific user account.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sUserId User ID
 	 *
 	 * @return bool
 	 */
-	public function deleteCalendarShare($oAccount, $sCalendarId, $sUserId)
+	public function deleteCalendarShare($iUserId, $sCalendarId, $sUserId)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->updateCalendarShare($oAccount, $sCalendarId, $sUserId);
+			$oResult = $this->updateCalendarShare($iUserId, $sCalendarId, $sUserId);
 		}
 		catch (Exception $oException)
 		{
@@ -536,7 +536,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Share or remove sharing calendar with the specific user account. [Aurora only.](http://dev.afterlogic.com/aurora)
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sUserId User Id
 	 * @param int $iPermission Permissions set for the account. Accepted values:
@@ -546,13 +546,13 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShare($oAccount, $sCalendarId, $sUserId, $iPermission)
+	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPermission)
 	{
 		$oResult = null;
-		if ($this->oApiCapabilityManager->isCalendarSharingSupported($oAccount)) {
+		if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId)) {
 			try
 			{
-				$oResult = $this->oStorage->updateCalendarShare($oAccount, $sCalendarId, $sUserId, $iPermission);
+				$oResult = $this->oStorage->updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPermission);
 			}
 			catch (Exception $oException)
 			{
@@ -566,17 +566,17 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Returns calendar data as ICS data.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return string|bool
 	 */
-	public function exportCalendarToIcs($oAccount, $sCalendarId)
+	public function exportCalendarToIcs($iUserId, $sCalendarId)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->exportCalendarToIcs($oAccount, $sCalendarId);
+			$mResult = $this->oStorage->exportCalendarToIcs($iUserId, $sCalendarId);
 		}
 		catch (Exception $oException)
 		{
@@ -589,18 +589,18 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Populates calendar from .ICS file.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sTempFileName .ICS file name data are imported from
 	 *
 	 * @return int|bool integer (number of events added)
 	 */
-	public function importToCalendarFromIcs($oAccount, $sCalendarId, $sTempFileName)
+	public function importToCalendarFromIcs($iUserId, $sCalendarId, $sTempFileName)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->importToCalendarFromIcs($oAccount, $sCalendarId, $sTempFileName);
+			$mResult = $this->oStorage->importToCalendarFromIcs($iUserId, $sCalendarId, $sTempFileName);
 		}
 		catch (Exception $oException)
 		{
@@ -661,26 +661,61 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 
 	/**
+	 * @param int $iUserId Account object
+	 * @param mixed $mCalendarId
+	 * @param object $dStart
+	 * @param object $dEnd
+	 * @param bool $bGetData
+	 *
+	 * @return string
+	 */
+	public function getEventsInfo($iUserId, $mCalendarId, $dStart = null, $dEnd = null, $bGetData = false)
+	{
+		$aResult = array();
+		try
+		{
+			$dStart = ($dStart != null) ? date('Ymd\T000000\Z', $dStart  - 86400) : null;
+			$dEnd = ($dEnd != null) ? date('Ymd\T235959\Z', $dEnd) : null;
+			$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
+
+			foreach ($mCalendarId as $sCalendarId)
+			{
+				$aEvents = $this->oStorage->getEventsInfo($iUserId, $sCalendarId, $dStart, $dEnd, $bGetData);
+				if ($aEvents && is_array($aEvents))
+				{
+					$aResult = array_merge($aResult, $aEvents);
+				}
+			}
+		}
+		catch (Exception $oException)
+		{
+			$aResult = false;
+			$this->setLastException($oException);
+		}
+		return $aResult;
+	}
+
+	/**
 	 * Return specific event.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return array|bool
 	 */
-	public function getEvent($oAccount, $sCalendarId, $sEventId)
+	public function getEvent($iUserId, $sCalendarId, $sEventId)
 	{
 		$mResult = null;
 		try
 		{
 			$mResult = array();
-			$aData = $this->oStorage->getEvent($oAccount, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
 			if ($aData !== false) {
 				if (isset($aData['vcal'])) {
 					$oVCal = $aData['vcal'];
-					$oCalendar = $this->oStorage->getCalendar($oAccount, $sCalendarId);
-					$mResult = CalendarParser::parseEvent($oAccount, $oCalendar, $oVCal);
+					$oCalendar = $this->oStorage->getCalendar($iUserId, $sCalendarId);
+					$mResult = CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal);
 					$mResult['vcal'] = $oVCal;
 				}
 			}
@@ -699,30 +734,30 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * For recurring event, gets a base one.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return array|bool
 	 */
-	public function getBaseEvent($oAccount, $sCalendarId, $sEventId)
+	public function getBaseEvent($iUserId, $sCalendarId, $sEventId)
 	{
 		$mResult = null;
 		try
 		{
 			$mResult = array();
-			$aData = $this->oStorage->getEvent($oAccount, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
 			if ($aData !== false) {
 				if (isset($aData['vcal'])) {
 					$oVCal = $aData['vcal'];
 					$oVCalOriginal = clone $oVCal;
-					$oCalendar = $this->oStorage->getCalendar($oAccount, $sCalendarId);
+					$oCalendar = $this->oStorage->getCalendar($iUserId, $sCalendarId);
 					$oVEvent = $oVCal->getBaseComponents('VEVENT');
 					if (isset($oVEvent[0])) {
 						unset($oVCal->VEVENT);
 						$oVCal->VEVENT = $oVEvent[0];
 					}
-					$oEvent = CalendarParser::parseEvent($oAccount, $oCalendar, $oVCal, $oVCalOriginal);
+					$oEvent = CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal);
 					if (isset($oEvent[0])) {
 						$mResult = $oEvent[0];
 					}
@@ -740,7 +775,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * For recurring event, gets all occurences within a date range.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 * @param string $dStart Date range start
@@ -748,7 +783,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 *
 	 * @return array|bool
 	 */
-	public function getExpandedEvent($oAccount, $sCalendarId, $sEventId, $dStart = null, $dEnd = null)
+	public function getExpandedEvent($iUserId, $sCalendarId, $sEventId, $dStart = null, $dEnd = null)
 	{
 		$mResult = null;
 
@@ -756,7 +791,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 		{
 			$dStart = ($dStart != null) ? date('Ymd\T000000\Z', $dStart/*  + 86400*/) : null;
 			$dEnd = ($dEnd != null) ? date('Ymd\T235959\Z', $dEnd) : null;
-			$mResult = $this->oStorage->getExpandedEvent($oAccount, $sCalendarId, $sEventId, $dStart, $dEnd);
+			$mResult = $this->oStorage->getExpandedEvent($iUserId, $sCalendarId, $sEventId, $dStart, $dEnd);
 		}
 		catch (Exception $oException)
 		{
@@ -767,14 +802,14 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param array $sData
 	 *
 	 * @return mixed
 	 */
-	public function createEventFromRaw($oAccount, $sCalendarId, $sEventId, $sData)
+	public function createEventFromRaw($iUserId, $sCalendarId, $sEventId, $sData)
 	{
 		$oResult = null;
 		$aEvents = array();
@@ -783,7 +818,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 			$oVCal = \Sabre\VObject\Reader::read($sData);
 			if ($oVCal && $oVCal->VEVENT) {
 				if (!empty($sEventId)) {
-					$oResult = $this->oStorage->createEvent($oAccount, $sCalendarId, $sEventId, $oVCal);
+					$oResult = $this->oStorage->createEvent($iUserId, $sCalendarId, $sEventId, $oVCal);
 				} else {
 					foreach ($oVCal->VEVENT as $oVEvent) {
 						$sUid = (string)$oVEvent->UID;
@@ -794,7 +829,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 					}
 
 					foreach ($aEvents as $sUid => $oVCalNew) {
-						$this->oStorage->createEvent($oAccount, $sCalendarId, $sUid, $oVCalNew);
+						$this->oStorage->createEvent($iUserId, $sCalendarId, $sUid, $oVCalNew);
 					}
 					$oResult = true;
 				}
@@ -811,12 +846,12 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Creates event from event object.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param CEvent $oEvent Event object
 	 *
 	 * @return mixed
 	 */
-	public function createEvent($oAccount, $oEvent)
+	public function createEvent($iUserId, $oEvent)
 	{
 		$oResult = null;
 		try
@@ -831,12 +866,12 @@ class CApiCalendarManager extends AApiManagerWithStorage
 				'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
 			));
 
-			CCalendarHelper::populateVCalendar($oAccount, $oEvent, $oVCal->VEVENT);
+			CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT);
 
-			$oResult = $this->oStorage->createEvent($oAccount, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
+			$oResult = $this->oStorage->createEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 
 			if ($oResult) {
-				$this->updateEventGroups($oAccount, $oEvent);
+				$this->updateEventGroups($iUserId, $oEvent);
 			}
 		}
 		catch (Exception $oException)
@@ -848,10 +883,10 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param CEvent $oEvent
 	 */
-	public function updateEventGroups($oAccount, $oEvent)
+	public function updateEventGroups($iUserId, $oEvent)
 	{
 		$aGroups = CCalendarHelper::findGroupsHashTagsFromString($oEvent->Name);
 		$aGroupsDescription = CCalendarHelper::findGroupsHashTagsFromString($oEvent->Description);
@@ -864,10 +899,10 @@ class CApiCalendarManager extends AApiManagerWithStorage
 		if ($oContactsModule) {
 			foreach ($aGroups as $sGroup) {
 				$sGroupName = ltrim($sGroup, '#');
-				$oGroup = $oContactsModule->ExecuteMethod('getGroupByName', array($oAccount->IdUser, $sGroupName));
+				$oGroup = $oContactsModule->ExecuteMethod('getGroupByName', array($iUserId->IdUser, $sGroupName));
 				if (!$oGroup) {
 					$oGroup = new \CGroup();
-					$oGroup->IdUser = $oAccount->IdUser;
+					$oGroup->IdUser = $iUserId->IdUser;
 					$oGroup->Name = $sGroupName;
 					$oContactsModule->ExecuteMethod('createGroup', array($oGroup));
 				}
@@ -881,24 +916,24 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Update events using event object.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param CEvent $oEvent Event object
 	 *
 	 * @return bool
 	 */
-	public function updateEvent($oAccount, $oEvent)
+	public function updateEvent($iUserId, $oEvent)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($oAccount, $oEvent->IdCalendar, $oEvent->Id);
+			$aData = $this->oStorage->getEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false) {
 				$oVCal = $aData['vcal'];
 
 				if ($oVCal) {
 					$iIndex = CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
 					if ($iIndex !== false) {
-						CCalendarHelper::populateVCalendar($oAccount, $oEvent, $oVCal->VEVENT[$iIndex]);
+						CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT[$iIndex]);
 					}
 					$oVCalCopy = clone $oVCal;
 					if (!isset($oEvent->RRule)) {
@@ -911,9 +946,9 @@ class CApiCalendarManager extends AApiManagerWithStorage
 						}
 					}
 
-					$oResult = $this->oStorage->updateEvent($oAccount, $oEvent->IdCalendar, $oEvent->Id, $oVCalCopy);
+					$oResult = $this->oStorage->updateEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id, $oVCalCopy);
 					if ($oResult) {
-						$this->updateEventGroups($oAccount, $oEvent);
+						$this->updateEventGroups($iUserId, $oEvent);
 					}
 
 				}
@@ -928,24 +963,37 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 	
 	/**
+	 * @param int $iUserId
+	 * @param string $sCalendarId
+	 * @param string $sEventUrl
+	 * @param string $sData
+	 * 
+	 * @return bool
+	 */
+	public function updateEventRaw($iUserId, $sCalendarId, $sEventUrl, $sData)
+	{
+		return $this->oStorage->updateEventRaw($iUserId, $sCalendarId, $sEventUrl, $sData);
+	}
+	
+	/**
 	 * Moves event to a different calendar.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Current calendar ID
 	 * @param string $sCalendarIdNew New calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return bool
 	 */
-	public function moveEvent($oAccount, $sCalendarId, $sCalendarIdNew, $sEventId)
+	public function moveEvent($iUserId, $sCalendarId, $sCalendarIdNew, $sEventId)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($oAccount, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
-				$oResult = $this->oStorage->moveEvent($oAccount, $sCalendarId, $sCalendarIdNew, $sEventId, $aData['vcal']->serialize());
+				$oResult = $this->oStorage->moveEvent($iUserId, $sCalendarId, $sCalendarIdNew, $sEventId, $aData['vcal']->serialize());
 				$this->updateEventGroupByMoving($sCalendarId, $sEventId, $sCalendarIdNew);
 				return true;
 			}
@@ -983,19 +1031,19 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Updates or deletes exclusion from recurring event.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param CEvent $oEvent Event object
 	 * @param string $sRecurrenceId Recurrence ID
 	 * @param bool $bDelete If **true**, exclusion is deleted
 	 *
 	 * @return bool
 	 */
-	public function updateExclusion($oAccount, $oEvent, $sRecurrenceId, $bDelete = false)
+	public function updateExclusion($iUserId, $oEvent, $sRecurrenceId, $bDelete = false)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($oAccount, $oEvent->IdCalendar, $oEvent->Id);
+			$aData = $this->oStorage->getEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oVCal = $aData['vcal'];
@@ -1003,7 +1051,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 				if ($iIndex !== false) {
 					$oVCal->VEVENT[$iIndex]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
-					$oDTExdate = CCalendarHelper::prepareDateTime($sRecurrenceId, $oAccount->getDefaultStrTimeZone());
+					$oDTExdate = CCalendarHelper::prepareDateTime($sRecurrenceId, $iUserId->getDefaultStrTimeZone());
 					$oDTStart = $oVCal->VEVENT[$iIndex]->DTSTART->getDatetime();
 
 					$mIndex = CCalendarHelper::isRecurrenceExists($oVCal->VEVENT, $sRecurrenceId);
@@ -1030,7 +1078,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 
 							foreach($aVEvents as $oVEvent) {
 								if ($oVEvent->{'RECURRENCE-ID'}) {
-									$iRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oAccount->getDefaultStrTimeZone(), 'Ymd');
+									$iRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $iUserId->getDefaultStrTimeZone(), 'Ymd');
 									if ($iRecurrenceId == (int) $sRecurrenceId) {
 										continue;
 									}
@@ -1051,11 +1099,11 @@ class CApiCalendarManager extends AApiManagerWithStorage
 						}
 						if ($oVEventRecur) {
 							$oEvent->RRule = null;
-							CCalendarHelper::populateVCalendar($oAccount, $oEvent, $oVEventRecur);
+							CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVEventRecur);
 						}
 					}
 
-					return $this->oStorage->updateEvent($oAccount, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
+					return $this->oStorage->updateEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 
 				}
 			}
@@ -1072,19 +1120,19 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * deleteExclusion
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 * @param string $iRecurrenceId Recurrence ID
 	 *
 	 * @return bool
 	 */
-	public function deleteExclusion($oAccount, $sCalendarId, $sEventId, $iRecurrenceId)
+	public function deleteExclusion($iUserId, $sCalendarId, $sEventId, $iRecurrenceId)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($oAccount, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oVCal = $aData['vcal'];
@@ -1094,14 +1142,14 @@ class CApiCalendarManager extends AApiManagerWithStorage
 
 				foreach($aVEvents as $oVEvent) {
 					if (isset($oVEvent->{'RECURRENCE-ID'})) {
-						$iServerRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oAccount->getDefaultStrTimeZone(), 'Ymd');
+						$iServerRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $iUserId->getDefaultStrTimeZone(), 'Ymd');
 						if ($iRecurrenceId == $iServerRecurrenceId) {
 							continue;
 						}
 					}
 					$oVCal->add($oVEvent);
 				}
-				return $this->oStorage->updateEvent($oAccount, $sCalendarId, $sEventId, $oVCal);
+				return $this->oStorage->updateEvent($iUserId, $sCalendarId, $sEventId, $oVCal);
 			}
 			return false;
 		}
@@ -1203,7 +1251,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Processing response to event invitation. [Aurora only.](http://dev.afterlogic.com/aurora)
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 * @param string $sAttendee Attendee identified by email address
@@ -1214,16 +1262,16 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateAppointment($oAccount, $sCalendarId, $sEventId, $sAttendee, $sAction)
+	public function updateAppointment($iUserId, $sCalendarId, $sEventId, $sAttendee, $sAction)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($oAccount, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
 			if ($aData !== false) {
 				$oVCal = $aData['vcal'];
 				$oVCal->METHOD = 'REQUEST';
-				return $this->appointmentAction($oAccount, $sAttendee, $sAction, $sCalendarId, $oVCal->serialize());
+				return $this->appointmentAction($iUserId, $sAttendee, $sAction, $sCalendarId, $oVCal->serialize());
 			}
 		}
 		catch (Exception $oException)
@@ -1237,7 +1285,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Allows for responding to event invitation (accept / decline / tentative). [Aurora only.](http://dev.afterlogic.com/aurora)
 	 *
-	 * @param CAccount|string $mAccount Account object
+	 * @param int|string $iUserId Account object
 	 * @param string $sAttendee Attendee identified by email address
 	 * @param string $sAction Appointment actions. Accepted values:
 	 *		- "ACCEPTED"
@@ -1249,17 +1297,17 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function appointmentAction($oAccount, $sAttendee, $sAction, $sCalendarId, $sData, $bExternal = false)
+	public function appointmentAction($iUserId, $sAttendee, $sAction, $sCalendarId, $sData, $bExternal = false)
 	{
 		$oDefaultAccount = null;
 		$oAttendeeAccount = null;
 		$bDefaultAccountAsEmail = false;
 		$bIsDefaultAccount = false;
 				
-		if (isset($oAccount) && is_object($oAccount) &&  $oAccount instanceof \CAccount) {
+		if (isset($iUserId) && is_int($iUserId)) {
 			$bDefaultAccountAsEmail = false;
 			/* @var $oDefaultAccount CAccount */
-			$oDefaultAccount = $this->ApiUsersManager->getDefaultAccount($oAccount->IdUser);
+			$oDefaultAccount = $this->ApiUsersManager->getDefaultAccount($iUserId);
 			$bIsDefaultAccount = true;
 		} else {
 			$oAttendeeAccount = $this->ApiUsersManager->getAccountByEmail($sAttendee);
@@ -1371,7 +1419,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 							}
 							if ((!$oToAccount || !$bResult) && $oDefaultAccount instanceof \CAccount) {
 								if (!$oAttendeeAccount) {
-									$oAttendeeAccount = $this->getAccountFromAccountList($oAccount, $sAttendee);
+									$oAttendeeAccount = $this->getAccountFromAccountList($iUserId, $sAttendee);
 								}
 								if (!($oAttendeeAccount instanceof \CAccount)) {
 									$oAttendeeAccount = $oDefaultAccount;
@@ -1387,8 +1435,8 @@ class CApiCalendarManager extends AApiManagerWithStorage
 
 			if (!$bResult) {
 				CApi::Log('Ics Appointment Action FALSE result!', ELogLevel::Error);
-				if ($oAccount) {
-					CApi::Log('Email: '.$oAccount->Email.', Action: '. $sAction.', Data:', ELogLevel::Error);
+				if ($iUserId) {
+					CApi::Log('Email: '.$iUserId->Email.', Action: '. $sAction.', Data:', ELogLevel::Error);
 				}
 				CApi::Log($sData, ELogLevel::Error);
 			} else {
@@ -1408,13 +1456,13 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Returns default calendar of the account.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 *
 	 * @return CCalendar|false $oCalendar
 	 */
-	public function getDefaultCalendar($oAccount)
+	public function getDefaultCalendar($iUserId)
 	{
-		$aCalendars = $this->getCalendars($oAccount);
+		$aCalendars = $this->getCalendars($iUserId);
 		return (is_array($aCalendars) && isset($aCalendars[0])) ? $aCalendars[0] : false;
 	}
 
@@ -1476,18 +1524,18 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	/**
 	 * Deletes event.
 	 *
-	 * @param CAccount $oAccount Account object
+	 * @param int $iUserId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return bool
 	 */
-	public function deleteEvent($oAccount, $sCalendarId, $sEventId)
+	public function deleteEvent($iUserId, $sCalendarId, $sEventId)
 	{
 		$oResult = false;
 		try
 		{
-			$aData = $this->oStorage->getEvent($oAccount, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oVCal = $aData['vcal'];
@@ -1500,7 +1548,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 							str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER)) : null;
 
 					if (isset($sOrganizer)) {
-						if ($sOrganizer === $oAccount->Email) {
+						if ($sOrganizer === $iUserId->Email) {
 							$oDateTimeNow = new DateTime("now");
 							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
 							$oDateTimeRepeat = \CCalendarHelper::getNextRepeat($oDateTimeNow, $oVEvent);
@@ -1515,14 +1563,14 @@ class CApiCalendarManager extends AApiManagerWithStorage
 									$oVCal->METHOD = 'CANCEL';
 									$sSubject = (string)$oVEvent->SUMMARY . ': Canceled';
 
-									CCalendarHelper::sendAppointmentMessage($oAccount, $sEmail, $sSubject, $oVCal->serialize(), 'REQUEST');
+									CCalendarHelper::sendAppointmentMessage($iUserId, $sEmail, $sSubject, $oVCal->serialize(), 'REQUEST');
 									unset($oVCal->METHOD);
 								}
 							}
 						}
 					}
 				}
-				$oResult = $this->oStorage->deleteEvent($oAccount, $sCalendarId, $sEventId);
+				$oResult = $this->oStorage->deleteEvent($iUserId, $sCalendarId, $sEventId);
 				if ($oResult) {
 					$oContactsModule = \CApi::GetModule('Contacts');
 					$oContactsModule->ExecuteMethod('removeEventFromAllGroups', array($sCalendarId, $sEventId));
@@ -1538,22 +1586,37 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * Deletes event.
+	 *
+	 * @param int $iUserId
+	 * @param string $sCalendarId Calendar ID
+	 * @param string $sEventUrl Event URL
+	 *
+	 * @return bool
+	 */
+	public function deleteEventByUrl($iUserId, $sCalendarId, $sEventUrl)
+	{
+		return $this->oStorage->deleteEventByUrl($iUserId, $sCalendarId, $sEventUrl);
+	}
+
+
+	/**
+	 * @param int $iUserId
 	 * @param string $sData
 	 * @param string $mFromEmail
 	 * @param bool $bUpdateAttendeeStatus
 	 *
 	 * @return array|bool
 	 */
-	public function processICS($oAccount, $sData, $mFromEmail, $bUpdateAttendeeStatus = false)
+	public function processICS($iUserId, $sData, $mFromEmail, $bUpdateAttendeeStatus = false)
 	{
 		$mResult = false;
 
 		/* @var $oDefaultAccount CAccount */
-		$oDefaultAccount = $oAccount->IsDefaultAccount ? $oAccount : $this->ApiUsersManager->getDefaultAccount($oAccount->IdUser);
+		$oDefaultAccount = $iUserId->IsDefaultAccount ? $iUserId : $this->ApiUsersManager->getDefaultAccount($iUserId->IdUser);
 
 		$aAccountEmails = array();
-		$aUserAccounts = $this->ApiUsersManager->getUserAccounts($oAccount->IdUser);
+		$aUserAccounts = $this->ApiUsersManager->getUserAccounts($iUserId->IdUser);
 		foreach ($aUserAccounts as $aUserAccount) {
 			if (isset($aUserAccount) && isset($aUserAccount[1])) {
 				$aAccountEmails[] = $aUserAccount[1];
@@ -1569,7 +1632,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 			}
 		}
 			
-		$aIdentities = $this->ApiUsersManager->getUserIdentities($oAccount->IdUser);
+		$aIdentities = $this->ApiUsersManager->getUserIdentities($iUserId->IdUser);
 		if (is_array($aIdentities) && 0 < count($aIdentities)) {
 			foreach ($aIdentities as /* @var $oIdentity \CIdentity */ $oIdentity) {
 				if ($oIdentity) {
@@ -1741,16 +1804,16 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	}
 	
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 *
 	 * @return bool
 	 */
-	public function clearAllCalendars($oAccount)
+	public function clearAllCalendars($iUserId)
 	{
 		$bResult = false;
 		try
 		{
-			$bResult = $this->oStorage->clearAllCalendars($oAccount);
+			$bResult = $this->oStorage->clearAllCalendars($iUserId);
 		}
 		catch (CApiBaseException $oException)
 		{

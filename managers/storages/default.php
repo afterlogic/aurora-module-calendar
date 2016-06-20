@@ -19,9 +19,9 @@ class CApiCalendarStorage extends AApiManagerStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 */
-	public function init($oAccount)
+	public function init($iUserId)
 	{
 	}
 
@@ -32,18 +32,18 @@ class CApiCalendarStorage extends AApiManagerStorage
 	{
 	}
 
-	public function getCalendarAccess($oAccount, $sCalendarId)
+	public function getCalendarAccess($iUserId, $sCalendarId)
 	{
 		return ECalendarPermission::Write;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 *
 	 * @return null
 	 */
-	public function getCalendar($oAccount, $sCalendarId)
+	public function getCalendar($iUserId, $sCalendarId)
 	{
 		return null;
 	}
@@ -80,38 +80,38 @@ class CApiCalendarStorage extends AApiManagerStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 *
 	 * @return array
 	 */
-	public function GetCalendarsSharedToAll($oAccount)
+	public function GetCalendarsSharedToAll($iUserId)
 	{
 		return array();
 	}
 
 	/**
 	}
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 *
 	 * @return array
 	 */
-	public function getCalendars($oAccount)
+	public function getCalendars($iUserId)
 	{
 		return array();
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 *
      * @return array
 	 */
-	public function GetCalendarNames($oAccount)
+	public function GetCalendarNames($iUserId)
 	{
 		return array();
 	}	
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sName
 	 * @param string $sDescription
 	 * @param int $iOrder
@@ -119,13 +119,13 @@ class CApiCalendarStorage extends AApiManagerStorage
 	 *
 	 * @return false
 	 */
-	public function createCalendar($oAccount, $sName, $sDescription, $iOrder, $sColor)
+	public function createCalendar($iUserId, $sName, $sDescription, $iOrder, $sColor)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sName
 	 * @param string $sDescription
@@ -134,20 +134,20 @@ class CApiCalendarStorage extends AApiManagerStorage
 	 *
 	 * @return false
 	 */
-	public function updateCalendar($oAccount, $sCalendarId, $sName, $sDescription, $iOrder,
+	public function updateCalendar($iUserId, $sCalendarId, $sName, $sDescription, $iOrder,
 			$sColor)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sColor
 	 *
 	 * @return false
 	 */
-	public function updateCalendarColor($oAccount, $sCalendarId, $sColor)
+	public function updateCalendarColor($iUserId, $sCalendarId, $sColor)
 	{
 		return false;
 	}
@@ -162,118 +162,118 @@ class CApiCalendarStorage extends AApiManagerStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 *
 	 * @return false
 	 */
-	public function deleteCalendar($oAccount, $sCalendarId)
+	public function deleteCalendar($iUserId, $sCalendarId)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sUserId
 	 * @param int $iPerms
 	 *
 	 * @return false
 	 */
-	public function updateCalendarShare($oAccount, $sCalendarId, $sUserId, $iPerms = ECalendarPermission::RemovePermission)
+	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPerms = ECalendarPermission::RemovePermission)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param bool $bIsPublic
 	 *
 	 * @return false
 	 */
-	public function publicCalendar($oAccount, $sCalendarId, $bIsPublic)
+	public function publicCalendar($iUserId, $sCalendarId, $bIsPublic)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $oCalendar
 	 *
 	 * @return array
 	 */
-	public function getCalendarUsers($oAccount, $oCalendar)
+	public function getCalendarUsers($iUserId, $oCalendar)
 	{
 		return array();
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $dStart
 	 * @param string $dFinish
 	 *
 	 * @return array
 	 */
-	public function getEvents($oAccount, $sCalendarId, $dStart, $dFinish)
+	public function getEvents($iUserId, $sCalendarId, $dStart, $dFinish)
 	{
 		return array();
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 *
 	 * @return array
 	 */
-	public function getEvent($oAccount, $sCalendarId, $sEventId)
+	public function getEvent($iUserId, $sCalendarId, $sEventId)
 	{
 		return array();
 	}
 
 	/**
 	}
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param \Sabre\VObject\Component\VCalendar $vCal
 	 *
 	 * @return null
 	 */
-	public function createEvent($oAccount, $sCalendarId, $sEventId, $vCal)
+	public function createEvent($iUserId, $sCalendarId, $sEventId, $vCal)
 	{
 		return null;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param string $sData
 	 *
 	 * @return true
 	 */
-	public function updateEventRaw($oAccount, $sCalendarId, $sEventId, $sData)
+	public function updateEventRaw($iUserId, $sCalendarId, $sEventId, $sData)
 	{
 		return true;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param array $aArgs
 	 *
 	 * @return false
 	 */
-	public function updateEvent($oAccount, $sCalendarId, $sEventId, $aArgs)
+	public function updateEvent($iUserId, $sCalendarId, $sEventId, $aArgs)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sNewCalendarId
 	 * @param string $sEventId
@@ -281,19 +281,19 @@ class CApiCalendarStorage extends AApiManagerStorage
 	 *
 	 * @return false
 	 */
-	public function moveEvent($oAccount, $sCalendarId, $sNewCalendarId, $sEventId, $sData)
+	public function moveEvent($iUserId, $sCalendarId, $sNewCalendarId, $sEventId, $sData)
 	{
 		return false;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 *
 	 * @return false
 	 */
-	public function deleteEvent($oAccount, $sCalendarId, $sEventId)
+	public function deleteEvent($iUserId, $sCalendarId, $sEventId)
 	{
 		return false;
 	}
@@ -324,11 +324,11 @@ class CApiCalendarStorage extends AApiManagerStorage
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 *
 	 * @return bool
 	 */
-	public function clearAllCalendars($oAccount)
+	public function clearAllCalendars($iUserId)
 	{
 		return true;
 	}
