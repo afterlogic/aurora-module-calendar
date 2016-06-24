@@ -415,7 +415,7 @@ class CalendarModule extends AApiModule
 			throw new \System\Exceptions\ClientException(\System\Notifications::InvalidInputParameter);
 		}
 
-		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetCoreManager('filecache');
+		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetSystemManager('filecache');
 		$sData = $oApiFileCache->get($oAccount, $sTempFile);
 		if (!empty($sData))
 		{
@@ -467,7 +467,7 @@ class CalendarModule extends AApiModule
 			}
 			else if (!empty($sTempFile))
 			{
-				$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetCoreManager('filecache');
+				$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetSystemManager('filecache');
 				$sData = $oApiFileCache->get($oAccount, $sTempFile);
 			}
 			if (!empty($sData))
@@ -490,7 +490,7 @@ class CalendarModule extends AApiModule
 		$sResult = '';
 		$aInviteValues = \CApi::DecodeKeyValues($this->oHttp->GetQuery('invite'));
 
-		$oApiUsersManager = \CApi::GetCoreManager('users');
+		$oApiUsersManager = \CApi::GetSystemManager('users');
 		if (isset($aInviteValues['organizer']))
 		{
 			$oAccountOrganizer = $oApiUsersManager->getAccountByEmail($aInviteValues['organizer']);
@@ -604,7 +604,7 @@ class CalendarModule extends AApiModule
 	{
 		$sResult = '';
 		
-		$oApiIntegrator = \CApi::GetCoreManager('integrator');
+		$oApiIntegrator = \CApi::GetSystemManager('integrator');
 		
 		if ($oApiIntegrator)
 		{
@@ -659,7 +659,7 @@ class CalendarModule extends AApiModule
 		}
 		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
 		{
-			$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetCoreManager('filecache');
+			$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetSystemManager('filecache');
 			$sData = $oApiFileCache->get($oAccount, $sTempFile);
 			if (!empty($sData))
 			{
@@ -704,7 +704,7 @@ class CalendarModule extends AApiModule
 
 			if ($bIsIcsExtension)
 			{
-				$oApiFileCacheManager = \CApi::GetCoreManager('filecache');
+				$oApiFileCacheManager = \CApi::GetSystemManager('filecache');
 				$sSavedName = 'import-post-' . md5($aFileData['name'] . $aFileData['tmp_name']);
 				if ($oApiFileCacheManager->moveUploadedFile($oAccount, $sSavedName, $aFileData['tmp_name'])) {
 					
@@ -759,7 +759,7 @@ class CalendarModule extends AApiModule
 	public function onExtendMessageData($oAccount, &$oMessage, $aData)
 	{
 		$oApiCapa = /* @var CApiCapabilityManager */ $this->oApiCapabilityManager;
-		$oApiFileCache = /* @var CApiFilecacheManager */ CApi::GetCoreManager('filecache');
+		$oApiFileCache = /* @var CApiFilecacheManager */ CApi::GetSystemManager('filecache');
 		$sFromEmail = '';
 		$oFromCollection = $oMessage->getFrom();
 		if ($oFromCollection && 0 < $oFromCollection->Count())

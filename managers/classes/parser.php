@@ -20,8 +20,8 @@ class CalendarParser
 	 */
 	public static function parseEvent($oAccount, $oCalendar, $oVCal, $oVCalOriginal = null)
 	{
-		$ApiCapabilityManager = CApi::GetCoreManager('capability');
-		$ApiUsersManager = CApi::GetCoreManager('users');
+		$ApiCapabilityManager = CApi::GetSystemManager('capability');
+		$ApiUsersManager = CApi::GetSystemManager('users');
 
 		$aResult = array();
 		$aRules = array();

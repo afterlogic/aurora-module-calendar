@@ -286,7 +286,7 @@ class CCalendarHelper
 			}
 		}
 
-		$ApiCapabilityManager = CApi::GetCoreManager('capability');
+		$ApiCapabilityManager = CApi::GetSystemManager('capability');
 		if ($ApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
 		{
 			$aAttendees = array();
