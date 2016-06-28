@@ -436,8 +436,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function SetAppointmentAction()
 	{
-		$oAccount = $this->getAccountFromParam();
-		$oDefaultAccount = $this->getDefaultAccountFromParam();
+		$oAccount = null; //$this->getAccountFromParam(); TODO:
+		$oDefaultAccount = null; //$this->getDefaultAccountFromParam(); TODO
 		
 		$mResult = false;
 
