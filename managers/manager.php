@@ -26,11 +26,6 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	{
 		parent::__construct('', $oManager, $sForcedStorage, $oModule);
 
-		$this->incClass('helper');
-		$this->incClass('calendar');
-		$this->incClass('event');
-		$this->incClass('parser');
-
 		$this->ApiUsersManager = CApi::GetSystemManager('users');
 		$this->oApiCapabilityManager = CApi::GetSystemManager('capability');
 	}

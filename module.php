@@ -6,6 +6,11 @@ class CalendarModule extends AApiModule
 	
 	public function init() 
 	{
+		$this->incClass('helper');
+		$this->incClass('calendar');
+		$this->incClass('event');
+		$this->incClass('parser');
+
 		$this->oApiCalendarManager = $this->GetManager('', 'sabredav');
 		$this->AddEntries(array(
 				'invite' => 'EntryInvite',
