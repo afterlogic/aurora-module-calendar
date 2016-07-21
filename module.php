@@ -19,6 +19,7 @@ class CalendarModule extends AApiModule
 		);
 		
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
+		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 //		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
 	}
 	
@@ -811,5 +812,24 @@ class CalendarModule extends AApiModule
 			}
 		}
 	}
+	
+    public function onGetMobileSyncInfo(&$aData)
+	{
+		$oDavModule = \CApi::GetModuleDecorator('Dav');
+		$aCalendars = $this->GetCalendars();
+		if (isset($aCalendars['Calendars']) && is_array($aCalendars['Calendars']) && 0 < count($aCalendars['Calendars']))
+		{
+			foreach($aCalendars['Calendars'] as $oCalendar)
+			{
+				if ($oCalendar instanceof \CCalendar)
+				{
+					$aData['Dav']['Calendars'][] = array(
+						'Name' => $oCalendar->DisplayName,
+						'Url' => $oDavModule->GetServerUrl().$oCalendar->Url
+					);
+				}
+			}
+		}	
+	}	
 	
 }
