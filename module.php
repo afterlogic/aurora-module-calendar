@@ -52,7 +52,7 @@ class CalendarModule extends AApiModule
 			$mCalendars = array($oCalendar);
 		} else 
 		{
-			$iUserId = \CApi::getLogginedUserId();
+			$iUserId = \CApi::getAuthenticatedUserId();
 			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId)) 
 			{
 				
@@ -109,7 +109,7 @@ class CalendarModule extends AApiModule
 	public function CreateCalendar($Name, $Description, $Color)
 	{
 		$mResult = false;
-		$iUserId = \CApi::getLogginedUserId();
+		$iUserId = \CApi::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
 			throw new \System\Exceptions\ClientException(\System\Notifications::CalendarsNotAllowed);
@@ -133,7 +133,7 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendar($Name, $Description, $Color, $Id)
 	{
-		$iUserId = \CApi::getLogginedUserId();
+		$iUserId = \CApi::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
 			throw new \System\Exceptions\ClientException(\System\Notifications::CalendarsNotAllowed);
@@ -147,7 +147,7 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendarColor($Color, $Id)
 	{
-		$iUserId = \CApi::getLogginedUserId();
+		$iUserId = \CApi::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
 			throw new \System\Exceptions\ClientException(\System\Notifications::CalendarsNotAllowed);
@@ -161,7 +161,7 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendarShare()
 	{
-		$iUserId = \CApi::getLogginedUserId();
+		$iUserId = \CApi::getAuthenticatedUserId();
 		$sCalendarId = $this->getParamValue('Id');
 		$bIsPublic = (bool) $this->getParamValue('IsPublic');
 		$aShares = @json_decode($this->getParamValue('Shares'), true);
@@ -253,7 +253,7 @@ class CalendarModule extends AApiModule
 		}
 		else
 		{
-			$iUserId = \CApi::getLogginedUserId();
+			$iUserId = \CApi::getAuthenticatedUserId();
 			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 			{
 				throw new \System\Exceptions\ClientException(\System\Notifications::CalendarsNotAllowed);
