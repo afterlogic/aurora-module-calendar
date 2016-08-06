@@ -23,7 +23,7 @@ class CalendarModule extends AApiModule
 //		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
 	}
 	
-	public function GetAppData($oUser = null)
+	public function GetAppData()
 	{
 		return array(
 			'AllowAppointments' => true, // AppData.User.CalendarAppointments
