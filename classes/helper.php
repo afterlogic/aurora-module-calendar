@@ -436,7 +436,7 @@ class CCalendarHelper
 	 * @param string $sMethod
 	 * @param string $sHtmlBody Default value is empty string.
 	 *
-	 * @throws \Core\Exceptions\ClientException
+	 * @throws \System\Exceptions\AuroraApiException
 	 *
 	 * @return \MailSo\Mime\Message
 	 */
@@ -467,7 +467,7 @@ class CCalendarHelper
 						break;
 				}
 
-				throw new \Core\Exceptions\ClientException($iCode, $oException);
+				throw new \System\Exceptions\AuroraApiException($iCode, $oException);
 			}
 		}
 
