@@ -25,6 +25,8 @@ class CalendarModule extends AApiModule
 	
 	public function GetAppData()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		return array(
 			'AllowAppointments' => true, // AppData.User.CalendarAppointments
 			'AllowShare' => true, // AppData.User.CalendarSharing
@@ -43,6 +45,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function GetCalendars($IsPublic = false, $PublicCalendarId = '')
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$mResult = false;
 		$mCalendars = false;
 		
@@ -76,6 +80,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function DownloadCalendar()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 		if ($this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
@@ -108,6 +114,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function CreateCalendar($Name, $Description, $Color)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$mResult = false;
 		$iUserId = \CApi::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
@@ -133,6 +141,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendar($Name, $Description, $Color, $Id)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$iUserId = \CApi::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
@@ -147,6 +157,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendarColor($Color, $Id)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$iUserId = \CApi::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
@@ -161,6 +173,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendarShare()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$iUserId = \CApi::getAuthenticatedUserId();
 		$sCalendarId = $this->getParamValue('Id');
 		$bIsPublic = (bool) $this->getParamValue('IsPublic');
@@ -194,6 +208,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateCalendarPublic()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 		$sCalendarId = $this->getParamValue('Id');
 		$bIsPublic = (bool) $this->getParamValue('IsPublic');
@@ -211,6 +227,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function DeleteCalendar()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 		
 		$sCalendarId = $this->getParamValue('Id');
@@ -224,6 +242,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function GetBaseEvent()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
@@ -242,6 +262,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function GetEvents($CalendarIds, $Start, $End, $IsPublic, $TimezoneOffset, $Timezone)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$mResult = false;
 		
 		if ($IsPublic)
@@ -269,6 +291,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function CreateEvent()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
@@ -312,6 +336,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function UpdateEvent()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$mResult = false;
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
@@ -373,6 +399,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function DeleteEvent()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$mResult = false;
 		$oAccount = $this->getDefaultAccountFromParam();
 		
@@ -404,6 +432,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function AddEventsFromFile()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 
 		$mResult = false;
@@ -442,6 +472,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function SetAppointmentAction()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = null; //$this->getAccountFromParam(); TODO:
 		$oDefaultAccount = null; //$this->getDefaultAccountFromParam(); TODO
 		
@@ -652,6 +684,8 @@ class CalendarModule extends AApiModule
 	
 	public function UpdateAttendeeStatus()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getAccountFromParam();
 		
 		$mResult = false;
@@ -679,6 +713,8 @@ class CalendarModule extends AApiModule
 	
 	public function ProcessICS()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getParamValue('Account', null);
 		$sData = (string) $this->getParamValue('Data', '');
 		$sFromEmail = (string) $this->getParamValue('FromEmail', '');
@@ -691,6 +727,8 @@ class CalendarModule extends AApiModule
 	 */
 	public function UploadCalendars()
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		$oAccount = $this->getDefaultAccountFromParam();
 		
 		$aFileData = $this->getParamValue('FileData', null);
@@ -762,56 +800,56 @@ class CalendarModule extends AApiModule
 		}
 	}
 	
-	public function onExtendMessageData($oAccount, &$oMessage, $aData)
-	{
-		$oApiCapa = /* @var CApiCapabilityManager */ $this->oApiCapabilityManager;
-		$oApiFileCache = /* @var CApiFilecacheManager */ CApi::GetSystemManager('filecache');
-		$sFromEmail = '';
-		$oFromCollection = $oMessage->getFrom();
-		if ($oFromCollection && 0 < $oFromCollection->Count())
-		{
-			$oFrom =& $oFromCollection->GetByIndex(0);
-			if ($oFrom)
-			{
-				$sFromEmail = trim($oFrom->GetEmail());
-			}
-		}
-		foreach ($aData as $aDataItem)
-		{
-			if ($aDataItem['Part'] instanceof \MailSo\Imap\BodyStructure && $aDataItem['Part']->ContentType() === 'text/calendar')
-			{
-				$sData = $aDataItem['Data'];
-				if (!empty($sData) && $oApiCapa->isCalendarSupported($oAccount))
-				{
-					$mResult = $this->oApiCalendarManager->processICS($oAccount, $sData, $sFromEmail);
-					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
-					{
-						$sTemptFile = md5($mResult['Body']).'.ics';
-						if ($oApiFileCache && $oApiFileCache->put($oAccount, $sTemptFile, $mResult['Body']))
-						{
-							$oIcs = CApiMailIcs::createInstance();
-
-							$oIcs->Uid = $mResult['UID'];
-							$oIcs->Sequence = $mResult['Sequence'];
-							$oIcs->File = $sTemptFile;
-							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
-							$oIcs->Type = ($oApiCapa->isCalendarAppointmentsSupported($oAccount)) ? $mResult['Action'] : 'SAVE';
-							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
-							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
-							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
-							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
-
-							$oMessage->addExtend('ICAL', $oIcs);
-						}
-						else
-						{
-							CApi::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
-						}
-					}
-				}				
-			}
-		}
-	}
+//	public function onExtendMessageData($oAccount, &$oMessage, $aData)
+//	{
+//		$oApiCapa = /* @var CApiCapabilityManager */ $this->oApiCapabilityManager;
+//		$oApiFileCache = /* @var CApiFilecacheManager */ CApi::GetSystemManager('filecache');
+//		$sFromEmail = '';
+//		$oFromCollection = $oMessage->getFrom();
+//		if ($oFromCollection && 0 < $oFromCollection->Count())
+//		{
+//			$oFrom =& $oFromCollection->GetByIndex(0);
+//			if ($oFrom)
+//			{
+//				$sFromEmail = trim($oFrom->GetEmail());
+//			}
+//		}
+//		foreach ($aData as $aDataItem)
+//		{
+//			if ($aDataItem['Part'] instanceof \MailSo\Imap\BodyStructure && $aDataItem['Part']->ContentType() === 'text/calendar')
+//			{
+//				$sData = $aDataItem['Data'];
+//				if (!empty($sData) && $oApiCapa->isCalendarSupported($oAccount))
+//				{
+//					$mResult = $this->oApiCalendarManager->processICS($oAccount, $sData, $sFromEmail);
+//					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
+//					{
+//						$sTemptFile = md5($mResult['Body']).'.ics';
+//						if ($oApiFileCache && $oApiFileCache->put($oAccount, $sTemptFile, $mResult['Body']))
+//						{
+//							$oIcs = CApiMailIcs::createInstance();
+//
+//							$oIcs->Uid = $mResult['UID'];
+//							$oIcs->Sequence = $mResult['Sequence'];
+//							$oIcs->File = $sTemptFile;
+//							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
+//							$oIcs->Type = ($oApiCapa->isCalendarAppointmentsSupported($oAccount)) ? $mResult['Action'] : 'SAVE';
+//							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
+//							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
+//							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
+//							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
+//
+//							$oMessage->addExtend('ICAL', $oIcs);
+//						}
+//						else
+//						{
+//							CApi::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
+//						}
+//					}
+//				}				
+//			}
+//		}
+//	}
 	
     public function onGetMobileSyncInfo(&$aData)
 	{
