@@ -23,6 +23,11 @@ class CalendarModule extends AApiModule
 //		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
 	}
 	
+	/**
+	 * Obtaines list of module settings for authenticated user.
+	 * 
+	 * @return array
+	 */
 	public function GetAppData()
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
