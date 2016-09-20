@@ -1,5 +1,7 @@
 <?php
 
+
+//test
 class CalendarModule extends AApiModule
 {
 	public $oApiCalendarManager = null;
