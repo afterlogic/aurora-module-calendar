@@ -267,7 +267,7 @@ class CalendarModule extends AApiModule
 	/**
 	 * @return array
 	 */
-	public function GetEvents($CalendarIds, $Start, $End, $IsPublic, $TimezoneOffset, $Timezone)
+	public function GetEvents($CalendarIds, $Start, $End, $IsPublic, $TimezoneOffset, $Timezone, $Expand = true)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
@@ -278,7 +278,7 @@ class CalendarModule extends AApiModule
 			$oPublicAccount = $this->oApiCalendarManager->getPublicAccount();
 			$oPublicAccount->User->DefaultTimeZone = $TimezoneOffset;
 			$oPublicAccount->User->ClientTimeZone = $Timezone;
-			$mResult = $this->oApiCalendarManager->getEvents($oPublicAccount, $CalendarIds, $Start, $End);
+			$mResult = $this->oApiCalendarManager->getEvents($oPublicAccount, $CalendarIds, $Start, $End, $Expand);
 		}
 		else
 		{
