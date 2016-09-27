@@ -444,9 +444,6 @@ class CCalendarHelper
 	{
 		$oMessage = self::buildAppointmentMessage($oAccount, $sTo, $sSubject, $sBody, $sMethod, $sHtmlBody);
 
-		CApi::Plugin()->RunHook('webmail-change-appointment-message-before-send',
-			array(&$oMessage, &$oAccount));
-
 		if ($oMessage)
 		{
 			try
