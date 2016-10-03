@@ -677,7 +677,7 @@ class CalendarModule extends AApiModule
 					
 					$sAuthToken = isset($_COOKIE[\System\Service::AUTH_TOKEN_KEY]) ? $_COOKIE[\System\Service::AUTH_TOKEN_KEY] : '';
 					$sResult = strtr($sResult, array(
-						'{{AppVersion}}' => PSEVEN_APP_VERSION,
+						'{{AppVersion}}' => AURORA_APP_VERSION,
 						'{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
 						'{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
 						'{{IntegratorBody}}' => $oApiIntegrator->buildBody('-calendar-pub')
