@@ -858,7 +858,7 @@ class CalendarModule extends AApiModule
 //		}
 //	}
 	
-    public function onGetMobileSyncInfo(&$aArgs)
+    public function onGetMobileSyncInfo($aArgs, &$mResult)
 	{
 		$oDavModule = \CApi::GetModuleDecorator('Dav');
 		$aCalendars = $this->GetCalendars();
@@ -868,7 +868,7 @@ class CalendarModule extends AApiModule
 			{
 				if ($oCalendar instanceof \CCalendar)
 				{
-					$aArgs['Dav']['Calendars'][] = array(
+					$mResult['Dav']['Calendars'][] = array(
 						'Name' => $oCalendar->DisplayName,
 						'Url' => $oDavModule->GetServerUrl().$oCalendar->Url
 					);
