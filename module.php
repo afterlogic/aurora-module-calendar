@@ -580,7 +580,7 @@ class CalendarModule extends AApiModule
 
 							$sDateFormat = 'm/d/Y';
 							$sTimeFormat = 'h:i A';
-							switch ($oAccountOrganizer->User->DefaultDateFormat)
+							switch ($oAccountOrganizer->User->DateFormat)
 							{
 								case \EDateFormat::DDMMYYYY:
 									$sDateFormat = 'd/m/Y';
