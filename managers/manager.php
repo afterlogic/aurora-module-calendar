@@ -1638,7 +1638,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 		if (is_array($aFetchers) && 0 < count($aFetchers)) {
 			foreach ($aFetchers as /* @var $oFetcher \CFetcher */ $oFetcher) {
 				if ($oFetcher) {
-					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingMailLogin;
+					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
 				}
 			}
 		}
