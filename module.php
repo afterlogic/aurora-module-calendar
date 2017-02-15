@@ -277,7 +277,6 @@ class CalendarModule extends AApiModule
 		{
 			$oPublicAccount = $this->oApiCalendarManager->getPublicAccount();
 			$oPublicAccount->User->DefaultTimeZone = $TimezoneOffset;
-			$oPublicAccount->User->ClientTimeZone = $Timezone;
 			$mResult = $this->oApiCalendarManager->getEvents($oPublicAccount, $CalendarIds, $Start, $End, $Expand);
 		}
 		else
