@@ -1624,7 +1624,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 		$mResult = false;
 
 		/* @var $oDefaultAccount CAccount */
-		$oDefaultAccount = $iUserId->CanAuthorize ? $iUserId : $this->ApiUsersManager->getDefaultAccount($iUserId->IdUser);
+		$oDefaultAccount = $iUserId->UseToAuthorize ? $iUserId : $this->ApiUsersManager->getDefaultAccount($iUserId->IdUser);
 
 		$aAccountEmails = array();
 		$aUserAccounts = $this->ApiUsersManager->getUserAccounts($iUserId->IdUser);
