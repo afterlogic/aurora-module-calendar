@@ -1,8 +1,9 @@
 <?php
 
 
-//test
-class CalendarModule extends AApiModule
+namespace Aurora\Modules;
+
+class CalendarModule extends \AApiModule
 {
 	public $oApiCalendarManager = null;
 	
@@ -809,7 +810,7 @@ class CalendarModule extends AApiModule
 //	public function onExtendMessageData($oAccount, &$oMessage, $aData)
 //	{
 //		$oApiCapa = /* @var CApiCapabilityManager */ $this->oApiCapabilityManager;
-//		$oApiFileCache = /* @var CApiFilecacheManager */ CApi::GetSystemManager('filecache');
+//		$oApiFileCache = /* @var CApiFilecacheManager */\CApi::GetSystemManager('filecache');
 //		$sFromEmail = '';
 //		$oFromCollection = $oMessage->getFrom();
 //		if ($oFromCollection && 0 < $oFromCollection->Count())
