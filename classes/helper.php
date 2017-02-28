@@ -302,7 +302,7 @@ class CCalendarHelper
 			}
 		}
 
-		$ApiCapabilityManager =\CApi::GetSystemManager('capability');
+		$ApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
 		if ($ApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
 		{
 			$aAttendees = array();
@@ -395,7 +395,7 @@ class CCalendarHelper
 					if (($sAttendee !== $oAccount->Email) &&
 						(!isset($oAttendee['PARTSTAT']) || (isset($oAttendee['PARTSTAT']) && (string)$oAttendee['PARTSTAT'] !== 'DECLINED')))
 					{
-						$oApiCalendar = \CApi::Manager('calendar', 'sabredav');
+						$oApiCalendar = \Aurora\System\Api::Manager('calendar', 'sabredav');
 
 						$sStartDateFormat = $oVEvent->DTSTART->hasTime() ? 'D, F d, o, H:i' : 'D, F d, o';
 						$sStartDate = self::getStrDate($oVEvent->DTSTART, $oAccount->getDefaultStrTimeZone(), $sStartDateFormat);
@@ -464,8 +464,8 @@ class CCalendarHelper
 		{
 			try
 			{
-				CApi::Log('IcsAppointmentActionSendOriginalMailMessage');
-				return \CApi::ExecuteMethod('Mail::SendMessageObject', array(
+				\Aurora\System\Api::Log('IcsAppointmentActionSendOriginalMailMessage');
+				return \Aurora\System\Api::ExecuteMethod('Mail::SendMessageObject', array(
 					'Account' => $oAccount,
 					'Message' => $oMessage
 				));
@@ -506,7 +506,7 @@ class CCalendarHelper
 			$oMessage->RegenerateMessageId();
 			$oMessage->DoesNotCreateEmptyTextPart();
 
-			$sXMailer = \CApi::GetConf('webmail.xmailer-value', '');
+			$sXMailer = \Aurora\System\Api::GetConf('webmail.xmailer-value', '');
 			if (0 < strlen($sXMailer))
 			{
 				$oMessage->SetXMailer($sXMailer);
@@ -579,25 +579,25 @@ class CCalendarHelper
 		);
 		
 		$aValues['action'] = 'ACCEPTED';
-		$sEncodedValueAccept = \CApi::EncodeKeyValues($aValues);
+		$sEncodedValueAccept = \Aurora\System\Api::EncodeKeyValues($aValues);
 		$aValues['action'] = 'TENTATIVE';
-		$sEncodedValueTentative = \CApi::EncodeKeyValues($aValues);
+		$sEncodedValueTentative = \Aurora\System\Api::EncodeKeyValues($aValues);
 		$aValues['action'] = 'DECLINED';
-		$sEncodedValueDecline = \CApi::EncodeKeyValues($aValues);
+		$sEncodedValueDecline = \Aurora\System\Api::EncodeKeyValues($aValues);
 
 		$sHref = rtrim(\MailSo\Base\Http::SingletonInstance()->GetFullUrl(), '\\/ ').'/?invite=';
-		$oCalendarModule = \CApi::GetModule('Calendar');
-		if ($oCalendarModule instanceof AApiModule)
+		$oCalendarModule = \Aurora\System\Api::GetModule('Calendar');
+		if ($oCalendarModule instanceof \Aurora\System\AbstractModule)
 		{
 			$sHtml = file_get_contents($oCalendarModule->GetPath().'/templates/CalendarEventInvite.html');
 			$sHtml = strtr($sHtml, array(
-				'{{INVITE/LOCATION}}'	=> \CApi::I18N('INVITE/LOCATION'),
-				'{{INVITE/WHEN}}'		=> \CApi::I18N('INVITE/WHEN'),
-				'{{INVITE/DESCRIPTION}}'=> \CApi::I18N('INVITE/DESCRIPTION'),
-				'{{INVITE/INFORMATION}}'=> \CApi::I18N('INVITE/INFORMATION', array('Email' => $sAttendee)),
-				'{{INVITE/ACCEPT}}'		=> \CApi::I18N('INVITE/ACCEPT'),
-				'{{INVITE/TENTATIVE}}'	=> \CApi::I18N('INVITE/TENTATIVE'),
-				'{{INVITE/DECLINE}}'	=> \CApi::I18N('INVITE/DECLINE'),
+				'{{INVITE/LOCATION}}'	=> \Aurora\System\Api::I18N('INVITE/LOCATION'),
+				'{{INVITE/WHEN}}'		=> \Aurora\System\Api::I18N('INVITE/WHEN'),
+				'{{INVITE/DESCRIPTION}}'=> \Aurora\System\Api::I18N('INVITE/DESCRIPTION'),
+				'{{INVITE/INFORMATION}}'=> \Aurora\System\Api::I18N('INVITE/INFORMATION', array('Email' => $sAttendee)),
+				'{{INVITE/ACCEPT}}'		=> \Aurora\System\Api::I18N('INVITE/ACCEPT'),
+				'{{INVITE/TENTATIVE}}'	=> \Aurora\System\Api::I18N('INVITE/TENTATIVE'),
+				'{{INVITE/DECLINE}}'	=> \Aurora\System\Api::I18N('INVITE/DECLINE'),
 				'{{Calendar}}'			=> $sCalendarName.' '.$sAccountEmail,
 				'{{Location}}'			=> $oEvent->Location,
 				'{{Start}}'				=> $sStartDate,

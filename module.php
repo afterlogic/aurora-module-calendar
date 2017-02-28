@@ -3,7 +3,7 @@
 
 namespace Aurora\Modules;
 
-class CalendarModule extends \AApiModule
+class CalendarModule extends \Aurora\System\AbstractModule
 {
 	public $oApiCalendarManager = null;
 	
@@ -33,7 +33,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function GetSettings()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		return array(
 			'AllowAppointments' => true, // AppData.User.CalendarAppointments
@@ -53,7 +53,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function GetCalendars($IsPublic = false, $PublicCalendarId = '')
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		$mResult = false;
 		$mCalendars = false;
@@ -64,7 +64,7 @@ class CalendarModule extends \AApiModule
 			$mCalendars = array($oCalendar);
 		} else 
 		{
-			$iUserId = \CApi::getAuthenticatedUserId();
+			$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId)) 
 			{
 				
@@ -88,13 +88,13 @@ class CalendarModule extends \AApiModule
 	 */
 	public function DownloadCalendar()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 		if ($this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
 			$sRawKey = (string) $this->getParamValue('RawKey', '');
-			$aValues = \CApi::DecodeKeyValues($sRawKey);
+			$aValues = \Aurora\System\Api::DecodeKeyValues($sRawKey);
 
 			if (isset($aValues['CalendarId'])) {
 				
@@ -122,10 +122,10 @@ class CalendarModule extends \AApiModule
 	 */
 	public function CreateCalendar($Name, $Description, $Color)
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$mResult = false;
-		$iUserId = \CApi::getAuthenticatedUserId();
+		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
 			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
@@ -149,9 +149,9 @@ class CalendarModule extends \AApiModule
 	 */
 	public function UpdateCalendar($Name, $Description, $Color, $Id)
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$iUserId = \CApi::getAuthenticatedUserId();
+		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
 			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
@@ -165,9 +165,9 @@ class CalendarModule extends \AApiModule
 	 */
 	public function UpdateCalendarColor($Color, $Id)
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$iUserId = \CApi::getAuthenticatedUserId();
+		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
 			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
@@ -181,9 +181,9 @@ class CalendarModule extends \AApiModule
 	 */
 	public function UpdateCalendarShare()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$iUserId = \CApi::getAuthenticatedUserId();
+		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		$sCalendarId = $this->getParamValue('Id');
 		$bIsPublic = (bool) $this->getParamValue('IsPublic');
 		$aShares = @json_decode($this->getParamValue('Shares'), true);
@@ -216,7 +216,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function UpdateCalendarPublic()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 		$sCalendarId = $this->getParamValue('Id');
@@ -235,7 +235,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function DeleteCalendar()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 		
@@ -250,7 +250,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function GetBaseEvent()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
@@ -270,7 +270,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function GetEvents($CalendarIds, $Start, $End, $IsPublic, $TimezoneOffset, $Timezone, $Expand = true)
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		$mResult = false;
 		
@@ -282,7 +282,7 @@ class CalendarModule extends \AApiModule
 		}
 		else
 		{
-			$iUserId = \CApi::getAuthenticatedUserId();
+			$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 			{
 				throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
@@ -298,7 +298,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function CreateEvent()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
@@ -343,7 +343,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function UpdateEvent()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$mResult = false;
 		$oAccount = $this->getDefaultAccountFromParam();
@@ -406,7 +406,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function DeleteEvent()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$mResult = false;
 		$oAccount = $this->getDefaultAccountFromParam();
@@ -439,7 +439,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function AddEventsFromFile()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 
@@ -458,7 +458,7 @@ class CalendarModule extends \AApiModule
 			throw new \System\Exceptions\AuroraApiException(\System\Notifications::InvalidInputParameter);
 		}
 
-		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetSystemManager('filecache');
+		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
 		$sData = $oApiFileCache->get($oAccount, $sTempFile);
 		if (!empty($sData))
 		{
@@ -479,7 +479,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function SetAppointmentAction()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = null; //$this->getAccountFromParam(); TODO:
 		$oDefaultAccount = null; //$this->getDefaultAccountFromParam(); TODO
@@ -512,7 +512,7 @@ class CalendarModule extends \AApiModule
 			}
 			else if (!empty($sTempFile))
 			{
-				$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetSystemManager('filecache');
+				$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
 				$sData = $oApiFileCache->get($oAccount, $sTempFile);
 			}
 			if (!empty($sData))
@@ -533,9 +533,9 @@ class CalendarModule extends \AApiModule
 	public function EntryInvite()
 	{
 		$sResult = '';
-		$aInviteValues = \CApi::DecodeKeyValues($this->oHttp->GetQuery('invite'));
+		$aInviteValues = \Aurora\System\Api::DecodeKeyValues($this->oHttp->GetQuery('invite'));
 
-		$oApiUsersManager = \CApi::GetSystemManager('users');
+		$oApiUsersManager = \Aurora\System\Api::GetSystemManager('users');
 		if (isset($aInviteValues['organizer']))
 		{
 			$oAccountOrganizer = $oApiUsersManager->getAccountByEmail($aInviteValues['organizer']);
@@ -610,9 +610,9 @@ class CalendarModule extends \AApiModule
 							$mResult = array(
 								'{{COLOR}}' => $oCalendar->Color,
 								'{{EVENT_NAME}}' => $oEvent[0]['subject'],
-								'{{EVENT_BEGIN}}' => ucfirst(\CApi::ClientI18N('REMINDERS/EVENT_BEGIN', $oAccountOrganizer)),
+								'{{EVENT_BEGIN}}' => ucfirst(\Aurora\System\Api::ClientI18N('REMINDERS/EVENT_BEGIN', $oAccountOrganizer)),
 								'{{EVENT_DATE}}' => $sDateTime,
-								'{{CALENDAR}}' => ucfirst(\CApi::ClientI18N('REMINDERS/CALENDAR', $oAccountOrganizer)),
+								'{{CALENDAR}}' => ucfirst(\Aurora\System\Api::ClientI18N('REMINDERS/CALENDAR', $oAccountOrganizer)),
 								'{{CALENDAR_NAME}}' => $oCalendar->DisplayName,
 								'{{EVENT_DESCRIPTION}}' => $oEvent[0]['description'],
 								'{{EVENT_ACTION}}' => $sActionText,
@@ -623,17 +623,17 @@ class CalendarModule extends \AApiModule
 						}
 						else
 						{
-							\CApi::Log('Empty template.', \ELogLevel::Error);
+							\Aurora\System\Api::Log('Empty template.', \ELogLevel::Error);
 						}
 					}
 					else
 					{
-						\CApi::Log('Event not found.', \ELogLevel::Error);
+						\Aurora\System\Api::Log('Event not found.', \ELogLevel::Error);
 					}
 				}
 				else
 				{
-					\CApi::Log('Calendar not found.', \ELogLevel::Error);
+					\Aurora\System\Api::Log('Calendar not found.', \ELogLevel::Error);
 				}
 				$sAttendee = $aInviteValues['attendee'];
 				if (!empty($sAttendee))
@@ -649,7 +649,7 @@ class CalendarModule extends \AApiModule
 	{
 		$sResult = '';
 		
-		$oApiIntegrator = \CApi::GetSystemManager('integrator');
+		$oApiIntegrator = \Aurora\System\Api::GetSystemManager('integrator');
 		
 		if ($oApiIntegrator)
 		{
@@ -660,17 +660,17 @@ class CalendarModule extends \AApiModule
 				@\header('Last-Modified: '.\gmdate('D, d M Y H:i:s').' GMT');
 			}
 			
-			if ((\CApi::GetConf('labs.cache-ctrl', true) && isset($_COOKIE['aft-cache-ctrl'])))
+			if ((\Aurora\System\Api::GetConf('labs.cache-ctrl', true) && isset($_COOKIE['aft-cache-ctrl'])))
 			{
 				setcookie('aft-cache-ctrl', '', time() - 3600);
 				\MailSo\Base\Http::NewInstance()->StatusHeader(304);
 				exit();
 			}
-			$oCoreClientModule = \CApi::GetModule('CoreWebclient');
-			if ($oCoreClientModule instanceof \AApiModule) {
+			$oCoreClientModule = \Aurora\System\Api::GetModule('CoreWebclient');
+			if ($oCoreClientModule instanceof \Aurora\System\AbstractModule) {
 				$sResult = file_get_contents($oCoreClientModule->GetPath().'/templates/Index.html');
 				if (is_string($sResult)) {
-					$sFrameOptions = \CApi::GetConf('labs.x-frame-options', '');
+					$sFrameOptions = \Aurora\System\Api::GetConf('labs.x-frame-options', '');
 					if (0 < \strlen($sFrameOptions)) {
 						@\header('X-Frame-Options: '.$sFrameOptions);
 					}
@@ -691,7 +691,7 @@ class CalendarModule extends \AApiModule
 	
 	public function UpdateAttendeeStatus()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getAccountFromParam();
 		
@@ -706,7 +706,7 @@ class CalendarModule extends \AApiModule
 		}
 		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
 		{
-			$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \CApi::GetSystemManager('filecache');
+			$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
 			$sData = $oApiFileCache->get($oAccount, $sTempFile);
 			if (!empty($sData))
 			{
@@ -720,7 +720,7 @@ class CalendarModule extends \AApiModule
 	
 	public function ProcessICS()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getParamValue('Account', null);
 		$sData = (string) $this->getParamValue('Data', '');
@@ -734,7 +734,7 @@ class CalendarModule extends \AApiModule
 	 */
 	public function UploadCalendars()
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$oAccount = $this->getDefaultAccountFromParam();
 		
@@ -755,7 +755,7 @@ class CalendarModule extends \AApiModule
 
 			if ($bIsIcsExtension)
 			{
-				$oApiFileCacheManager = \CApi::GetSystemManager('filecache');
+				$oApiFileCacheManager = \Aurora\System\Api::GetSystemManager('filecache');
 				$sSavedName = 'import-post-' . md5($aFileData['name'] . $aFileData['tmp_name']);
 				if ($oApiFileCacheManager->moveUploadedFile($oAccount, $sSavedName, $aFileData['tmp_name'])) {
 					
@@ -810,7 +810,7 @@ class CalendarModule extends \AApiModule
 //	public function onExtendMessageData($oAccount, &$oMessage, $aData)
 //	{
 //		$oApiCapa = /* @var CApiCapabilityManager */ $this->oApiCapabilityManager;
-//		$oApiFileCache = /* @var CApiFilecacheManager */\CApi::GetSystemManager('filecache');
+//		$oApiFileCache = /* @var CApiFilecacheManager */\Aurora\System\Api::GetSystemManager('filecache');
 //		$sFromEmail = '';
 //		$oFromCollection = $oMessage->getFrom();
 //		if ($oFromCollection && 0 < $oFromCollection->Count())
@@ -850,7 +850,7 @@ class CalendarModule extends \AApiModule
 //						}
 //						else
 //						{
-//							CApi::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
+//							\Aurora\System\Api::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
 //						}
 //					}
 //				}				
@@ -860,7 +860,7 @@ class CalendarModule extends \AApiModule
 	
     public function onGetMobileSyncInfo($aArgs, &$mResult)
 	{
-		$oDavModule = \CApi::GetModuleDecorator('Dav');
+		$oDavModule = \Aurora\System\Api::GetModuleDecorator('Dav');
 		$aCalendars = $this->GetCalendars();
 		if (isset($aCalendars['Calendars']) && is_array($aCalendars['Calendars']) && 0 < count($aCalendars['Calendars']))
 		{

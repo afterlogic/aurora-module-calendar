@@ -36,8 +36,8 @@ class CalendarParser
 	 */
 	public static function parseEvent($oAccount, $oCalendar, $oVCal, $oVCalOriginal = null)
 	{
-		$ApiCapabilityManager =\CApi::GetSystemManager('capability');
-		$ApiUsersManager =\CApi::GetSystemManager('users');
+		$ApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
+		$ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
 
 		$aResult = array();
 		$aRules = array();

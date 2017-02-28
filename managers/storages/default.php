@@ -24,12 +24,12 @@
  * @package Calendar
  * @subpackage Storages
  */
-class CApiCalendarStorage extends AApiManagerStorage
+class CApiCalendarStorage extends \Aurora\System\AbstractManagerStorage
 {
 	/**
-	 * @param CApiGlobalManager &$oManager
+	 * @param \Aurora\System\GlobalManager &$oManager
 	 */
-	public function __construct($sStorageName, AApiManager &$oManager)
+	public function __construct($sStorageName, \Aurora\System\AbstractManager &$oManager)
 	{
 		parent::__construct('calendar', $sStorageName, $oManager);
 	}

@@ -57,9 +57,9 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	protected $TenantUser;
 
 	/**
-	 * @param CApiGlobalManager $oManager
+	 * @param \Aurora\System\GlobalManager $oManager
 	 */
-	public function __construct(AApiManager &$oManager)
+	public function __construct(\Aurora\System\AbstractManager &$oManager)
 	{
 		parent::__construct('sabredav', $oManager);
 
@@ -278,7 +278,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 /*		if (!isset($this->TenantUser)) {
 			$sPrincipal = 'default_' . \Afterlogic\DAV\Constants::DAV_TENANT_PRINCIPAL;
 			if ($iUserId->IdTenant > 0) {
-				$oApiTenantsMan =\CApi::GetCoreManager('tenants');
+				$oApiTenantsMan =\Aurora\System\Api::GetCoreManager('tenants');
 				$oTenant = $oApiTenantsMan ? $oApiTenantsMan->getTenantById($iUserId->IdTenant) : null;
 				if ($oTenant) {
 					$sPrincipal = $oTenant->Login . '_' . \Afterlogic\DAV\Constants::DAV_TENANT_PRINCIPAL;
@@ -301,7 +301,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	{
 		$oTenantAccount = new CAccount(new CDomain());
 		$oTenantAccount->Email = $this->getTenantUser($iUserId);
-		$oTenantAccount->FriendlyName = \CApi::ClientI18N('CONTACTS/SHARED_TO_ALL', $oAccount);
+		$oTenantAccount->FriendlyName = \Aurora\System\Api::ClientI18N('CONTACTS/SHARED_TO_ALL', $oAccount);
 		
 		return $oTenantAccount;
 	}	

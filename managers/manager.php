@@ -23,7 +23,7 @@
  * 
  * @package Calendar
  */
-class CApiCalendarManager extends AApiManagerWithStorage
+class CApiCalendarManager extends \Aurora\System\AbstractManagerWithStorage
 {
 	/*
 	 * @type $ApiUsersManager CApiUsersManager
@@ -36,14 +36,14 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	protected $oApiCapabilityManager;
 
 	/**
-	 * @param CApiGlobalManager &$oManager
+	 * @param \Aurora\System\GlobalManager &$oManager
 	 */
-	public function __construct(CApiGlobalManager &$oManager, $sForcedStorage = '', AApiModule $oModule = null)
+	public function __construct(\Aurora\System\GlobalManager &$oManager, $sForcedStorage = '', \Aurora\System\AbstractModule $oModule = null)
 	{
 		parent::__construct('', $oManager, $sForcedStorage, $oModule);
 
-		$this->ApiUsersManager =\CApi::GetSystemManager('users');
-		$this->oApiCapabilityManager =\CApi::GetSystemManager('capability');
+		$this->ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
+		$this->oApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
 	}
 	
 	/**
@@ -906,7 +906,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 		$aGroups = array_merge($aGroups, $aGroupsLocation);
 
 
-		$oContactsModule = \CApi::GetModule('Contacts');
+		$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
 		if ($oContactsModule) {
 			foreach ($aGroups as $sGroup) {
 				$sGroupName = ltrim($sGroup, '#');
@@ -1025,7 +1025,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 	 */
 	public function updateEventGroupByMoving($sCalendarId, $sEventId, $sNewCalendarId)
 	{
-		$oContactsModule = \CApi::GetModule('Contacts');
+		$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
 		if ($oContactsModule) {
 			$aEvents = $oContactsModule->CallMethod('getGroupEvent', array($sCalendarId, $sEventId));
 			if (is_array($aEvents) && 0 < count($aEvents)) {
@@ -1445,11 +1445,11 @@ class CApiCalendarManager extends AApiManagerWithStorage
 			}
 
 			if (!$bResult) {
-				CApi::Log('Ics Appointment Action FALSE result!', ELogLevel::Error);
+				\Aurora\System\Api::Log('Ics Appointment Action FALSE result!', ELogLevel::Error);
 				if ($iUserId) {
-					CApi::Log('Email: '.$iUserId->Email.', Action: '. $sAction.', Data:', ELogLevel::Error);
+					\Aurora\System\Api::Log('Email: '.$iUserId->Email.', Action: '. $sAction.', Data:', ELogLevel::Error);
 				}
-				CApi::Log($sData, ELogLevel::Error);
+				\Aurora\System\Api::Log($sData, ELogLevel::Error);
 			} else {
 				$bResult = $sEventId;
 			}
@@ -1583,7 +1583,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 				}
 				$oResult = $this->oStorage->deleteEvent($iUserId, $sCalendarId, $sEventId);
 				if ($oResult) {
-					$oContactsModule = \CApi::GetModule('Contacts');
+					$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
 					$oContactsModule->CallMethod('removeEventFromAllGroups', array($sCalendarId, $sEventId));
 				}
 			}
@@ -1634,7 +1634,7 @@ class CApiCalendarManager extends AApiManagerWithStorage
 			}
 		}
 		
-		$aFetchers = \CApi::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
+		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
 		if (is_array($aFetchers) && 0 < count($aFetchers)) {
 			foreach ($aFetchers as /* @var $oFetcher \CFetcher */ $oFetcher) {
 				if ($oFetcher) {
