@@ -1526,7 +1526,7 @@ class CApiCalendarManager extends \Aurora\System\AbstractManagerWithStorage
 		catch (Exception $oException)
 		{
 			$oResult = false;
-			$this->setLastException($oException);
+//			$this->setLastException($oException);
 		}
 
 		return $oResult;
