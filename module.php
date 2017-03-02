@@ -68,7 +68,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId)) 
 			{
 				
-				throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+				throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 			}
 	
 			$mCalendars = $this->oApiCalendarManager->getCalendars($iUserId);
@@ -128,7 +128,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		$mCalendarId = $this->oApiCalendarManager->createCalendar($iUserId, $Name, $Description, 0, $Color);
@@ -154,7 +154,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		return $this->oApiCalendarManager->updateCalendar($iUserId, $Id, $Name, $Description, 0, $Color);
@@ -170,7 +170,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		return $this->oApiCalendarManager->updateCalendarColor($iUserId, $Id, $Color);
@@ -193,7 +193,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		
 		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		// Share calendar to all users
@@ -224,7 +224,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		return $this->oApiCalendarManager->publicCalendar($oAccount, $sCalendarId, $bIsPublic);
@@ -255,7 +255,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		$sCalendarId = $this->getParamValue('calendarId');
@@ -285,7 +285,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 			$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
 			{
-				throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+				throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 			}
 			$mResult = $this->oApiCalendarManager->getEvents($iUserId, $CalendarIds, $Start, $End);
 		}
@@ -303,7 +303,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		$oEvent = new \CEvent();
@@ -349,7 +349,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		$oAccount = $this->getDefaultAccountFromParam();
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 		
 		$sNewCalendarId = $this->getParamValue('newCalendarId'); 
@@ -447,7 +447,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 
 		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CalendarsNotAllowed);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CalendarsNotAllowed);
 		}
 
 		$sCalendarId = (string) $this->getParamValue('CalendarId', '');
@@ -455,7 +455,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 
 		if (empty($sCalendarId) || empty($sTempFile))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::InvalidInputParameter);
+			throw new \System\Exceptions\ApiException(\System\Notifications::InvalidInputParameter);
 		}
 
 		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
@@ -494,7 +494,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		
 		if (empty($sAction) || empty($sCalendarId))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::InvalidInputParameter);
+			throw new \System\Exceptions\ApiException(\System\Notifications::InvalidInputParameter);
 		}
 
 		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oDefaultAccount))
@@ -675,7 +675,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 						@\header('X-Frame-Options: '.$sFrameOptions);
 					}
 					
-					$sAuthToken = isset($_COOKIE[\System\Service::AUTH_TOKEN_KEY]) ? $_COOKIE[\System\Service::AUTH_TOKEN_KEY] : '';
+					$sAuthToken = isset($_COOKIE[\Aurora\System\Service::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Service::AUTH_TOKEN_KEY] : '';
 					$sResult = strtr($sResult, array(
 						'{{AppVersion}}' => AURORA_APP_VERSION,
 						'{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
@@ -702,7 +702,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 		
 		if (empty($sTempFile) || empty($sFromEmail))
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::InvalidInputParameter);
+			throw new \System\Exceptions\ApiException(\System\Notifications::InvalidInputParameter);
 		}
 		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
 		{
@@ -780,7 +780,7 @@ class CalendarModule extends \Aurora\System\AbstractModule
 			}
 			else
 			{
-				throw new \System\Exceptions\AuroraApiException(\System\Notifications::IncorrectFileExtension);
+				throw new \System\Exceptions\ApiException(\System\Notifications::IncorrectFileExtension);
 			}
 		}
 		else

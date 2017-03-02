@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, Afterlogic Corp.
+ * @copyright Copyright (c) 2017, Afterlogic Corp.
  * @license AGPL-3.0
  *
  * This code is free software: you can redistribute it and/or modify
@@ -452,7 +452,7 @@ class CCalendarHelper
 	 * @param string $sMethod
 	 * @param string $sHtmlBody Default value is empty string.
 	 *
-	 * @throws \System\Exceptions\AuroraApiException
+	 * @throws \System\Exceptions\ApiException
 	 *
 	 * @return \MailSo\Mime\Message
 	 */
@@ -480,7 +480,7 @@ class CCalendarHelper
 						break;
 				}
 
-				throw new \System\Exceptions\AuroraApiException($iCode, $oException);
+				throw new \System\Exceptions\ApiException($iCode, $oException);
 			}
 		}
 
