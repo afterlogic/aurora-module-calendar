@@ -675,7 +675,7 @@ class CalendarModule extends \Aurora\System\Module\AbstractModule
 						@\header('X-Frame-Options: '.$sFrameOptions);
 					}
 					
-					$sAuthToken = isset($_COOKIE[\Aurora\System\Service::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Service::AUTH_TOKEN_KEY] : '';
+					$sAuthToken = isset($_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY] : '';
 					$sResult = strtr($sResult, array(
 						'{{AppVersion}}' => AURORA_APP_VERSION,
 						'{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
