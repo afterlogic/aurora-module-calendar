@@ -1826,7 +1826,7 @@ class CApiCalendarManager extends \Aurora\System\AbstractManagerWithStorage
 		{
 			$bResult = $this->oStorage->clearAllCalendars($iUserId);
 		}
-		catch (CApiBaseException $oException)
+		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
 			$bResult = false;
 			$this->setLastException($oException);

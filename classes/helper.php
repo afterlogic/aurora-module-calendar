@@ -470,7 +470,7 @@ class CCalendarHelper
 					'Message' => $oMessage
 				));
 			}
-			catch (\CApiManagerException $oException)
+			catch (\Aurora\System\Exceptions\ManagerException $oException)
 			{
 				$iCode = \Core\Notifications::CanNotSendMessage;
 				switch ($oException->getCode())
