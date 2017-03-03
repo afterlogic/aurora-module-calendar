@@ -38,11 +38,11 @@ class CApiCalendarManager extends \Aurora\System\AbstractManagerWithStorage
 	/**
 	 * @param \Aurora\System\GlobalManager &$oManager
 	 */
-	public function __construct(\Aurora\System\GlobalManager &$oManager, $sForcedStorage = '', \Aurora\System\AbstractModule $oModule = null)
+	public function __construct(\Aurora\System\GlobalManager &$oManager, $sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
 	{
 		parent::__construct('', $oManager, $sForcedStorage, $oModule);
 
-		$this->ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
+//		$this->ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
 		$this->oApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
 	}
 	

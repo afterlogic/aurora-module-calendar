@@ -452,7 +452,7 @@ class CCalendarHelper
 	 * @param string $sMethod
 	 * @param string $sHtmlBody Default value is empty string.
 	 *
-	 * @throws \System\Exceptions\ApiException
+	 * @throws \Aurora\System\Exceptions\ApiException
 	 *
 	 * @return \MailSo\Mime\Message
 	 */
@@ -480,7 +480,7 @@ class CCalendarHelper
 						break;
 				}
 
-				throw new \System\Exceptions\ApiException($iCode, $oException);
+				throw new \Aurora\System\Exceptions\ApiException($iCode, $oException);
 			}
 		}
 
@@ -587,7 +587,7 @@ class CCalendarHelper
 
 		$sHref = rtrim(\MailSo\Base\Http::SingletonInstance()->GetFullUrl(), '\\/ ').'/?invite=';
 		$oCalendarModule = \Aurora\System\Api::GetModule('Calendar');
-		if ($oCalendarModule instanceof \Aurora\System\AbstractModule)
+		if ($oCalendarModule instanceof \Aurora\System\Module\AbstractModule)
 		{
 			$sHtml = file_get_contents($oCalendarModule->GetPath().'/templates/CalendarEventInvite.html');
 			$sHtml = strtr($sHtml, array(
