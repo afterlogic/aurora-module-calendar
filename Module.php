@@ -458,7 +458,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
+		$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('Filecache');
 		$sData = $oApiFileCache->get($oAccount, $sTempFile);
 		if (!empty($sData))
 		{
@@ -512,7 +512,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 			else if (!empty($sTempFile))
 			{
-				$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
+				$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('Filecache');
 				$sData = $oApiFileCache->get($oAccount, $sTempFile);
 			}
 			if (!empty($sData))
@@ -706,7 +706,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
 		{
-			$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('filecache');
+			$oApiFileCache = /* @var $oApiFileCache \CApiFilecacheManager */ \Aurora\System\Api::GetSystemManager('Filecache');
 			$sData = $oApiFileCache->get($oAccount, $sTempFile);
 			if (!empty($sData))
 			{
@@ -755,7 +755,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			if ($bIsIcsExtension)
 			{
-				$oApiFileCacheManager = \Aurora\System\Api::GetSystemManager('filecache');
+				$oApiFileCacheManager = \Aurora\System\Api::GetSystemManager('Filecache');
 				$sSavedName = 'import-post-' . md5($aFileData['name'] . $aFileData['tmp_name']);
 				if ($oApiFileCacheManager->moveUploadedFile($oAccount, $sSavedName, $aFileData['tmp_name'])) {
 					
@@ -810,7 +810,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 //	public function onExtendMessageData($oAccount, &$oMessage, $aData)
 //	{
 //		$oApiCapa = /* @var CApiCapabilityManager */ $this->oApiCapabilityManager;
-//		$oApiFileCache = /* @var CApiFilecacheManager */\Aurora\System\Api::GetSystemManager('filecache');
+//		$oApiFileCache = /* @var CApiFilecacheManager */\Aurora\System\Api::GetSystemManager('Filecache');
 //		$sFromEmail = '';
 //		$oFromCollection = $oMessage->getFrom();
 //		if ($oFromCollection && 0 < $oFromCollection->Count())
