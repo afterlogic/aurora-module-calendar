@@ -31,7 +31,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 	protected $ApiUsersManager;
 
 	/*
-	 * @type CApiCapabilityManager
+	 * @type \Aurora\System\Managers\Capability\Manager
 	 */
 	protected $oApiCapabilityManager;
 
