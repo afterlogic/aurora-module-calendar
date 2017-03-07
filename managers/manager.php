@@ -23,7 +23,7 @@
  * 
  * @package Calendar
  */
-class CApiCalendarManager extends \Aurora\System\AbstractManagerWithStorage
+class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
 	/*
 	 * @type $ApiUsersManager CApiUsersManager
@@ -36,9 +36,9 @@ class CApiCalendarManager extends \Aurora\System\AbstractManagerWithStorage
 	protected $oApiCapabilityManager;
 
 	/**
-	 * @param \Aurora\System\GlobalManager &$oManager
+	 * @param \Aurora\System\Managers\GlobalManager &$oManager
 	 */
-	public function __construct(\Aurora\System\GlobalManager &$oManager, $sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
+	public function __construct(\Aurora\System\Managers\GlobalManager &$oManager, $sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
 	{
 		parent::__construct('', $oManager, $sForcedStorage, $oModule);
 
