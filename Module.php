@@ -277,7 +277,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if ($IsPublic)
 		{
 			$oPublicAccount = $this->oApiCalendarManager->getPublicAccount();
-			$oPublicAccount->User->DefaultTimeZone = $TimezoneOffset;
 			$mResult = $this->oApiCalendarManager->getEvents($oPublicAccount, $CalendarIds, $Start, $End, $Expand);
 		}
 		else
