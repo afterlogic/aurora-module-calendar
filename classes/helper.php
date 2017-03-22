@@ -506,7 +506,8 @@ class CCalendarHelper
 			$oMessage->RegenerateMessageId();
 			$oMessage->DoesNotCreateEmptyTextPart();
 
-			$sXMailer = \Aurora\System\Api::GetConf('webmail.xmailer-value', '');
+			$oMailModule = \Aurora\System\Api::GetModule('Mail'); 
+			$sXMailer = $oMailModule ? $oMailModule->getConfig('XMailerValue', '') : '';
 			if (0 < strlen($sXMailer))
 			{
 				$oMessage->SetXMailer($sXMailer);
