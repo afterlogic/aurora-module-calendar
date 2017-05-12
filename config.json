@@ -2,5 +2,37 @@
     "Disabled": [
 		false,
 		"bool"
+	],
+    "AllowAppointments": [
+		true,
+		"bool"
+	],
+    "AllowShare": [
+		true,
+		"bool"
+	],
+    "DefaultTab": [
+		3,
+		"int"
+	],
+    "HighlightWorkingDays": [
+		true,
+		"bool"
+	],
+    "HighlightWorkingHours": [
+		true,
+		"bool"
+	],
+    "WeekStartsOn": [
+		0,
+		"int"
+	],
+    "WorkdayEnds": [
+		18,
+		"int"
+	],
+    "WorkdayStarts": [
+		9,
+		"int"
 	]
 }

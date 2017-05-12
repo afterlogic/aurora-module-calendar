@@ -16,6 +16,7 @@ namespace Aurora\Modules\Calendar;
 class Module extends \Aurora\System\Module\AbstractModule
 {
 	public $oApiCalendarManager = null;
+	public $oApiFileCache = null;
 	
 	public function init() 
 	{
@@ -25,6 +26,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->incClass('parser');
 
 		$this->oApiCalendarManager = $this->GetManager('', 'sabredav');
+		$this->oApiFileCache = \Aurora\System\Api::GetSystemManager('Filecache');
+		
 		$this->AddEntries(array(
 				'invite' => 'EntryInvite',
 				'calendar-pub' => 'EntryCalendarPub'
@@ -46,22 +49,26 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		return array(
-			'AllowAppointments' => true, // AppData.User.CalendarAppointments
-			'AllowShare' => true, // AppData.User.CalendarSharing
-			'DefaultTab' => '3', // AppData.User.Calendar.CalendarDefaultTab
-			'HighlightWorkingDays' => true, // AppData.User.Calendar.CalendarShowWeekEnds
-			'HighlightWorkingHours' => true, // AppData.User.Calendar.CalendarShowWorkDay
-			'PublicCalendarId' => '', // AppData.CalendarPubHash
-			'WeekStartsOn' => '0', // AppData.User.Calendar.CalendarWeekStartsOn
-			'WorkdayEnds' => '18', // AppData.User.Calendar.CalendarWorkDayEnds
-			'WorkdayStarts' => '9' // AppData.User.Calendar.CalendarWorkDayStarts
+			'AllowAppointments' => $this->getConfig('AllowAppointments', true),
+			'AllowShare' => $this->getConfig('AllowShare', true),
+			'DefaultTab' => $this->getConfig('DefaultTab', 3),
+			'HighlightWorkingDays' => $this->getConfig('HighlightWorkingDays', true),
+			'HighlightWorkingHours' => $this->getConfig('HighlightWorkingHours', true),
+			'PublicCalendarId' => '',
+			'WeekStartsOn' => $this->getConfig('WeekStartsOn', 0),
+			'WorkdayEnds' => $this->getConfig('WorkdayEnds', 18),
+			'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
 		);
 	}
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param boolean $IsPublic
+	 * @param string $PublicCalendarId
+	 * @return array|boolean
 	 */
-	public function GetCalendars($IsPublic = false, $PublicCalendarId = '')
+	public function GetCalendars($UserId, $IsPublic = false, $PublicCalendarId = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
@@ -72,55 +79,46 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oCalendar = $this->oApiCalendarManager->getPublicCalendar($PublicCalendarId);
 			$mCalendars = array($oCalendar);
-		} else 
+		}
+		else 
 		{
-			$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId)) 
-			{
-				
-				throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-			}
-	
-			$mCalendars = $this->oApiCalendarManager->getCalendars($iUserId);
+			$mCalendars = $this->oApiCalendarManager->getCalendars($UserId);
 		}
 		
 		if ($mCalendars) 
 		{
-			
-			$mResult['Calendars'] = $mCalendars;
+			$mResult = array(
+				'Calendars' => $mCalendars
+			);
 		}
 		
 		return $mResult;
 	}
 	
 	/**
-	 * @return bool
+	 * 
+	 * @param int $UserId
+	 * @param string $RawKey
+	 * @return boolean
 	 */
-	public function DownloadCalendar()
+	public function DownloadCalendar($UserId, $RawKey)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
-		$oAccount = $this->getDefaultAccountFromParam();
-		if ($this->oApiCapabilityManager->isCalendarSupported($oAccount))
+		$aValues = \Aurora\System\Api::DecodeKeyValues($RawKey);
+
+		if (isset($aValues['CalendarId']))
 		{
-			$sRawKey = (string) $this->getParamValue('RawKey', '');
-			$aValues = \Aurora\System\Api::DecodeKeyValues($sRawKey);
-
-			if (isset($aValues['CalendarId'])) {
-				
-				$sCalendarId = $aValues['CalendarId'];
-
-				$sOutput = $this->oApiCalendarManager->exportCalendarToIcs($oAccount, $sCalendarId);
-				if (false !== $sOutput) {
-					
-					header('Pragma: public');
-					header('Content-Type: text/calendar');
-					header('Content-Disposition: attachment; filename="'.$sCalendarId.'.ics";');
-					header('Content-Transfer-Encoding: binary');
-
-					echo $sOutput;
-					return true;
-				}
+			$sCalendarId = $aValues['CalendarId'];
+			$sOutput = $this->oApiCalendarManager->exportCalendarToIcs($UserId, $sCalendarId);
+			if (false !== $sOutput)
+			{
+				header('Pragma: public');
+				header('Content-Type: text/calendar');
+				header('Content-Disposition: attachment; filename="' . $sCalendarId . '.ics";');
+				header('Content-Transfer-Encoding: binary');
+				echo $sOutput;
+				return true;
 			}
 		}
 
@@ -128,26 +126,26 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $Name
+	 * @param string $Description
+	 * @param string $Color
+	 * @return array|boolean
 	 */
-	public function CreateCalendar($Name, $Description, $Color)
+	public function CreateCalendar($UserId, $Name, $Description, $Color)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$mResult = false;
-		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
 		
-		$mCalendarId = $this->oApiCalendarManager->createCalendar($iUserId, $Name, $Description, 0, $Color);
+		$mCalendarId = $this->oApiCalendarManager->createCalendar($UserId, $Name, $Description, 0, $Color);
 		if ($mCalendarId)
 		{
-			$oCalendar = $this->oApiCalendarManager->getCalendar($iUserId, $mCalendarId);
+			$oCalendar = $this->oApiCalendarManager->getCalendar($UserId, $mCalendarId);
 			if ($oCalendar instanceof \CCalendar)
 			{
-				$mResult = $oCalendar->toResponseArray($iUserId);
+				$mResult = $oCalendar->toResponseArray($UserId);
 			}
 		}
 		
@@ -155,130 +153,119 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $Id
+	 * @param string $Name
+	 * @param string $Description
+	 * @param string $Color
+	 * @return array|boolean
 	 */
-	public function UpdateCalendar($Name, $Description, $Color, $Id)
+	public function UpdateCalendar($UserId, $Id, $Name, $Description, $Color)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
-		
-		return $this->oApiCalendarManager->updateCalendar($iUserId, $Id, $Name, $Description, 0, $Color);
+		return $this->oApiCalendarManager->updateCalendar($UserId, $Id, $Name, $Description, 0, $Color);
 	}	
 
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $Id
+	 * @param string $Color
+	 * @return array|boolean
 	 */
-	public function UpdateCalendarColor($Color, $Id)
+	public function UpdateCalendarColor($UserId, $Id, $Color)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
-		
-		return $this->oApiCalendarManager->updateCalendarColor($iUserId, $Id, $Color);
+		return $this->oApiCalendarManager->updateCalendarColor($UserId, $Id, $Color);
 	}
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $Id
+	 * @param boolean $IsPublic
+	 * @param array $Shares
+	 * @param boolean $ShareToAll
+	 * @param int $ShareToAllAccess
+	 * @return array|boolean
 	 */
-	public function UpdateCalendarShare()
+	public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \ECalendarPermission::Read)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-		$sCalendarId = $this->getParamValue('Id');
-		$bIsPublic = (bool) $this->getParamValue('IsPublic');
-		$aShares = @json_decode($this->getParamValue('Shares'), true);
-		
-		$bShareToAll = (bool) $this->getParamValue('ShareToAll', false);
-		$iShareToAllAccess = (int) $this->getParamValue('ShareToAllAccess', \ECalendarPermission::Read);
-		
-		if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
+		$aShares = $Shares;
 		
 		// Share calendar to all users
 		$aShares[] = array(
-			'email' => $this->oApiCalendarManager->getTenantUser($iUserId),
-			'access' => $bShareToAll ? $iShareToAllAccess : \ECalendarPermission::RemovePermission
+			'email' => $this->oApiCalendarManager->getTenantUser($UserId),
+			'access' => $ShareToAll ? $ShareToAllAccess : \ECalendarPermission::RemovePermission
 		);
 		
 		// Public calendar
 		$aShares[] = array(
 			'email' => $this->oApiCalendarManager->getPublicUser(),
-			'access' => $bIsPublic ? \ECalendarPermission::Read : \ECalendarPermission::RemovePermission
+			'access' => $IsPublic ? \ECalendarPermission::Read : \ECalendarPermission::RemovePermission
 		);
 		
-		return $this->oApiCalendarManager->updateCalendarShares($iUserId, $sCalendarId, $aShares);
+		return $this->oApiCalendarManager->updateCalendarShares($UserId, $Id, $aShares);
 	}		
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $Id
+	 * @param boolean $IsPublic
+	 * @return array|boolean
 	 */
-	public function UpdateCalendarPublic()
+	public function UpdateCalendarPublic($UserId, $Id, $IsPublic)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = $this->getDefaultAccountFromParam();
-		$sCalendarId = $this->getParamValue('Id');
-		$bIsPublic = (bool) $this->getParamValue('IsPublic');
-		
-		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
-		
-		return $this->oApiCalendarManager->publicCalendar($oAccount, $sCalendarId, $bIsPublic);
+		return $this->oApiCalendarManager->publicCalendar($UserId, $Id, $IsPublic);
 	}		
 
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $Id
+	 * @return array|boolean
 	 */
-	public function DeleteCalendar()
+	public function DeleteCalendar($UserId, $Id)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = $this->getDefaultAccountFromParam();
-		
-		$sCalendarId = $this->getParamValue('Id');
-		$mResult = $this->oApiCalendarManager->deleteCalendar($oAccount, $sCalendarId);
-		
-		return $this->DefaultResponse(__FUNCTION__, $mResult);
+		return $this->oApiCalendarManager->deleteCalendar($UserId, $Id);
 	}	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $calendarId
+	 * @param string $uid
+	 * @return array|boolean
 	 */
-	public function GetBaseEvent()
+	public function GetBaseEvent($UserId, $calendarId, $uid)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
-		$oAccount = $this->getDefaultAccountFromParam();
-		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
-		
-		$sCalendarId = $this->getParamValue('calendarId');
-		$sEventId = $this->getParamValue('uid');
-		
-		return $this->oApiCalendarManager->getBaseEvent($oAccount, $sCalendarId, $sEventId);
+		return $this->oApiCalendarManager->getBaseEvent($UserId, $calendarId, $uid);
 	}	
 	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param array $CalendarIds
+	 * @param int $Start
+	 * @param int $End
+	 * @param boolean $IsPublic
+	 * @param boolean $Expand
+	 * @return array|boolean
 	 */
-	public function GetEvents($CalendarIds, $Start, $End, $IsPublic, $TimezoneOffset, $Timezone, $Expand = true)
+	public function GetEvents($UserId, $CalendarIds, $Start, $End, $IsPublic, $Expand = true)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
@@ -291,187 +278,185 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		else
 		{
-			$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-			if (!$this->oApiCapabilityManager->isCalendarSupported($iUserId))
-			{
-				throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-			}
-			$mResult = $this->oApiCalendarManager->getEvents($iUserId, $CalendarIds, $Start, $End);
+			$mResult = $this->oApiCalendarManager->getEvents($UserId, $CalendarIds, $Start, $End);
 		}
 		
 		return $mResult;
 	}	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $newCalendarId
+	 * @param string $subject
+	 * @param string $description
+	 * @param string $location
+	 * @param int $startTS
+	 * @param int $endTS
+	 * @param boolean $allDay
+	 * @param string $alarms
+	 * @param string $attendees
+	 * @param string $rrule
+	 * @param int $selectStart
+	 * @param int $selectEnd
+	 * @return array|boolean
 	 */
-	public function CreateEvent()
+	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS, 
+			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = $this->getDefaultAccountFromParam();
-		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
-		
 		$oEvent = new \CEvent();
+		$oEvent->IdCalendar = $newCalendarId;
+		$oEvent->Name = $subject;
+		$oEvent->Description = $description;
+		$oEvent->Location = $location;
+		$oEvent->Start = $startTS;
+		$oEvent->End = $endTS;
+		$oEvent->AllDay = $allDay;
+		$oEvent->Alarms = @json_decode($alarms, true);
+		$oEvent->Attendees = @json_decode($attendees, true);
 
-		$oEvent->IdCalendar = $this->getParamValue('newCalendarId');
-		$oEvent->Name = $this->getParamValue('subject');
-		$oEvent->Description = $this->getParamValue('description');
-		$oEvent->Location = $this->getParamValue('location');
-		$oEvent->Start = $this->getParamValue('startTS');
-		$oEvent->End = $this->getParamValue('endTS');
-		$oEvent->AllDay = (bool) $this->getParamValue('allDay');
-		$oEvent->Alarms = @json_decode($this->getParamValue('alarms'), true);
-		$oEvent->Attendees = @json_decode($this->getParamValue('attendees'), true);
-
-		$aRRule = @json_decode($this->getParamValue('rrule'), true);
+		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
-			$oRRule = new \CRRule($oAccount);
+			$oRRule = new \CRRule($UserId);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
 		}
 
-		$mResult = $this->oApiCalendarManager->createEvent($oAccount, $oEvent);
+		$mResult = $this->oApiCalendarManager->createEvent($UserId, $oEvent);
 		if ($mResult)
 		{
-			$iStart = $this->getParamValue('selectStart'); 
-			$iEnd = $this->getParamValue('selectEnd'); 
-
-			$mResult = $this->oApiCalendarManager->getExpandedEvent($oAccount, $oEvent->IdCalendar, $mResult, $iStart, $iEnd);
+			$mResult = $this->oApiCalendarManager->getExpandedEvent($UserId, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
 		}
 		
 		return $mResult;
 	}
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $newCalendarId
+	 * @param string $calendarId
+	 * @param string $uid
+	 * @param string $subject
+	 * @param string $description
+	 * @param string $location
+	 * @param int $startTS
+	 * @param int $endTS
+	 * @param boolean $allDay
+	 * @param string $alarms
+	 * @param string $attendees
+	 * @param string $rrule
+	 * @param int $allEvents
+	 * @param string $recurrenceId
+	 * @param int $selectStart
+	 * @param int $selectEnd
+	 * @return array|boolean
 	 */
-	public function UpdateEvent()
+	public function UpdateEvent($UserId, $newCalendarId, $calendarId, $uid, $subject, $description, 
+			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
+			$selectStart, $selectEnd)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$mResult = false;
-		$oAccount = $this->getDefaultAccountFromParam();
-		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
 		
-		$sNewCalendarId = $this->getParamValue('newCalendarId'); 
 		$oEvent = new \CEvent();
-
-		$oEvent->IdCalendar = $this->getParamValue('calendarId');
-		$oEvent->Id = $this->getParamValue('uid');
-		$oEvent->Name = $this->getParamValue('subject');
-		$oEvent->Description = $this->getParamValue('description');
-		$oEvent->Location = $this->getParamValue('location');
-		$oEvent->Start = $this->getParamValue('startTS');
-		$oEvent->End = $this->getParamValue('endTS');
-		$oEvent->AllDay = (bool) $this->getParamValue('allDay');
-		$oEvent->Alarms = @json_decode($this->getParamValue('alarms'), true);
-		$oEvent->Attendees = @json_decode($this->getParamValue('attendees'), true);
+		$oEvent->IdCalendar = $calendarId;
+		$oEvent->Id = $uid;
+		$oEvent->Name = $subject;
+		$oEvent->Description = $description;
+		$oEvent->Location = $location;
+		$oEvent->Start = $startTS;
+		$oEvent->End = $endTS;
+		$oEvent->AllDay = $allDay;
+		$oEvent->Alarms = @json_decode($alarms, true);
+		$oEvent->Attendees = @json_decode($attendees, true);
 		
-		$aRRule = @json_decode($this->getParamValue('rrule'), true);
+		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
-			$oRRule = new \CRRule($oAccount);
+			$oRRule = new \CRRule($UserId);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
 		}
 		
-		$iAllEvents = (int) $this->getParamValue('allEvents');
-		$sRecurrenceId = $this->getParamValue('recurrenceId');
-		
-		if ($iAllEvents && $iAllEvents === 1)
+		if ($allEvents === 1)
 		{
-			$mResult = $this->oApiCalendarManager->updateExclusion($oAccount, $oEvent, $sRecurrenceId);
+			$mResult = $this->oApiCalendarManager->updateExclusion($UserId, $oEvent, $recurrenceId);
 		}
 		else
 		{
-			$mResult = $this->oApiCalendarManager->updateEvent($oAccount, $oEvent);
-			if ($mResult && $sNewCalendarId !== $oEvent->IdCalendar)
+			$mResult = $this->oApiCalendarManager->updateEvent($UserId, $oEvent);
+			if ($mResult && $newCalendarId !== $oEvent->IdCalendar)
 			{
-				$mResult = $this->oApiCalendarManager->moveEvent($oAccount, $oEvent->IdCalendar, $sNewCalendarId, $oEvent->Id);
-				$oEvent->IdCalendar = $sNewCalendarId;
+				$mResult = $this->oApiCalendarManager->moveEvent($UserId, $oEvent->IdCalendar, $newCalendarId, $oEvent->Id);
+				$oEvent->IdCalendar = $newCalendarId;
 			}
 		}
 		if ($mResult)
 		{
-			$iStart = $this->getParamValue('selectStart'); 
-			$iEnd = $this->getParamValue('selectEnd'); 
-
-			$mResult = $this->oApiCalendarManager->getExpandedEvent($oAccount, $oEvent->IdCalendar, $oEvent->Id, $iStart, $iEnd);
+			$mResult = $this->oApiCalendarManager->getExpandedEvent($UserId, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
 		}
 			
 		return $mResult;
 	}	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $calendarId
+	 * @param string $uid
+	 * @param boolean $allEvents
+	 * @param string $recurrenceId
+	 * @return array|boolean
 	 */
-	public function DeleteEvent()
+	public function DeleteEvent($UserId, $calendarId, $uid, $allEvents, $recurrenceId)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
 		$mResult = false;
-		$oAccount = $this->getDefaultAccountFromParam();
 		
-		$sCalendarId = $this->getParamValue('calendarId');
-		$sId = $this->getParamValue('uid');
-
-		$iAllEvents = (int) $this->getParamValue('allEvents');
-		
-		if ($iAllEvents && $iAllEvents === 1)
+		if ($allEvents === 1)
 		{
 			$oEvent = new \CEvent();
-			$oEvent->IdCalendar = $sCalendarId;
-			$oEvent->Id = $sId;
-			
-			$sRecurrenceId = $this->getParamValue('recurrenceId');
-
-			$mResult = $this->oApiCalendarManager->updateExclusion($oAccount, $oEvent, $sRecurrenceId, true);
+			$oEvent->IdCalendar = $calendarId;
+			$oEvent->Id = $uid;
+			$mResult = $this->oApiCalendarManager->updateExclusion($UserId, $oEvent, $recurrenceId, true);
 		}
 		else
 		{
-			$mResult = $this->oApiCalendarManager->deleteEvent($oAccount, $sCalendarId, $sId);
+			$mResult = $this->oApiCalendarManager->deleteEvent($UserId, $calendarId, $uid);
 		}
 		
 		return $mResult;
 	}	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $CalendarId
+	 * @param string $File
+	 * @return array|boolean
+	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function AddEventsFromFile()
+	public function AddEventsFromFile($UserId, $CalendarId, $File)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		$oAccount = $this->getDefaultAccountFromParam();
 
 		$mResult = false;
 
-		if (!$this->oApiCapabilityManager->isCalendarSupported($oAccount))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CalendarsNotAllowed);
-		}
-
-		$sCalendarId = (string) $this->getParamValue('CalendarId', '');
-		$sTempFile = (string) $this->getParamValue('File', '');
-
-		if (empty($sCalendarId) || empty($sTempFile))
+		if (empty($CalendarId) || empty($File))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		$oApiFileCache = /* @var $oApiFileCache \Aurora\System\Managers\Filecache\Manager */ \Aurora\System\Api::GetSystemManager('Filecache');
-		$sData = $oApiFileCache->get($oAccount, $sTempFile);
+		$sData = $this->oApiFileCache->get($UserId, $File);
 		if (!empty($sData))
 		{
-			$mCreateEventResult = $this->oApiCalendarManager->createEventFromRaw($oAccount, $sCalendarId, null, $sData);
+			$mCreateEventResult = $this->oApiCalendarManager->createEventFromRaw($UserId, $CalendarId, null, $sData);
 			if ($mCreateEventResult)
 			{
 				$mResult = array(
@@ -484,34 +469,33 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}	
 	
 	/**
-	 * @return array
+	 * 
+	 * @param int $UserId
+	 * @param string $CalendarId
+	 * @param string $EventId
+	 * @param string $File
+	 * @param string $AppointmentAction
+	 * @param string $Attendee
+	 * @return array|boolean
+	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function SetAppointmentAction()
+	public function SetAppointmentAction($UserId, $CalendarId, $EventId, $File, $AppointmentAction, $Attendee)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = null; //$this->getAccountFromParam(); TODO:
-		$oDefaultAccount = null; //$this->getDefaultAccountFromParam(); TODO
-		
 		$mResult = false;
 
-		$sCalendarId = (string) $this->getParamValue('CalendarId', '');
-		$sEventId = (string) $this->getParamValue('EventId', '');
-		$sTempFile = (string) $this->getParamValue('File', '');
-		$sAction = (string) $this->getParamValue('AppointmentAction', '');
-		$sAttendee = (string) $this->getParamValue('Attendee', '');
-		
-		if (empty($sAction) || empty($sCalendarId))
+		if (empty($AppointmentAction) || empty($CalendarId))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oDefaultAccount))
+		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId))
 		{
 			$sData = '';
-			if (!empty($sEventId))
+			if (!empty($EventId))
 			{
-				$aEventData =  $this->oApiCalendarManager->getEvent($oDefaultAccount, $sCalendarId, $sEventId);
+				$aEventData =  $this->oApiCalendarManager->getEvent($UserId, $CalendarId, $EventId);
 				if (isset($aEventData) && isset($aEventData['vcal']) && $aEventData['vcal'] instanceof \Sabre\VObject\Component\VCalendar)
 				{
 					$oVCal = $aEventData['vcal'];
@@ -519,14 +503,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$sData = $oVCal->serialize();
 				}
 			}
-			else if (!empty($sTempFile))
+			else if (!empty($File))
 			{
-				$oApiFileCache = /* @var $oApiFileCache \Aurora\System\Managers\Filecache\Manager */ \Aurora\System\Api::GetSystemManager('Filecache');
-				$sData = $oApiFileCache->get($oAccount, $sTempFile);
+				$sData = $this->oApiFileCache->get($UserId, $File);
 			}
 			if (!empty($sData))
 			{
-				$mProcessResult = $this->oApiCalendarManager->appointmentAction($oDefaultAccount, $sAttendee, $sAction, $sCalendarId, $sData);
+				$mProcessResult = $this->oApiCalendarManager->appointmentAction($UserId, $Attendee, $AppointmentAction, $CalendarId, $sData);
 				if ($mProcessResult)
 				{
 					$mResult = array(
@@ -700,58 +683,64 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $sResult;	
 	}
 	
-	public function UpdateAttendeeStatus()
+	/**
+	 * 
+	 * @param int $UserId
+	 * @param string $File
+	 * @param string $FromEmail
+	 * @return boolean
+	 * @throws \Aurora\System\Exceptions\ApiException
+	 */
+	public function UpdateAttendeeStatus($UserId, $File, $FromEmail)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = $this->getAccountFromParam();
-		
 		$mResult = false;
 
-		$sTempFile = (string) $this->getParamValue('File', '');
-		$sFromEmail = (string) $this->getParamValue('FromEmail', '');
-		
-		if (empty($sTempFile) || empty($sFromEmail))
+		if (empty($File) || empty($FromEmail))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
-		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
+		
+		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId))
 		{
-			$oApiFileCache = /* @var $oApiFileCache \Aurora\System\Managers\Filecache\Manager */ \Aurora\System\Api::GetSystemManager('Filecache');
-			$sData = $oApiFileCache->get($oAccount, $sTempFile);
+			$sData = $this->oApiFileCache->get($UserId, $File);
 			if (!empty($sData))
 			{
-				$mResult = $this->oApiCalendarManager->processICS($oAccount, $sData, $sFromEmail, true);
+				$mResult = $this->oApiCalendarManager->processICS($UserId, $sData, $FromEmail, true);
 			}
 		}
 
 		return $mResult;		
-		
 	}	
 	
-	public function ProcessICS()
+	/**
+	 * 
+	 * @param int $UserId
+	 * @param string $Data
+	 * @param string $FromEmail
+	 * @return boolean
+	 */
+	public function ProcessICS($UserId, $Data, $FromEmail)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = $this->getParamValue('Account', null);
-		$sData = (string) $this->getParamValue('Data', '');
-		$sFromEmail = (string) $this->getParamValue('FromEmail', '');
-
-		return $this->oApiCalendarManager->processICS($oAccount, $sData, $sFromEmail);
+		return $this->oApiCalendarManager->processICS($UserId, $Data, $FromEmail);
 	}
 	
 	/**
+	 * 
+	 * @param int $UserId
+	 * @param array $FileData
+	 * @param string $AdditionalData
 	 * @return array
+	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function UploadCalendars()
+	public function UploadCalendars($UserId, $FileData, $AdditionalData)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		$oAccount = $this->getDefaultAccountFromParam();
-		
-		$aFileData = $this->getParamValue('FileData', null);
-		$sAdditionalData = $this->getParamValue('AdditionalData', '{}');
-		$aAdditionalData = @json_decode($sAdditionalData, true);
+		$aAdditionalData = @json_decode($AdditionalData, true);
 		
 		$sCalendarId = isset($aAdditionalData['CalendarID']) ? $aAdditionalData['CalendarID'] : '';
 
@@ -760,29 +749,31 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'ImportedCount' => 0
 		);
 
-		if (is_array($aFileData))
+		if (is_array($FileData))
 		{
-			$bIsIcsExtension  = strtolower(pathinfo($aFileData['name'], PATHINFO_EXTENSION)) === 'ics';
+			$bIsIcsExtension  = strtolower(pathinfo($FileData['name'], PATHINFO_EXTENSION)) === 'ics';
 
 			if ($bIsIcsExtension)
 			{
-				$oApiFileCacheManager = \Aurora\System\Api::GetSystemManager('Filecache');
-				$sSavedName = 'import-post-' . md5($aFileData['name'] . $aFileData['tmp_name']);
-				if ($oApiFileCacheManager->moveUploadedFile($oAccount, $sSavedName, $aFileData['tmp_name'])) {
-					
+				$sSavedName = 'import-post-' . md5($FileData['name'] . $FileData['tmp_name']);
+				if ($this->oApiFileCache->moveUploadedFile($UserId, $sSavedName, $FileData['tmp_name']))
+				{
 					$iImportedCount = $this->oApiCalendarManager->importToCalendarFromIcs(
-							$oAccount, 
+							$UserId, 
 							$sCalendarId, 
-							$oApiFileCacheManager->generateFullFilePath($oAccount, $sSavedName)
+							$this->oApiFileCache->generateFullFilePath($UserId, $sSavedName)
 					);
 
-					if (false !== $iImportedCount && -1 !== $iImportedCount) {
+					if (false !== $iImportedCount && -1 !== $iImportedCount)
+					{
 						$aResponse['ImportedCount'] = $iImportedCount;
-					} else {
+					}
+					else
+					{
 						$sError = 'unknown';
 					}
 
-					$oApiFileCacheManager->clear($oAccount, $sSavedName);
+					$this->oApiFileCache->clear($UserId, $sSavedName);
 				}
 				else
 				{
@@ -821,7 +812,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 //	public function onExtendMessageData($oAccount, &$oMessage, $aData)
 //	{
 //		$oApiCapa = /* @var \Aurora\System\Managers\Capability\Manager */ $this->oApiCapabilityManager;
-//		$oApiFileCache = /* @var \Aurora\System\Managers\Filecache\Manager */\Aurora\System\Api::GetSystemManager('Filecache');
 //		$sFromEmail = '';
 //		$oFromCollection = $oMessage->getFrom();
 //		if ($oFromCollection && 0 < $oFromCollection->Count())
@@ -837,13 +827,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 //			if ($aDataItem['Part'] instanceof \MailSo\Imap\BodyStructure && $aDataItem['Part']->ContentType() === 'text/calendar')
 //			{
 //				$sData = $aDataItem['Data'];
-//				if (!empty($sData) && $oApiCapa->isCalendarSupported($oAccount))
+//				if (!empty($sData))
 //				{
 //					$mResult = $this->oApiCalendarManager->processICS($oAccount, $sData, $sFromEmail);
 //					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
 //					{
 //						$sTemptFile = md5($mResult['Body']).'.ics';
-//						if ($oApiFileCache && $oApiFileCache->put($oAccount, $sTemptFile, $mResult['Body']))
+//						if ($this->oApiFileCache->put($oAccount, $sTemptFile, $mResult['Body']))
 //						{
 //							$oIcs = CApiMailIcs::createInstance();
 //

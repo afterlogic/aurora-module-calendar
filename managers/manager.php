@@ -617,12 +617,10 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $dStart Date range start
 	 * @param string $dFinish Date range end
-	 * @param string $sTimezone Timezone identifier
-	 * @param int $iTimezoneOffset Offset value for timezone
 	 *
 	 * @return array|bool
 	 */
-	public function getPublicEvents($sCalendarId, $dStart = null, $dFinish = null, $sTimezone = 'UTC', $iTimezoneOffset = 0)
+	public function getPublicEvents($sCalendarId, $dStart = null, $dFinish = null)
 	{
 		return $this->getEvents($this->getPublicAccount(), $sCalendarId, $dStart, $dFinish);
 	}
