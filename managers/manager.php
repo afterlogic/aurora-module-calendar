@@ -1042,6 +1042,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 		$oResult = null;
 		try
 		{
+			$oUser = \Aurora\System\Api::getAuthenticatedUser();
 			$aData = $this->oStorage->getEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
@@ -1050,7 +1051,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 				if ($iIndex !== false) {
 					$oVCal->VEVENT[$iIndex]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
-					$oDTExdate = CCalendarHelper::prepareDateTime($sRecurrenceId, $iUserId->getDefaultStrTimeZone());
+					$oDTExdate = CCalendarHelper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
 					$oDTStart = $oVCal->VEVENT[$iIndex]->DTSTART->getDatetime();
 
 					$mIndex = CCalendarHelper::isRecurrenceExists($oVCal->VEVENT, $sRecurrenceId);
@@ -1077,7 +1078,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 
 							foreach($aVEvents as $oVEvent) {
 								if ($oVEvent->{'RECURRENCE-ID'}) {
-									$iRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $iUserId->getDefaultStrTimeZone(), 'Ymd');
+									$iRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
 									if ($iRecurrenceId == (int) $sRecurrenceId) {
 										continue;
 									}
@@ -1141,7 +1142,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 
 				foreach($aVEvents as $oVEvent) {
 					if (isset($oVEvent->{'RECURRENCE-ID'})) {
-						$iServerRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $iUserId->getDefaultStrTimeZone(), 'Ymd');
+						$iServerRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
 						if ($iRecurrenceId == $iServerRecurrenceId) {
 							continue;
 						}
@@ -1610,35 +1611,35 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 	public function processICS($iUserId, $sData, $mFromEmail, $bUpdateAttendeeStatus = false)
 	{
 		$mResult = false;
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		$aAccountEmails = array($oUser->PublicId);
+		//TODO get list user emails
 
-		/* @var $oDefaultAccount CAccount */
-		$oDefaultAccount = $iUserId->UseToAuthorize ? $iUserId : $this->ApiUsersManager->getDefaultAccount($iUserId->IdUser);
-
-		$aAccountEmails = array();
-		$aUserAccounts = $this->ApiUsersManager->getUserAccounts($iUserId->IdUser);
-		foreach ($aUserAccounts as $aUserAccount) {
-			if (isset($aUserAccount) && isset($aUserAccount[1])) {
-				$aAccountEmails[] = $aUserAccount[1];
-			}
-		}
-		
-		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
-		if (is_array($aFetchers) && 0 < count($aFetchers)) {
-			foreach ($aFetchers as /* @var $oFetcher \CFetcher */ $oFetcher) {
-				if ($oFetcher) {
-					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
-				}
-			}
-		}
-			
-		$aIdentities = $this->ApiUsersManager->getUserIdentities($iUserId->IdUser);
-		if (is_array($aIdentities) && 0 < count($aIdentities)) {
-			foreach ($aIdentities as /* @var $oIdentity \CIdentity */ $oIdentity) {
-				if ($oIdentity) {
-					$aAccountEmails[] = $oIdentity->Email;
-				}
-			}
-		}
+//		$aAccountEmails = array();
+//		$aUserAccounts = $this->ApiUsersManager->getUserAccounts($iUserId->IdUser);
+//		foreach ($aUserAccounts as $aUserAccount) {
+//			if (isset($aUserAccount) && isset($aUserAccount[1])) {
+//				$aAccountEmails[] = $aUserAccount[1];
+//			}
+//		}
+//
+//		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
+//		if (is_array($aFetchers) && 0 < count($aFetchers)) {
+//			foreach ($aFetchers as /* @var $oFetcher \CFetcher */ $oFetcher) {
+//				if ($oFetcher) {
+//					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
+//				}
+//			}
+//		}
+//
+//		$aIdentities = $this->ApiUsersManager->getUserIdentities($iUserId->IdUser);
+//		if (is_array($aIdentities) && 0 < count($aIdentities)) {
+//			foreach ($aIdentities as /* @var $oIdentity \CIdentity */ $oIdentity) {
+//				if ($oIdentity) {
+//					$aAccountEmails[] = $oIdentity->Email;
+//				}
+//			}
+//		}
 
 		try
 		{
@@ -1682,10 +1683,10 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 									$lastModified = $oVEvent->{'LAST-MODIFIED'}->getDateTime();
 									$lastModifiedServer = $oVEventServer->{'LAST-MODIFIED'}->getDateTime();
 
-                                    $sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
-                                    $sequenceServer = isset($oVEventServer->{'SEQUENCE'}) && $oVEventServer->{'SEQUENCE'}->getValue() ? $oVEventServer->{'SEQUENCE'}->getValue() : 0; // accepted sequence value
+									$sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
+									$sequenceServer = isset($oVEventServer->{'SEQUENCE'}) && $oVEventServer->{'SEQUENCE'}->getValue() ? $oVEventServer->{'SEQUENCE'}->getValue() : 0; // accepted sequence value
 
-                                    if ($sequenceServer >= $sequence) {
+									if ($sequenceServer >= $sequence) {
 										$oVCalResult = $oVCalServer;
 										$oVEventResult = $oVEventServer;
 									}
@@ -1715,17 +1716,17 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 												$mResult = $this->oStorage->updateEventRaw($oDefaultAccount, $sCalendarId, $sEventId, $oVCalResult->serialize());
 												$oVCalResult->METHOD = $sMethod;
 											}
-                                        }
+										}
 									}
 								}
 							}
 						}
 
-                        if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus) {
-                            if ($this->deleteEvent($oDefaultAccount, $sCalendarId, $sEventId)) {
-                                $mResult = true;
-                            }
-                        }
+						if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus) {
+							if ($this->deleteEvent($oDefaultAccount, $sCalendarId, $sEventId)) {
+								$mResult = true;
+							}
+						}
 
 					}
 
@@ -1739,7 +1740,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 							'Action' => $sMethod,
 							'Location' => isset($oVEventResult->LOCATION) ? (string)$oVEventResult->LOCATION : '',
 							'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
-							'When' => CCalendarHelper::getStrDate($oVEventResult->DTSTART, $oDefaultAccount->getDefaultStrTimeZone(), $sTimeFormat),
+							'When' => CCalendarHelper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, $sTimeFormat),
 							'Sequence' => isset($sequence) ? $sequence : 1
 						);
 

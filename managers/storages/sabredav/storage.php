@@ -201,8 +201,8 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 
 		$sPrincipal = $oCalendar->GetMainPrincipalUrl();
 		$sUserId = basename(urldecode($sPrincipal));
-
-		$oCalendar->Owner = (!empty($sUserId)) ? $sUserId : $this->UserId;
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		$oCalendar->Owner = isset($oUser->PublicId) ? $oUser->PublicId : '';
 		$oCalendar->Url = '/calendars/'.$this->UserId.'/'.$oCalDAVCalendar->getName();
 		$oCalendar->RealUrl = 'calendars/'.$oCalendar->Owner.'/'.$oCalDAVCalendar->getName();
 		$oCalendar->SyncToken = $oCalDAVCalendar->getSyncToken();
@@ -796,13 +796,13 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	{
 		if ($oCalDAVCalendar) {
 			$sEventFileName = $sEventId . '.ics';
-			if (count($this->CalDAVCalendarObjectsCache) > 0 && isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->Account->Email])) {
-				return $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->Account->Email];
+			if (count($this->CalDAVCalendarObjectsCache) > 0 && isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserId])) {
+				return $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserId];
 			} else {
 				if ($oCalDAVCalendar->childExists($sEventFileName)) {
 					$oChild = $oCalDAVCalendar->getChild($sEventFileName);
 					if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
-						$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->Account->Email] = $oChild;
+						$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserId] = $oChild;
 						return $oChild;
 					}
 				} else {
@@ -813,7 +813,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 								foreach ($oVCal->VEVENT as $oVEvent) {
 									foreach($oVEvent->select('UID') as $oUid) {
 										if ((string)$oUid === $sEventId) {
-											$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->Account->Email] = $oChild;
+											$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserId] = $oChild;
 											return $oChild;
 										}
 									}
@@ -1006,14 +1006,14 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 			
 			foreach ($aUrls as $sUrl)
 			{
-				if (isset($this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->Account->Email]))
+				if (isset($this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserId]))
 				{
-					$oEvent = $this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->Account->Email];
+					$oEvent = $this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserId];
 				}
 				else
 				{
 					$oEvent = $oCalendar->getChild($sUrl);
-					$this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->Account->Email] = $oEvent;		
+					$this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserId] = $oEvent;
 				}
 
 				$aEventInfo = array(

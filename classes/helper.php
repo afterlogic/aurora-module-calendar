@@ -209,14 +209,14 @@ class CCalendarHelper
 	}
 
 	/**
-	 * @param \CAccount $oAccount
+	 * @param int $iUserId
 	 * @param \CEvent $oEvent
 	 * @param \Sabre\VObject\Component\VEvent $oVEvent
 	 */
-	public static function populateVCalendar($oAccount, $oEvent, &$oVEvent)
+	public static function populateVCalendar($iUserId, $oEvent, &$oVEvent)
 	{
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
-        $oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
+		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
 
 		$oVCal =& $oVEvent->parent;
 
@@ -224,7 +224,8 @@ class CCalendarHelper
 
 		if (!empty($oEvent->Start) && !empty($oEvent->End))
 		{
-			$oDTStart = self::prepareDateTime($oEvent->Start, $oAccount->getDefaultStrTimeZone());
+			$oUser = \Aurora\System\Api::getAuthenticatedUser();
+			$oDTStart = self::prepareDateTime($oEvent->Start, $oUser->DefaultTimeZone);
 			if (isset($oDTStart))
 			{
 				$oVEvent->DTSTART = $oDTStart;
@@ -233,7 +234,7 @@ class CCalendarHelper
 					$oVEvent->DTSTART->offsetSet('VALUE', 'DATE');
 				}
 			}
-			$oDTEnd = self::prepareDateTime($oEvent->End, $oAccount->getDefaultStrTimeZone());
+			$oDTEnd = self::prepareDateTime($oEvent->End, $oUser->DefaultTimeZone);
 			if (isset($oDTEnd))
 			{
 				$oVEvent->DTEND = $oDTEnd;
@@ -263,7 +264,7 @@ class CCalendarHelper
 			$sRRULE = '';
 			if (isset($oVEvent->RRULE) && null === $oEvent->RRule)
 			{
-				$oRRule = \CalendarParser::parseRRule($oAccount, $oVCal, (string)$oVEvent->UID);
+				$oRRule = \CalendarParser::parseRRule($iUserId, $oVCal, (string)$oVEvent->UID);
 				if ($oRRule && $oRRule instanceof \CRRule)
 				{
 					$sRRULE = (string) $oRRule;
@@ -293,7 +294,7 @@ class CCalendarHelper
 		}
 
 		$ApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
-		if ($ApiCapabilityManager->isCalendarAppointmentsSupported($oAccount))
+		if ($ApiCapabilityManager->isCalendarAppointmentsSupported($iUserId))
 		{
 			$aAttendees = array();
 			$aAttendeeEmails = array();
@@ -343,7 +344,8 @@ class CCalendarHelper
 						{
 							$oVCal->METHOD = 'CANCEL';
 							$sSubject = (string)$oVEvent->SUMMARY . ': Canceled';
-							self::sendAppointmentMessage($oAccount, $sAttendee, $sSubject, $oVCal->serialize(), (string)$oVCal->METHOD);
+//							self::sendAppointmentMessage($oAccount, $sAttendee, $sSubject, $oVCal->serialize(), (string)$oVCal->METHOD);
+							//TODO Notify the user
 							unset($oVCal->METHOD);
 						}
 					}
@@ -394,7 +396,8 @@ class CCalendarHelper
 						$sHtml = self::createHtmlFromEvent($oEvent, $oAccount->Email, $sAttendee, $oCalendar->DisplayName, $sStartDate);
 
 						$oVCal->METHOD = 'REQUEST';
-						self::sendAppointmentMessage($oAccount, $sAttendee, (string)$oVEvent->SUMMARY, $oVCal->serialize(), (string)$oVCal->METHOD, $sHtml);
+//						self::sendAppointmentMessage($oAccount, $sAttendee, (string)$oVEvent->SUMMARY, $oVCal->serialize(), (string)$oVCal->METHOD, $sHtml);
+						//TODO Notify the user
 						unset($oVCal->METHOD);
 					}
 				}

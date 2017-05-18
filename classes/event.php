@@ -102,11 +102,11 @@ class CRRule
 	public $End;
 	public $WeekNum;
 	public $ByDays;
-	protected $Account;
+	protected $User;
 	
-	public function __construct($oAccount)
+	public function __construct($oUser)
 	{
-		$this->Account = $oAccount;
+		$this->User = $oUser;
 		$this->StartBase  = null;
 		$this->EndBase    = null;
 		$this->Period	  = null;
@@ -218,6 +218,6 @@ class CRRule
 	
 	public function GetTimeZone()
 	{
-		return $this->Account->getDefaultStrTimeZone();
+		return $this->User->DefaultTimeZone;
 	}
 }

@@ -71,7 +71,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function GetCalendars($UserId, $IsPublic = false, $PublicCalendarId = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 		$mCalendars = false;
 		
@@ -82,7 +82,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		else 
 		{
-			$mCalendars = $this->oApiCalendarManager->getCalendars($UserId);
+			$mCalendars = $this->oApiCalendarManager->getCalendars($UUID);
 		}
 		
 		if ($mCalendars) 
@@ -136,16 +136,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateCalendar($UserId, $Name, $Description, $Color)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 		
-		$mCalendarId = $this->oApiCalendarManager->createCalendar($UserId, $Name, $Description, 0, $Color);
+		$mCalendarId = $this->oApiCalendarManager->createCalendar($UUID, $Name, $Description, 0, $Color);
 		if ($mCalendarId)
 		{
-			$oCalendar = $this->oApiCalendarManager->getCalendar($UserId, $mCalendarId);
+			$oCalendar = $this->oApiCalendarManager->getCalendar($UUID, $mCalendarId);
 			if ($oCalendar instanceof \CCalendar)
 			{
-				$mResult = $oCalendar->toResponseArray($UserId);
+				$mResult = $oCalendar->toResponseArray($UUID);
 			}
 		}
 		
@@ -164,8 +164,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function UpdateCalendar($UserId, $Id, $Name, $Description, $Color)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		return $this->oApiCalendarManager->updateCalendar($UserId, $Id, $Name, $Description, 0, $Color);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		return $this->oApiCalendarManager->updateCalendar($UUID, $Id, $Name, $Description, 0, $Color);
 	}	
 
 	/**
@@ -178,8 +178,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function UpdateCalendarColor($UserId, $Id, $Color)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		return $this->oApiCalendarManager->updateCalendarColor($UserId, $Id, $Color);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		return $this->oApiCalendarManager->updateCalendarColor($UUID, $Id, $Color);
 	}
 	
 	/**
@@ -195,7 +195,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \ECalendarPermission::Read)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$aShares = $Shares;
 		
 		// Share calendar to all users
@@ -210,7 +210,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'access' => $IsPublic ? \ECalendarPermission::Read : \ECalendarPermission::RemovePermission
 		);
 		
-		return $this->oApiCalendarManager->updateCalendarShares($UserId, $Id, $aShares);
+		return $this->oApiCalendarManager->updateCalendarShares($UUID, $Id, $aShares);
 	}		
 	
 	/**
@@ -223,8 +223,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function UpdateCalendarPublic($UserId, $Id, $IsPublic)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		return $this->oApiCalendarManager->publicCalendar($UserId, $Id, $IsPublic);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		return $this->oApiCalendarManager->publicCalendar($UUID, $Id, $IsPublic);
 	}		
 
 	/**
@@ -236,8 +236,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function DeleteCalendar($UserId, $Id)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		return $this->oApiCalendarManager->deleteCalendar($UserId, $Id);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		return $this->oApiCalendarManager->deleteCalendar($UUID, $Id);
 	}	
 	
 	/**
@@ -250,8 +250,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function GetBaseEvent($UserId, $calendarId, $uid)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-		
-		return $this->oApiCalendarManager->getBaseEvent($UserId, $calendarId, $uid);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		return $this->oApiCalendarManager->getBaseEvent($UUID, $calendarId, $uid);
 	}	
 	
 	
@@ -268,7 +268,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function GetEvents($UserId, $CalendarIds, $Start, $End, $IsPublic, $Expand = true)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 		
 		if ($IsPublic)
@@ -278,7 +278,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		else
 		{
-			$mResult = $this->oApiCalendarManager->getEvents($UserId, $CalendarIds, $Start, $End);
+			$mResult = $this->oApiCalendarManager->getEvents($UUID, $CalendarIds, $Start, $End);
 		}
 		
 		return $mResult;
@@ -305,7 +305,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$oEvent = new \CEvent();
 		$oEvent->IdCalendar = $newCalendarId;
 		$oEvent->Name = $subject;
@@ -320,15 +320,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
-			$oRRule = new \CRRule($UserId);
+			$oUser = \Aurora\System\Api::getAuthenticatedUserId();
+			$oRRule = new \CRRule($oUser);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
 		}
 
-		$mResult = $this->oApiCalendarManager->createEvent($UserId, $oEvent);
+		$mResult = $this->oApiCalendarManager->createEvent($UUID, $oEvent);
 		if ($mResult)
 		{
-			$mResult = $this->oApiCalendarManager->getExpandedEvent($UserId, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
+			$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
 		}
 		
 		return $mResult;
@@ -360,7 +361,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$selectStart, $selectEnd)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 		
 		$oEvent = new \CEvent();
@@ -378,27 +379,28 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
-			$oRRule = new \CRRule($UserId);
+			$oUser = \Aurora\System\Api::getAuthenticatedUserId();
+			$oRRule = new \CRRule($oUser);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
 		}
 		
 		if ($allEvents === 1)
 		{
-			$mResult = $this->oApiCalendarManager->updateExclusion($UserId, $oEvent, $recurrenceId);
+			$mResult = $this->oApiCalendarManager->updateExclusion($UUID, $oEvent, $recurrenceId);
 		}
 		else
 		{
-			$mResult = $this->oApiCalendarManager->updateEvent($UserId, $oEvent);
+			$mResult = $this->oApiCalendarManager->updateEvent($UUID, $oEvent);
 			if ($mResult && $newCalendarId !== $oEvent->IdCalendar)
 			{
-				$mResult = $this->oApiCalendarManager->moveEvent($UserId, $oEvent->IdCalendar, $newCalendarId, $oEvent->Id);
+				$mResult = $this->oApiCalendarManager->moveEvent($UUID, $oEvent->IdCalendar, $newCalendarId, $oEvent->Id);
 				$oEvent->IdCalendar = $newCalendarId;
 			}
 		}
 		if ($mResult)
 		{
-			$mResult = $this->oApiCalendarManager->getExpandedEvent($UserId, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
+			$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
 		}
 			
 		return $mResult;
@@ -416,7 +418,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function DeleteEvent($UserId, $calendarId, $uid, $allEvents, $recurrenceId)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 		
 		if ($allEvents === 1)
@@ -424,11 +426,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oEvent = new \CEvent();
 			$oEvent->IdCalendar = $calendarId;
 			$oEvent->Id = $uid;
-			$mResult = $this->oApiCalendarManager->updateExclusion($UserId, $oEvent, $recurrenceId, true);
+			$mResult = $this->oApiCalendarManager->updateExclusion($UUID, $oEvent, $recurrenceId, true);
 		}
 		else
 		{
-			$mResult = $this->oApiCalendarManager->deleteEvent($UserId, $calendarId, $uid);
+			$mResult = $this->oApiCalendarManager->deleteEvent($UUID, $calendarId, $uid);
 		}
 		
 		return $mResult;
@@ -445,7 +447,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function AddEventsFromFile($UserId, $CalendarId, $File)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 
 		if (empty($CalendarId) || empty($File))
@@ -453,10 +455,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		$sData = $this->oApiFileCache->get($UserId, $File);
+		$sData = $this->oApiFileCache->get($UUID, $File);
 		if (!empty($sData))
 		{
-			$mCreateEventResult = $this->oApiCalendarManager->createEventFromRaw($UserId, $CalendarId, null, $sData);
+			$mCreateEventResult = $this->oApiCalendarManager->createEventFromRaw($UUID, $CalendarId, null, $sData);
 			if ($mCreateEventResult)
 			{
 				$mResult = array(
@@ -482,7 +484,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function SetAppointmentAction($UserId, $CalendarId, $EventId, $File, $AppointmentAction, $Attendee)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 
 		if (empty($AppointmentAction) || empty($CalendarId))
@@ -495,7 +497,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$sData = '';
 			if (!empty($EventId))
 			{
-				$aEventData =  $this->oApiCalendarManager->getEvent($UserId, $CalendarId, $EventId);
+				$aEventData =  $this->oApiCalendarManager->getEvent($UUID, $CalendarId, $EventId);
 				if (isset($aEventData) && isset($aEventData['vcal']) && $aEventData['vcal'] instanceof \Sabre\VObject\Component\VCalendar)
 				{
 					$oVCal = $aEventData['vcal'];
@@ -505,11 +507,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 			else if (!empty($File))
 			{
-				$sData = $this->oApiFileCache->get($UserId, $File);
+				$sData = $this->oApiFileCache->get($UUID, $File);
 			}
 			if (!empty($sData))
 			{
-				$mProcessResult = $this->oApiCalendarManager->appointmentAction($UserId, $Attendee, $AppointmentAction, $CalendarId, $sData);
+				$mProcessResult = $this->oApiCalendarManager->appointmentAction($UUID, $Attendee, $AppointmentAction, $CalendarId, $sData);
 				if ($mProcessResult)
 				{
 					$mResult = array(
@@ -731,37 +733,37 @@ class Module extends \Aurora\System\Module\AbstractModule
 	/**
 	 * 
 	 * @param int $UserId
-	 * @param array $FileData
+	 * @param array $UploadData
 	 * @param string $AdditionalData
 	 * @return array
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function UploadCalendars($UserId, $FileData, $AdditionalData)
+	public function UploadCalendar($UserId,$UploadData, $CalendarID)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$aAdditionalData = @json_decode($AdditionalData, true);
 		
-		$sCalendarId = isset($aAdditionalData['CalendarID']) ? $aAdditionalData['CalendarID'] : '';
+		$sCalendarId = isset($CalendarID) ? $CalendarID : '';
 
 		$sError = '';
 		$aResponse = array(
 			'ImportedCount' => 0
 		);
 
-		if (is_array($FileData))
+		if (is_array($UploadData))
 		{
-			$bIsIcsExtension  = strtolower(pathinfo($FileData['name'], PATHINFO_EXTENSION)) === 'ics';
+			$bIsIcsExtension  = strtolower(pathinfo($UploadData['name'], PATHINFO_EXTENSION)) === 'ics';
 
 			if ($bIsIcsExtension)
 			{
-				$sSavedName = 'import-post-' . md5($FileData['name'] . $FileData['tmp_name']);
-				if ($this->oApiFileCache->moveUploadedFile($UserId, $sSavedName, $FileData['tmp_name']))
+				$sSavedName = 'import-post-' . md5($UploadData['name'] . $UploadData['tmp_name']);
+				if ($this->oApiFileCache->moveUploadedFile($UUID, $sSavedName, $UploadData['tmp_name']))
 				{
 					$iImportedCount = $this->oApiCalendarManager->importToCalendarFromIcs(
-							$UserId, 
+							$UUID,
 							$sCalendarId, 
-							$this->oApiFileCache->generateFullFilePath($UserId, $sSavedName)
+							$this->oApiFileCache->generateFullFilePath($UUID, $sSavedName)
 					);
 
 					if (false !== $iImportedCount && -1 !== $iImportedCount)
@@ -773,7 +775,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 						$sError = 'unknown';
 					}
 
-					$this->oApiFileCache->clear($UserId, $sSavedName);
+					$this->oApiFileCache->clear($UUID, $sSavedName);
 				}
 				else
 				{

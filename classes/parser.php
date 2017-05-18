@@ -17,14 +17,14 @@
 class CalendarParser
 {
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param CCalendar $oCalendar
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 * @param \Sabre\VObject\Component\VCalendar $oVCalOriginal Default value is **null**.
 	 *
 	 * @return array
 	 */
-	public static function parseEvent($oAccount, $oCalendar, $oVCal, $oVCalOriginal = null)
+	public static function parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal = null)
 	{
 		$ApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
 //		$ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
@@ -32,10 +32,11 @@ class CalendarParser
 		$aResult = array();
 		$aRules = array();
 		$aExcludedRecurrences = array();
-		
+
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if (isset($oVCalOriginal))
 		{
-			$aRules = CalendarParser::getRRules($oAccount, $oVCalOriginal);
+			$aRules = CalendarParser::getRRules($iUserId, $oVCalOriginal);
 			$aExcludedRecurrences = CalendarParser::getExcludedRecurrences($oVCalOriginal);
 		}
 
@@ -61,7 +62,7 @@ class CalendarParser
 
 					$bIsAppointment = false;
 					$aEvent['attendees'] = array();
-					if ($ApiCapabilityManager->isCalendarAppointmentsSupported($oAccount) && isset($oVEvent->ATTENDEE))
+					if ($ApiCapabilityManager->isCalendarAppointmentsSupported($iUserId) && isset($oVEvent->ATTENDEE))
 					{
 						$aEvent['attendees'] = self::parseAttendees($oVEvent);
 
@@ -69,11 +70,12 @@ class CalendarParser
 						{
 							$sOwnerEmail = str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER));
 						}
-						$bIsAppointment = ($sOwnerEmail !== $oAccount->Email);
+						$bIsAppointment = ($sOwnerEmail !== $oUser->PublicId);
 					}
 					
-					$oOwner = $ApiUsersManager->getAccountByEmail($sOwnerEmail);
-					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
+//					$oOwner = $ApiUsersManager->getAccountByEmail($sOwnerEmail);
+//					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
+					$sOwnerName  = ($oUser->Name) ? $oUser->Name : $oUser->PublicId;
 					
 					$aEvent['appointment'] = $bIsAppointment;
 					$aEvent['appointmentAccess'] = 0;
@@ -81,7 +83,7 @@ class CalendarParser
 					$aEvent['alarms'] = self::parseAlarms($oVEvent);
 
 					$bAllDay = (isset($oVEvent->DTSTART) && !$oVEvent->DTSTART->hasTime());
-					$sTimeZone = /*($bAllDay) ? 'UTC' : $oAccount->getDefaultStrTimeZone()*/ 'UTC';
+					$sTimeZone = ($bAllDay) ? 'UTC' : $oUser->DefaultTimeZone;
 
 					if (!isset($oVEvent->DTEND))
 					{
@@ -188,12 +190,12 @@ class CalendarParser
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param \Sabre\VObject\Component\VEvent $oVEventBase
 	 *
 	 * @return \CRRule|null
 	 */
-	public static function parseRRule($oAccount, $oVEventBase)
+	public static function parseRRule($iUserId, $oVEventBase)
 	{
 		$oResult = null;
 
@@ -210,7 +212,8 @@ class CalendarParser
 		
 		if (isset($oVEventBase->RRULE))
 		{
-			$oResult = new \CRRule($oAccount);
+			$oUser = \Aurora\System\Api::getAuthenticatedUser();
+			$oResult = new \CRRule($oUser);
 			$aRules = $oVEventBase->RRULE->getParts();
 			if (isset($aRules['FREQ']))
 			{
@@ -270,20 +273,20 @@ class CalendarParser
 				}
 			}
 			
-			$oResult->StartBase = CCalendarHelper::getTimestamp($oVEventBase->DTSTART, $oAccount->getDefaultStrTimeZone());
-			$oResult->EndBase = CCalendarHelper::getTimestamp($oVEventBase->DTEND, $oAccount->getDefaultStrTimeZone());
+			$oResult->StartBase = CCalendarHelper::getTimestamp($oVEventBase->DTSTART, $oUser->DefaultTimeZone);
+			$oResult->EndBase = CCalendarHelper::getTimestamp($oVEventBase->DTEND, $oUser->DefaultTimeZone);
 		}
 
 		return $oResult;
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param int $iUserId
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 *
 	 * @return array
 	 */
-	public static function getRRules($oAccount, $oVCal)
+	public static function getRRules($iUserId, $oVCal)
 	{
 		$aResult = array();
 		
@@ -291,7 +294,7 @@ class CalendarParser
 		{
 			if (isset($oVEventBase->RRULE))
 			{
-				$oRRule = CalendarParser::parseRRule($oAccount, $oVEventBase);
+				$oRRule = CalendarParser::parseRRule($iUserId, $oVEventBase);
 				if ($oRRule)
 				{
 					$aResult[(string)$oVEventBase->UID] = $oRRule;
