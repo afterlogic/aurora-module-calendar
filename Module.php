@@ -46,7 +46,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetSettings()
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
 		return array(
 			'AllowAppointments' => $this->getConfig('AllowAppointments', true),
@@ -70,7 +70,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetCalendars($UserId, $IsPublic = false, $PublicCalendarId = '')
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
 		$mResult = false;
 		$mCalendars = false;
@@ -103,7 +103,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function DownloadCalendar($UserId, $RawKey)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
 		$aValues = \Aurora\System\Api::DecodeKeyValues($RawKey);
 
@@ -135,7 +135,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function CreateCalendar($UserId, $Name, $Description, $Color)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$mResult = false;
 		
@@ -163,7 +163,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UpdateCalendar($UserId, $Id, $Name, $Description, $Color)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		return $this->oApiCalendarManager->updateCalendar($UserId, $Id, $Name, $Description, 0, $Color);
 	}	
@@ -177,7 +177,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UpdateCalendarColor($UserId, $Id, $Color)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		return $this->oApiCalendarManager->updateCalendarColor($UserId, $Id, $Color);
 	}
@@ -194,7 +194,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \ECalendarPermission::Read)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$aShares = $Shares;
 		
@@ -222,7 +222,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UpdateCalendarPublic($UserId, $Id, $IsPublic)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		return $this->oApiCalendarManager->publicCalendar($UserId, $Id, $IsPublic);
 	}		
@@ -235,7 +235,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function DeleteCalendar($UserId, $Id)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		return $this->oApiCalendarManager->deleteCalendar($UserId, $Id);
 	}	
@@ -249,7 +249,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetBaseEvent($UserId, $calendarId, $uid)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
 		return $this->oApiCalendarManager->getBaseEvent($UserId, $calendarId, $uid);
 	}	
@@ -267,7 +267,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function GetEvents($UserId, $CalendarIds, $Start, $End, $IsPublic, $Expand = true)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
 		$mResult = false;
 		
@@ -304,7 +304,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS, 
 			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$oEvent = new \CEvent();
 		$oEvent->IdCalendar = $newCalendarId;
@@ -359,7 +359,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
 			$selectStart, $selectEnd)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$mResult = false;
 		
@@ -415,7 +415,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function DeleteEvent($UserId, $calendarId, $uid, $allEvents, $recurrenceId)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$mResult = false;
 		
@@ -444,7 +444,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function AddEventsFromFile($UserId, $CalendarId, $File)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$mResult = false;
 
@@ -481,7 +481,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function SetAppointmentAction($UserId, $CalendarId, $EventId, $File, $AppointmentAction, $Attendee)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$mResult = false;
 
@@ -574,10 +574,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 							$sTimeFormat = 'h:i A';
 							switch ($oAccountOrganizer->User->DateFormat)
 							{
-								case \EDateFormat::DDMMYYYY:
+								case \Aurora\System\Enums\DateFormat::DDMMYYYY:
 									$sDateFormat = 'd/m/Y';
 									break;
-								case \EDateFormat::DD_MONTH_YYYY:
+								case \Aurora\System\Enums\DateFormat::DD_MONTH_YYYY:
 									$sDateFormat = 'd/m/Y';
 									break;
 								default:
@@ -586,11 +586,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 							}
 							switch ($oAccountOrganizer->User->TimeFormat)
 							{
-								case \ETimeFormat::F24:
+								case \Aurora\System\Enums\TimeFormat::F24:
 									$sTimeFormat = 'H:i';
 									break;
-								case \EDateFormat::DD_MONTH_YYYY:
-									\ETimeFormat::F12;
+								case \Aurora\System\Enums\DateFormat::DD_MONTH_YYYY:
+									\Aurora\System\Enums\TimeFormat::F12;
 									$sTimeFormat = 'h:i A';
 									break;
 								default:
@@ -693,7 +693,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UpdateAttendeeStatus($UserId, $File, $FromEmail)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$mResult = false;
 
@@ -723,7 +723,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function ProcessICS($UserId, $Data, $FromEmail)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		return $this->oApiCalendarManager->processICS($UserId, $Data, $FromEmail);
 	}
@@ -738,7 +738,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function UploadCalendars($UserId, $FileData, $AdditionalData)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$aAdditionalData = @json_decode($AdditionalData, true);
 		
