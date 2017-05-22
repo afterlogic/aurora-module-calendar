@@ -1644,65 +1644,81 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 		try
 		{
 			$oVCal = \Sabre\VObject\Reader::read($sData);
-			if ($oVCal) {
+			if ($oVCal)
+			{
 				$oVCalResult = $oVCal;
 
 				$oMethod = isset($oVCal->METHOD) ? $oVCal->METHOD : null;
 				$sMethod = isset($oMethod) ? (string) $oMethod : 'SAVE';
 
-				if (!in_array($sMethod, array('REQUEST', 'REPLY', 'CANCEL', 'PUBLISH', 'SAVE'))) {
+				if (!in_array($sMethod, array('REQUEST', 'REPLY', 'CANCEL', 'PUBLISH', 'SAVE')))
+				{
 					return false;
 				}
 
 				$aVEvents = $oVCal->getBaseComponents('VEVENT');
 				$oVEvent = (isset($aVEvents) && count($aVEvents) > 0) ? $aVEvents[0] : null;
 
-				if (isset($oVEvent)) {
+				if (isset($oVEvent))
+				{
 					$sCalendarId = '';
 					$oVEventResult = $oVEvent;
 
 					$sEventId = (string)$oVEventResult->UID;
 
-					$aCalendars = $this->oStorage->GetCalendarNames($oDefaultAccount);
-					$aCalendarIds = $this->oStorage->findEventInCalendars($oDefaultAccount, $sEventId, $aCalendars);
+					$aCalendars = $this->oStorage->GetCalendarNames($iUserId);
+					$aCalendarIds = $this->oStorage->findEventInCalendars($iUserId, $sEventId, $aCalendars);
 
-					if (is_array($aCalendarIds) && isset($aCalendarIds[0])) {
+					if (is_array($aCalendarIds) && isset($aCalendarIds[0]))
+					{
 						$sCalendarId = $aCalendarIds[0];
-						$aDataServer = $this->oStorage->getEvent($oDefaultAccount, $sCalendarId, $sEventId);
-						if ($aDataServer !== false) {
+						$aDataServer = $this->oStorage->getEvent($iUserId, $sCalendarId, $sEventId);
+						if ($aDataServer !== false)
+						{
 							$oVCalServer = $aDataServer['vcal'];
-							if (isset($oMethod)) {
+							if (isset($oMethod))
+							{
 								$oVCalServer->METHOD = $oMethod;
 							}
 							$aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
-							if (count($aVEventsServer) > 0) {
+							if (count($aVEventsServer) > 0)
+							{
 								$oVEventServer = $aVEventsServer[0];
 
 								if (isset($oVEvent->{'LAST-MODIFIED'}) && 
-									isset($oVEventServer->{'LAST-MODIFIED'})) {
+									isset($oVEventServer->{'LAST-MODIFIED'}))
+								{
 									$lastModified = $oVEvent->{'LAST-MODIFIED'}->getDateTime();
 									$lastModifiedServer = $oVEventServer->{'LAST-MODIFIED'}->getDateTime();
 
 									$sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
 									$sequenceServer = isset($oVEventServer->{'SEQUENCE'}) && $oVEventServer->{'SEQUENCE'}->getValue() ? $oVEventServer->{'SEQUENCE'}->getValue() : 0; // accepted sequence value
 
-									if ($sequenceServer >= $sequence) {
+									if ($sequenceServer >= $sequence)
+									{
 										$oVCalResult = $oVCalServer;
 										$oVEventResult = $oVEventServer;
 									}
-									if (isset($sMethod) && !($lastModifiedServer >= $lastModified)) {
-										if ($sMethod === 'REPLY') {
+									if (isset($sMethod) && !($lastModifiedServer >= $lastModified))
+									{
+										if ($sMethod === 'REPLY')
+										{
 											$oVCalResult = $oVCalServer;
 											$oVEventResult = $oVEventServer;
 
-											if (isset($oVEvent->ATTENDEE) && $sequenceServer >= $sequence) {
+											if (isset($oVEvent->ATTENDEE) && $sequenceServer >= $sequence)
+											{
 												$oAttendee = $oVEvent->ATTENDEE[0];
 												$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
-												if (isset($oVEventResult->ATTENDEE)) {
-													foreach ($oVEventResult->ATTENDEE as $oAttendeeResult) {
+												if (isset($oVEventResult->ATTENDEE))
+												{
+													foreach ($oVEventResult->ATTENDEE as $oAttendeeResult)
+													{
 														$sEmailResult = str_replace('mailto:', '', strtolower((string)$oAttendeeResult));
-														if ($sEmailResult === $sAttendee) {
-															if (isset($oAttendee['PARTSTAT'])) {
+														if ($sEmailResult === $sAttendee)
+														{
+															if (isset($oAttendee['PARTSTAT']))
+															{
 																$oAttendeeResult['PARTSTAT'] = $oAttendee['PARTSTAT']->getValue();
 															}
 															break;
@@ -1710,10 +1726,11 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 													}
 												}
 											}
-											if ($bUpdateAttendeeStatus) {
+											if ($bUpdateAttendeeStatus)
+											{
 												unset($oVCalResult->METHOD);
 												$oVEventResult->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
-												$mResult = $this->oStorage->updateEventRaw($oDefaultAccount, $sCalendarId, $sEventId, $oVCalResult->serialize());
+												$mResult = $this->oStorage->updateEventRaw($iUserId, $sCalendarId, $sEventId, $oVCalResult->serialize());
 												$oVCalResult->METHOD = $sMethod;
 											}
 										}
@@ -1722,15 +1739,18 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 							}
 						}
 
-						if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus) {
-							if ($this->deleteEvent($oDefaultAccount, $sCalendarId, $sEventId)) {
+						if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus)
+						{
+							if ($this->deleteEvent($iUserId, $sCalendarId, $sEventId))
+							{
 								$mResult = true;
 							}
 						}
 
 					}
 
-					if (!$bUpdateAttendeeStatus) {
+					if (!$bUpdateAttendeeStatus)
+					{
 						$sTimeFormat = (isset($oVEventResult->DTSTART) && !$oVEventResult->DTSTART->hasTime()) ? 'D, M d' : 'D, M d, Y, H:i';
 						$mResult = array(
 							'Calendars' => $aCalendars,
@@ -1745,10 +1765,13 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 						);
 
 						$aAccountEmails = ($sMethod === 'REPLY') ? array($mFromEmail) : $aAccountEmails;
-						if (isset($oVEventResult->ATTENDEE) && isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence) {
-							foreach($oVEventResult->ATTENDEE as $oAttendee) {
+						if (isset($oVEventResult->ATTENDEE) && isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence)
+						{
+							foreach($oVEventResult->ATTENDEE as $oAttendee)
+							{
 								$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
-								if (in_array($sAttendee, $aAccountEmails) && isset($oAttendee['PARTSTAT'])) {
+								if (in_array($sAttendee, $aAccountEmails) && isset($oAttendee['PARTSTAT']))
+								{
 									$mResult['Attendee'] = $sAttendee;
 									$mResult['Action'] = $sMethod . '-' . $oAttendee['PARTSTAT']->getValue();
 								}

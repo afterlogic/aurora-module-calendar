@@ -36,7 +36,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
-//		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
+		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
 	}
 	
 	/**
@@ -696,7 +696,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function UpdateAttendeeStatus($UserId, $File, $FromEmail)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 
 		if (empty($File) || empty($FromEmail))
@@ -706,7 +706,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId))
 		{
-			$sData = $this->oApiFileCache->get($UserId, $File);
+			$sData = $this->oApiFileCache->get($UUID, $File);
 			if (!empty($sData))
 			{
 				$mResult = $this->oApiCalendarManager->processICS($UserId, $sData, $FromEmail, true);
@@ -811,55 +811,57 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 	}
 	
-//	public function onExtendMessageData($oAccount, &$oMessage, $aData)
-//	{
-//		$oApiCapa = /* @var \Aurora\System\Managers\Capability\Manager */ $this->oApiCapabilityManager;
-//		$sFromEmail = '';
-//		$oFromCollection = $oMessage->getFrom();
-//		if ($oFromCollection && 0 < $oFromCollection->Count())
-//		{
-//			$oFrom =& $oFromCollection->GetByIndex(0);
-//			if ($oFrom)
-//			{
-//				$sFromEmail = trim($oFrom->GetEmail());
-//			}
-//		}
-//		foreach ($aData as $aDataItem)
-//		{
-//			if ($aDataItem['Part'] instanceof \MailSo\Imap\BodyStructure && $aDataItem['Part']->ContentType() === 'text/calendar')
-//			{
-//				$sData = $aDataItem['Data'];
-//				if (!empty($sData))
-//				{
-//					$mResult = $this->oApiCalendarManager->processICS($oAccount, $sData, $sFromEmail);
-//					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
-//					{
-//						$sTemptFile = md5($mResult['Body']).'.ics';
-//						if ($this->oApiFileCache->put($oAccount, $sTemptFile, $mResult['Body']))
-//						{
-//							$oIcs = CApiMailIcs::createInstance();
-//
-//							$oIcs->Uid = $mResult['UID'];
-//							$oIcs->Sequence = $mResult['Sequence'];
-//							$oIcs->File = $sTemptFile;
-//							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
-//							$oIcs->Type = ($oApiCapa->isCalendarAppointmentsSupported($oAccount)) ? $mResult['Action'] : 'SAVE';
-//							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
-//							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
-//							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
-//							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
-//
-//							$oMessage->addExtend('ICAL', $oIcs);
-//						}
-//						else
-//						{
-//							\Aurora\System\Api::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
-//						}
-//					}
-//				}				
-//			}
-//		}
-//	}
+	public function onExtendMessageData($aData, &$oMessage)
+	{
+		$oApiCapa = /* @var \Aurora\System\Managers\Capability\Manager */ $this->oApiCapabilityManager;
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		$UUID = \Aurora\System\Api::getUserUUIDById($oUser->EntityId);
+		$sFromEmail = '';
+		$oFromCollection = $oMessage->getFrom();
+		if ($oFromCollection && 0 < $oFromCollection->Count())
+		{
+			$oFrom =& $oFromCollection->GetByIndex(0);
+			if ($oFrom)
+			{
+				$sFromEmail = trim($oFrom->GetEmail());
+			}
+		}
+		foreach ($aData as $aDataItem)
+		{
+			if ($aDataItem['Part'] instanceof \MailSo\Imap\BodyStructure && $aDataItem['Part']->ContentType() === 'text/calendar')
+			{
+				$sData = $aDataItem['Data'];
+				if (!empty($sData))
+				{
+					$mResult = $this->oApiCalendarManager->processICS($UUID, $sData, $sFromEmail);
+					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
+					{
+						$sTemptFile = md5($mResult['Body']).'.ics';
+						if ($this->oApiFileCache->put($UUID, $sTemptFile, $mResult['Body']))
+						{
+							$oIcs = \CApiMailIcs::createInstance();
+
+							$oIcs->Uid = $mResult['UID'];
+							$oIcs->Sequence = $mResult['Sequence'];
+							$oIcs->File = $sTemptFile;
+							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
+							$oIcs->Type = ($oApiCapa->isCalendarAppointmentsSupported($oUser->EntityId)) ? $mResult['Action'] : 'SAVE';
+							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
+							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
+							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
+							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
+
+							$oMessage->addExtend('ICAL', $oIcs);
+						}
+						else
+						{
+							\Aurora\System\Api::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
+						}
+					}
+				}				
+			}
+		}
+	}
 	
     public function onGetMobileSyncInfo($aArgs, &$mResult)
 	{
