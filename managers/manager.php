@@ -1505,7 +1505,7 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 
 			$bDefault = false;
 			foreach ($oCalendars as $oCalendar) {
-				if (!$bDefault && $oCalendar->Access !== ECalendarPermission::Read) {
+				if (!$bDefault && $oCalendar->Access !== \ECalendarPermission::Read) {
 					$oCalendar->IsDefault = $bDefault = true;
 				}
 				$oCalendar = $this->populateCalendarShares($iUserId, $oCalendar);

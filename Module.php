@@ -21,6 +21,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function init() 
 	{
 		$this->incClass('helper');
+		$this->incClass('enum');
 		$this->incClass('calendar');
 		$this->incClass('event');
 		$this->incClass('parser');

@@ -57,10 +57,10 @@ class CCalendar
 		$this->Order = $sOrder;
 		$this->Shared = false;
 		$this->SharedToAll = false;
-		$this->SharedToAllAccess = ECalendarPermission::Read;
+		$this->SharedToAllAccess = \ECalendarPermission::Read;
 		$this->Owner = '';
 		$this->Principals = array();
-		$this->Access = ECalendarPermission::Write;
+		$this->Access = \ECalendarPermission::Write;
 		$this->Shares = array();
 		$this->IsPublic = false;
 		$this->PubHash = null;
@@ -131,7 +131,7 @@ class CCalendar
 			$oCalendar->Shared = true;
 			if (isset($aProps['{http://sabredav.org/ns}read-only']))
 			{
-				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? ECalendarPermission::Read : ECalendarPermission::Write;
+				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \ECalendarPermission::Read : \ECalendarPermission::Write;
 			}
 			if (isset($aProps['{http://calendarserver.org/ns/}summary']))
 			{

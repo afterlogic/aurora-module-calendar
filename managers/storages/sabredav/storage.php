@@ -120,10 +120,10 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	 */
 	public function getCalendarAccess($iUserId, $sCalendarId)
 	{
-		$iResult = ECalendarPermission::Read;
+		$iResult = \ECalendarPermission::Read;
 		$oCalendar = $this->getCalendar($iUserId, $sCalendarId);
 		if ($oCalendar) {
-			$iResult = $oCalendar->Shared ? $oCalendar->Access : ECalendarPermission::Write;
+			$iResult = $oCalendar->Shared ? $oCalendar->Access : \ECalendarPermission::Write;
 		}
 		return $iResult;
 	}
@@ -170,7 +170,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
 			$oCalendar->Shared = true;
 			if (isset($aProps['{http://sabredav.org/ns}read-only'])) {
-				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? ECalendarPermission::Read : ECalendarPermission::Write;
+				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \ECalendarPermission::Read : \ECalendarPermission::Write;
 			}
 			if (isset($aProps['{http://calendarserver.org/ns/}summary'])) {
 				$oCalendar->Description = $aProps['{http://calendarserver.org/ns/}summary'];
@@ -600,7 +600,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPerms = ECalendarPermission::RemovePermission)
+	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPerms = \ECalendarPermission::RemovePermission)
 	{
 		$this->init($iUserId);
 
@@ -610,7 +610,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 			if (count($oCalendar->Principals) > 0) {
 				$add = array();
 				$remove = array();
-				if ($iPerms === ECalendarPermission::RemovePermission) {
+				if ($iPerms === \ECalendarPermission::RemovePermission) {
 					$remove[] = $sUserId;
 				} else {
 					$aItem['href'] = $sUserId;
@@ -683,7 +683,7 @@ class CApiCalendarSabredavStorage extends CApiCalendarStorage
 				$aResult[] = array(
 					'name' => basename($aShare['href']),
 					'email' => basename($aShare['href']),
-					'access' => $aShare['readOnly'] ? ECalendarPermission::Read : ECalendarPermission::Write
+					'access' => $aShare['readOnly'] ? \ECalendarPermission::Read : \ECalendarPermission::Write
 				);
 			}
 		}

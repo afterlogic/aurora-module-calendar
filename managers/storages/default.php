@@ -40,7 +40,7 @@ class CApiCalendarStorage extends \Aurora\System\Managers\AbstractManagerStorage
 
 	public function getCalendarAccess($iUserId, $sCalendarId)
 	{
-		return ECalendarPermission::Write;
+		return \ECalendarPermission::Write;
 	}
 
 	/**
@@ -186,7 +186,7 @@ class CApiCalendarStorage extends \Aurora\System\Managers\AbstractManagerStorage
 	 *
 	 * @return false
 	 */
-	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPerms = ECalendarPermission::RemovePermission)
+	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPerms = \ECalendarPermission::RemovePermission)
 	{
 		return false;
 	}
