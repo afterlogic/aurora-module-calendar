@@ -8,12 +8,9 @@
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
 
-/**
- * CApiCalendarMainManager class summary
- * 
- * @package Calendar
- */
-class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithStorage
+namespace Aurora\Modules\Calendar;
+
+class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
 	/*
 	 * @type $ApiUsersManager CApiUsersManager

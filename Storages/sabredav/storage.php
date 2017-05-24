@@ -8,13 +8,9 @@
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
 
-/**
- * @internal
- * 
- * @package Calendar
- * @subpackage Storages
- */
-class CApiCalendarSabredavStorage extends CApiCalendarStorage
+namespace Aurora\Modules\Calendar\Storages\Sabredav;
+
+class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 {
 	/**
 	 * @var array
