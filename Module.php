@@ -321,7 +321,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
-			$oUser = \Aurora\System\Api::getAuthenticatedUserId();
+			$oUser = \Aurora\System\Api::getAuthenticatedUser();
 			$oRRule = new \CRRule($oUser);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
@@ -380,7 +380,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
-			$oUser = \Aurora\System\Api::getAuthenticatedUserId();
+			$oUser = \Aurora\System\Api::getAuthenticatedUser();
 			$oRRule = new \CRRule($oUser);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
@@ -867,7 +867,8 @@ class Module extends \Aurora\System\Module\AbstractModule
     public function onGetMobileSyncInfo($aArgs, &$mResult)
 	{
 		$oDavModule = \Aurora\System\Api::GetModuleDecorator('Dav');
-		$aCalendars = $this->GetCalendars();
+		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
+		$aCalendars = $this->GetCalendars($iUserId);
 		if (isset($aCalendars['Calendars']) && is_array($aCalendars['Calendars']) && 0 < count($aCalendars['Calendars']))
 		{
 			foreach($aCalendars['Calendars'] as $oCalendar)
