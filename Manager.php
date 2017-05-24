@@ -29,6 +29,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	{
 		parent::__construct('', $sForcedStorage, $oModule);
 
+		$this->oStorage = new \Aurora\Modules\Calendar\Storages\Sabredav\Storage($this);
+		
 //		$this->ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
 		$this->oApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
 	}
