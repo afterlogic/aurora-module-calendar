@@ -28,9 +28,9 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 	/**
 	 * @param \Aurora\System\Managers\GlobalManager &$oManager
 	 */
-	public function __construct(\Aurora\System\Managers\GlobalManager &$oManager, $sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
+	public function __construct($sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
 	{
-		parent::__construct('', $oManager, $sForcedStorage, $oModule);
+		parent::__construct('', $sForcedStorage, $oModule);
 
 //		$this->ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
 		$this->oApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
@@ -1434,11 +1434,11 @@ class CApiCalendarManager extends \Aurora\System\Managers\AbstractManagerWithSto
 			}
 
 			if (!$bResult) {
-				\Aurora\System\Api::Log('Ics Appointment Action FALSE result!', ELogLevel::Error);
+				\Aurora\System\Api::Log('Ics Appointment Action FALSE result!', \Aurora\System\Enums\LogLevel::Error);
 				if ($iUserId) {
-					\Aurora\System\Api::Log('Email: '.$iUserId->Email.', Action: '. $sAction.', Data:', ELogLevel::Error);
+					\Aurora\System\Api::Log('Email: '.$iUserId->Email.', Action: '. $sAction.', Data:', \Aurora\System\Enums\LogLevel::Error);
 				}
-				\Aurora\System\Api::Log($sData, ELogLevel::Error);
+				\Aurora\System\Api::Log($sData, \Aurora\System\Enums\LogLevel::Error);
 			} else {
 				$bResult = $sEventId;
 			}

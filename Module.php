@@ -618,17 +618,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 						}
 						else
 						{
-							\Aurora\System\Api::Log('Empty template.', \ELogLevel::Error);
+							\Aurora\System\Api::Log('Empty template.', \Aurora\System\Enums\LogLevel::Error);
 						}
 					}
 					else
 					{
-						\Aurora\System\Api::Log('Event not found.', \ELogLevel::Error);
+						\Aurora\System\Api::Log('Event not found.', \Aurora\System\Enums\LogLevel::Error);
 					}
 				}
 				else
 				{
-					\Aurora\System\Api::Log('Calendar not found.', \ELogLevel::Error);
+					\Aurora\System\Api::Log('Calendar not found.', \Aurora\System\Enums\LogLevel::Error);
 				}
 				$sAttendee = $aInviteValues['attendee'];
 				if (!empty($sAttendee))
@@ -856,7 +856,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 						}
 						else
 						{
-							\Aurora\System\Api::Log('Can\'t save temp file "'.$sTemptFile.'"', ELogLevel::Error);
+							\Aurora\System\Api::Log('Can\'t save temp file "'.$sTemptFile.'"', \Aurora\System\Enums\LogLevel::Error);
 						}
 					}
 				}				
