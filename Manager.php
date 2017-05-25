@@ -928,7 +928,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				if ($oVCal) {
 					$iIndex = \CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
 					if ($iIndex !== false) {
-						CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT[$iIndex]);
+						\CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT[$iIndex]);
 					}
 					$oVCalCopy = clone $oVCal;
 					if (!isset($oEvent->RRule)) {
@@ -1095,7 +1095,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 						if ($oVEventRecur) {
 							$oEvent->RRule = null;
-							CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVEventRecur);
+							\CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVEventRecur);
 						}
 					}
 
@@ -1559,7 +1559,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 									$oVCal->METHOD = 'CANCEL';
 									$sSubject = (string)$oVEvent->SUMMARY . ': Canceled';
 
-									CCalendarHelper::sendAppointmentMessage($iUserId, $sEmail, $sSubject, $oVCal->serialize(), 'REQUEST');
+									\CCalendarHelper::sendAppointmentMessage($iUserId, $sEmail, $sSubject, $oVCal->serialize(), 'REQUEST');
 									unset($oVCal->METHOD);
 								}
 							}
