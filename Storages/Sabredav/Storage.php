@@ -367,7 +367,7 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 
 		$sSystemName = \Sabre\DAV\UUIDUtil::getUUID();
 		$oUserCalendars->createExtendedCollection($sSystemName, 
-			new Sabre\DAV\MkCol(
+			new \Sabre\DAV\MkCol(
 				[
 					'{DAV:}collection',
 					'{urn:ietf:params:xml:ns:caldav}calendar'
