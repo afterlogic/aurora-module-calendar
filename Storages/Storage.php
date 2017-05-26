@@ -13,14 +13,6 @@ namespace Aurora\Modules\Calendar\Storages;
 class Storage extends \Aurora\System\Managers\AbstractManagerStorage
 {
 	/**
-	 * @param \Aurora\System\Managers\GlobalManager &$oManager
-	 */
-	public function __construct($sStorageName, \Aurora\System\Managers\AbstractManager &$oManager)
-	{
-		parent::__construct('calendar', $sStorageName, $oManager);
-	}
-
-	/**
 	 * @param int $iUserId
 	 */
 	public function init($iUserId)

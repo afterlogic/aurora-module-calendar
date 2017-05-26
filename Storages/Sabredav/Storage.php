@@ -43,11 +43,11 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 	protected $TenantUser;
 
 	/**
-	 * @param \Aurora\System\Managers\GlobalManager $oManager
+	 * @param \Aurora\System\Managers\AbstractManager $oManager
 	 */
 	public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
 	{
-		parent::__construct('sabredav', $oManager);
+		parent::__construct($oManager);
 
 		$this->UserId = null;
 		$this->TenantUser = null;
