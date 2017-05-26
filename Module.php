@@ -866,7 +866,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
     public function onGetMobileSyncInfo($aArgs, &$mResult)
 	{
-		$oDavModule = \Aurora\System\Api::GetModuleDecorator('Dav');
+		$oDavModule = \Aurora\Modules\Dav\Module::Decorator();
 		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
 		$aCalendars = $this->GetCalendars($iUserId);
 		if (isset($aCalendars['Calendars']) && is_array($aCalendars['Calendars']) && 0 < count($aCalendars['Calendars']))
