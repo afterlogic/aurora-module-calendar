@@ -710,7 +710,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				if (isset($aData['vcal'])) {
 					$oVCal = $aData['vcal'];
 					$oCalendar = $this->oStorage->getCalendar($iUserId, $sCalendarId);
-					$mResult = CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal);
+					$mResult = \CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal);
 					$mResult['vcal'] = $oVCal;
 				}
 			}
@@ -752,7 +752,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						unset($oVCal->VEVENT);
 						$oVCal->VEVENT = $oVEvent[0];
 					}
-					$oEvent = CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal);
+					$oEvent = \CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal);
 					if (isset($oEvent[0])) {
 						$mResult = $oEvent[0];
 					}
@@ -861,7 +861,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
 			));
 
-			CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT);
+			\CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT);
 
 			$oResult = $this->oStorage->createEvent($iUserId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 
@@ -883,10 +883,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function updateEventGroups($iUserId, $oEvent)
 	{
-		$aGroups = CCalendarHelper::findGroupsHashTagsFromString($oEvent->Name);
-		$aGroupsDescription = CCalendarHelper::findGroupsHashTagsFromString($oEvent->Description);
+		$aGroups = \CCalendarHelper::findGroupsHashTagsFromString($oEvent->Name);
+		$aGroupsDescription = \CCalendarHelper::findGroupsHashTagsFromString($oEvent->Description);
 		$aGroups = array_merge($aGroups, $aGroupsDescription);
-		$aGroupsLocation = CCalendarHelper::findGroupsHashTagsFromString($oEvent->Location);
+		$aGroupsLocation = \CCalendarHelper::findGroupsHashTagsFromString($oEvent->Location);
 		$aGroups = array_merge($aGroups, $aGroupsLocation);
 
 
@@ -926,7 +926,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$oVCal = $aData['vcal'];
 
 				if ($oVCal) {
-					$iIndex = CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
+					$iIndex = \CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
 					if ($iIndex !== false) {
 						CCalendarHelper::populateVCalendar($iUserId, $oEvent, $oVCal->VEVENT[$iIndex]);
 					}
@@ -1043,14 +1043,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oVCal = $aData['vcal'];
-				$iIndex = CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
+				$iIndex = \CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
 				if ($iIndex !== false) {
 					$oVCal->VEVENT[$iIndex]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
-					$oDTExdate = CCalendarHelper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
+					$oDTExdate = \CCalendarHelper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
 					$oDTStart = $oVCal->VEVENT[$iIndex]->DTSTART->getDatetime();
 
-					$mIndex = CCalendarHelper::isRecurrenceExists($oVCal->VEVENT, $sRecurrenceId);
+					$mIndex = \CCalendarHelper::isRecurrenceExists($oVCal->VEVENT, $sRecurrenceId);
 					if ($bDelete) {
 						// if exclude first event in occurrence
 						if ($oDTExdate == $oDTStart) {
@@ -1074,7 +1074,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 							foreach($aVEvents as $oVEvent) {
 								if ($oVEvent->{'RECURRENCE-ID'}) {
-									$iRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
+									$iRecurrenceId = \CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
 									if ($iRecurrenceId == (int) $sRecurrenceId) {
 										continue;
 									}
@@ -1138,7 +1138,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 				foreach($aVEvents as $oVEvent) {
 					if (isset($oVEvent->{'RECURRENCE-ID'})) {
-						$iServerRecurrenceId = CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
+						$iServerRecurrenceId = \CCalendarHelper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
 						if ($iRecurrenceId == $iServerRecurrenceId) {
 							continue;
 						}
@@ -1420,7 +1420,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 								if (!($oAttendeeAccount instanceof \CAccount)) {
 									$oAttendeeAccount = $oDefaultAccount;
 								}
-								$bResult = CCalendarHelper::sendAppointmentMessage($oAttendeeAccount, $sTo, $sSubject, $sBody, $sMethod);
+								$bResult = \CCalendarHelper::sendAppointmentMessage($oAttendeeAccount, $sTo, $sSubject, $sBody, $sMethod);
 							}
 						}
 					} else {
@@ -1536,7 +1536,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oVCal = $aData['vcal'];
 
-				$iIndex = CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
+				$iIndex = \CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
 				if ($iIndex !== false) {
 					$oVEvent = $oVCal->VEVENT[$iIndex];
 
@@ -1756,7 +1756,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							'Action' => $sMethod,
 							'Location' => isset($oVEventResult->LOCATION) ? (string)$oVEventResult->LOCATION : '',
 							'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
-							'When' => CCalendarHelper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, $sTimeFormat),
+							'When' => \CCalendarHelper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, $sTimeFormat),
 							'Sequence' => isset($sequence) ? $sequence : 1
 						);
 

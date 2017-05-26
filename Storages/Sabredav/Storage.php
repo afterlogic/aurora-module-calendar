@@ -247,7 +247,7 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 	 */
 	public function getPublicAccount()
 	{
-		$oAccount = new CAccount(new CDomain());
+		$oAccount = new \CAccount(new \CDomain());
 		$oAccount->Email = $this->getPublicUser();
 		return $oAccount;
 	}
@@ -285,7 +285,7 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 	 */
 	public function getTenantAccount($iUserId)
 	{
-		$oTenantAccount = new CAccount(new CDomain());
+		$oTenantAccount = new \CAccount(new \CDomain());
 		$oTenantAccount->Email = $this->getTenantUser($iUserId);
 		$oTenantAccount->FriendlyName = \Aurora\System\Api::ClientI18N('CONTACTS/SHARED_TO_ALL', $oAccount);
 		
@@ -663,7 +663,7 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 
 	/**
 	 * @param int $iUserId
-	 * @param CCalendar $oCalendar
+	 * @param \CCalendar $oCalendar
 	 * 
 	 * @return array
 	 */
@@ -845,7 +845,7 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 			);
 		}
 		
-		$aEvents = CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal);
+		$aEvents = \CalendarParser::parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal);
 		
 		return $aEvents;
 	}
