@@ -32,6 +32,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		$this->oApiCapabilityManager = \Aurora\System\Api::GetSystemManager('capability');
 	}
 	
+	protected function isCalendarSharingSupported($iUserId)
+	{
+		return true; // TODO
+	}
+	
 	/**
 	 * Determines whether read/write or read-only permissions are set for accessing calendar from this account. 
 	 * 
@@ -414,7 +419,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function unsubscribeCalendar($iUserId, $sCalendarId)
 	{
 		$oResult = null;
-		if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId))
+		if ($this->isCalendarSharingSupported($iUserId))
 		{
 			try
 			{
@@ -468,7 +473,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function updateCalendarShares($iUserId, $sCalendarId, $aShares)
 	{
 		$oResult = null;
-		if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId)) {
+		if ($this->isCalendarSharingSupported($iUserId)) {
 			try
 			{
 				$oResult = $this->oStorage->updateCalendarShares($iUserId, $sCalendarId, $aShares);
@@ -546,7 +551,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPermission)
 	{
 		$oResult = null;
-		if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId)) {
+		if ($this->isCalendarSharingSupported($iUserId)) {
 			try
 			{
 				$oResult = $this->oStorage->updateCalendarShare($iUserId, $sCalendarId, $sUserId, $iPermission);
@@ -1475,7 +1480,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$oCalendars = array();
 			$oCalendarsOwn = $this->oStorage->getCalendars($iUserId);
 
-			if ($this->oApiCapabilityManager->isCalendarSharingSupported($iUserId)) {
+			if ($this->isCalendarSharingSupported($iUserId)) {
 				$oCalendarsSharedToAll = array();
 
 				$aCalendarsSharedToAllIds = array_map(
