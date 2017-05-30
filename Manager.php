@@ -17,19 +17,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	protected $ApiUsersManager;
 
-	/*
-	 * @type \Aurora\System\Managers\Capability\Manager
-	 */
-	protected $oApiCapabilityManager;
-
 	/**
 	 * @param \Aurora\System\Managers\GlobalManager &$oManager
 	 */
 	public function __construct($sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
 	{
 		parent::__construct($oModule, new Storages\Sabredav\Storage($this));
-		
-		$this->oApiCapabilityManager = \Aurora\System\Api::GetSystemManager('capability');
 	}
 	
 	protected function isCalendarSharingSupported($iUserId)

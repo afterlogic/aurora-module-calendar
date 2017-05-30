@@ -493,7 +493,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId))
+		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
 		{
 			$sData = '';
 			if (!empty($EventId))
@@ -705,7 +705,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		if ($this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId))
+		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
 		{
 			$sData = $this->oApiFileCache->get($UUID, $File);
 			if (!empty($sData))
@@ -814,7 +814,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	public function onExtendMessageData($aData, &$oMessage)
 	{
-		$oApiCapa = /* @var \Aurora\System\Managers\Capability\Manager */ $this->oApiCapabilityManager;
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		$UUID = \Aurora\System\Api::getUserUUIDById($oUser->EntityId);
 		$sFromEmail = '';
@@ -846,7 +845,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 							$oIcs->Sequence = $mResult['Sequence'];
 							$oIcs->File = $sTemptFile;
 							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
-							$oIcs->Type = ($oApiCapa->isCalendarAppointmentsSupported($oUser->EntityId)) ? $mResult['Action'] : 'SAVE';
+							
+							// TODO
+							$oIcs->Type = (/*$oApiCapa->isCalendarAppointmentsSupported($oUser->EntityId)*/ true) ? $mResult['Action'] : 'SAVE';
+							
 							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
 							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
 							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';

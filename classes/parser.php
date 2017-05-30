@@ -26,7 +26,6 @@ class CalendarParser
 	 */
 	public static function parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal = null)
 	{
-		$ApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
 //		$ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
 
 		$aResult = array();
@@ -62,7 +61,8 @@ class CalendarParser
 
 					$bIsAppointment = false;
 					$aEvent['attendees'] = array();
-					if ($ApiCapabilityManager->isCalendarAppointmentsSupported($iUserId) && isset($oVEvent->ATTENDEE))
+					// TODO
+					if (/*$ApiCapabilityManager->isCalendarAppointmentsSupported($iUserId) && */isset($oVEvent->ATTENDEE))
 					{
 						$aEvent['attendees'] = self::parseAttendees($oVEvent);
 

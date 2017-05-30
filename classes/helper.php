@@ -293,8 +293,7 @@ class CCalendarHelper
 			}
 		}
 
-		$ApiCapabilityManager =\Aurora\System\Api::GetSystemManager('capability');
-		if ($ApiCapabilityManager->isCalendarAppointmentsSupported($iUserId))
+		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
 		{
 			$aAttendees = array();
 			$aAttendeeEmails = array();
