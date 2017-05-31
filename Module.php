@@ -644,7 +644,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		$sResult = '';
 		
-		$oApiIntegrator = \Aurora\System\Api::GetSystemManager('integrator');
+		$oApiIntegrator = new \Aurora\Modules\Core\Managers\Integrator();
 		
 		if ($oApiIntegrator)
 		{
