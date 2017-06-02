@@ -27,7 +27,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->incClass('parser');
 
 		$this->oApiCalendarManager = new Manager('', $this);
-		$this->oApiFileCache = new \Aurora\System\Managers\Filecache\Manager();
+		$this->oApiFileCache = new \Aurora\System\Managers\Filecache();
 		
 		$this->AddEntries(array(
 				'invite' => 'EntryInvite',
