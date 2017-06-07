@@ -35,6 +35,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 			)
 		);
 		
+		$this->extendObject('CUser', array(
+				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
+				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
+				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', false)),
+				'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', false)),
+				'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', false)),
+				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', false)),
+			)
+		);
+		
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
@@ -49,7 +59,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
-		return array(
+		$aSettings = array(
 			'AllowAppointments' => $this->getConfig('AllowAppointments', true),
 			'AllowShare' => $this->getConfig('AllowShare', true),
 			'DefaultTab' => $this->getConfig('DefaultTab', 3),
@@ -60,6 +70,64 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'WorkdayEnds' => $this->getConfig('WorkdayEnds', 18),
 			'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
 		);
+		
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		if ($oUser && $oUser->Role === \Aurora\System\Enums\UserRole::NormalUser)
+		{
+			if (isset($oUser->{$this->GetName().'::HighlightWorkingDays'}))
+			{
+				$aSettings['HighlightWorkingDays'] = $oUser->{$this->GetName().'::HighlightWorkingDays'};
+			}
+			if (isset($oUser->{$this->GetName().'::HighlightWorkingHours'}))
+			{
+				$aSettings['HighlightWorkingHours'] = $oUser->{$this->GetName().'::HighlightWorkingHours'};
+			}
+			if (isset($oUser->{$this->GetName().'::WorkdayStarts'}))
+			{
+				$aSettings['WorkdayStarts'] = $oUser->{$this->GetName().'::WorkdayStarts'};
+			}
+			if (isset($oUser->{$this->GetName().'::WorkdayEnds'}))
+			{
+				$aSettings['WorkdayEnds'] = $oUser->{$this->GetName().'::WorkdayEnds'};
+			}
+			if (isset($oUser->{$this->GetName().'::WeekStartsOn'}))
+			{
+				$aSettings['WeekStartsOn'] = $oUser->{$this->GetName().'::WeekStartsOn'};
+			}
+			if (isset($oUser->{$this->GetName().'::DefaultTab'}))
+			{
+				$aSettings['DefaultTab'] = $oUser->{$this->GetName().'::DefaultTab'};
+			}
+		}
+		
+		return $aSettings;
+	}
+	
+	public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		if ($oUser)
+		{
+			if ($oUser->Role === \Aurora\System\Enums\UserRole::NormalUser)
+			{
+				$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
+				$oUser->{$this->GetName().'::HighlightWorkingDays'} = $HighlightWorkingDays;
+				$oUser->{$this->GetName().'::HighlightWorkingHours'} = $HighlightWorkingHours;
+				$oUser->{$this->GetName().'::WorkdayStarts'} = $WorkdayStarts;
+				$oUser->{$this->GetName().'::WorkdayEnds'} = $WorkdayEnds;
+				$oUser->{$this->GetName().'::WeekStartsOn'} = $WeekStartsOn;
+				$oUser->{$this->GetName().'::DefaultTab'} = $DefaultTab;
+				return $oCoreDecorator->UpdateUserObject($oUser);
+			}
+			if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
