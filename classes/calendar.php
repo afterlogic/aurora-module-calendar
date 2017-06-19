@@ -87,7 +87,7 @@ class CCalendar
 	 */
 	public function IsCalendarOwner($oAccount)
 	{
-		return ($oAccount->Email === $this->Owner);
+		return ($oAccount === $this->Owner);
 	}
 	
 	public function toResponseArray($aParameters = array())

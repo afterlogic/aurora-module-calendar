@@ -75,7 +75,11 @@ class CalendarParser
 					
 //					$oOwner = $ApiUsersManager->getAccountByEmail($sOwnerEmail);
 //					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
-					$sOwnerName  = ($oUser->Name) ? $oUser->Name : $oUser->PublicId;
+					$sOwnerName = '';
+					if (isset($oUser))
+					{
+						$sOwnerName  = ($oUser->Name) ? $oUser->Name : $oUser->PublicId;
+					}
 					
 					$aEvent['appointment'] = $bIsAppointment;
 					$aEvent['appointmentAccess'] = 0;

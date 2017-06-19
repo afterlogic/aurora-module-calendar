@@ -22,7 +22,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function __construct($sForcedStorage = '', \Aurora\System\Module\AbstractModule $oModule = null)
 	{
-		parent::__construct($oModule, new Storages\Sabredav\Storage($this));
+		parent::__construct($oModule, new Storages\Sabredav($this));
 	}
 	
 	protected function isCalendarSharingSupported($iUserId)

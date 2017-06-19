@@ -31,7 +31,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		$this->AddEntries(array(
 				'invite' => 'EntryInvite',
-				'calendar-pub' => 'EntryCalendarPub'
+				'calendar-pub' => 'EntryCalendarPub',
+				'calendar-download' => 'EntryCalendarDownload'
 			)
 		);
 		
@@ -65,7 +66,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'DefaultTab' => $this->getConfig('DefaultTab', 3),
 			'HighlightWorkingDays' => $this->getConfig('HighlightWorkingDays', true),
 			'HighlightWorkingHours' => $this->getConfig('HighlightWorkingHours', true),
-			'PublicCalendarId' => '',
+			'PublicCalendarId' => $this->oHttp->GetQuery('calendar-pub', ''),
 			'WeekStartsOn' => $this->getConfig('WeekStartsOn', 0),
 			'WorkdayEnds' => $this->getConfig('WorkdayEnds', 18),
 			'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
@@ -166,20 +167,21 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	/**
 	 * 
-	 * @param int $UserId
-	 * @param string $RawKey
 	 * @return boolean
 	 */
-	public function DownloadCalendar($UserId, $RawKey)
+	public function EntryCalendarDownload()
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
+		$RawKey = \Aurora\System\Application::GetPathItemByIndex(1, '');
 		$aValues = \Aurora\System\Api::DecodeKeyValues($RawKey);
+		
+		$sUserUUID = \Aurora\System\Api::getUserUUIDById(\Aurora\System\Api::getAuthenticatedUserId());
 
 		if (isset($aValues['CalendarId']))
 		{
 			$sCalendarId = $aValues['CalendarId'];
-			$sOutput = $this->oApiCalendarManager->exportCalendarToIcs($UserId, $sCalendarId);
+			$sOutput = $this->oApiCalendarManager->exportCalendarToIcs($sUserUUID, $sCalendarId);
 			if (false !== $sOutput)
 			{
 				header('Pragma: public');
@@ -731,12 +733,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 				exit();
 			}
 			$oCoreClientModule = \Aurora\System\Api::GetModule('CoreWebclient');
-			if ($oCoreClientModule instanceof \Aurora\System\Module\AbstractModule) {
+			if ($oCoreClientModule instanceof \Aurora\System\Module\AbstractModule) 
+			{
 				$sResult = file_get_contents($oCoreClientModule->GetPath().'/templates/Index.html');
-				if (is_string($sResult)) {
-					$oSettings =& \Aurora\System\Api::GetSettings();
+				if (is_string($sResult)) 
+				{
 					$sFrameOptions = $oSettings->GetConf('XFrameOptions', '');
-					if (0 < \strlen($sFrameOptions)) {
+					if (0 < \strlen($sFrameOptions)) 
+					{
 						@\header('X-Frame-Options: '.$sFrameOptions);
 					}
 					
@@ -745,12 +749,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 						'{{AppVersion}}' => AURORA_APP_VERSION,
 						'{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
 						'{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
-						'{{IntegratorBody}}' => $oApiIntegrator->buildBody('-calendar-pub')
+						'{{IntegratorBody}}' => $oApiIntegrator->buildBody(
+							array(
+								'public_app' => true,
+								'modules_list' => array("CalendarWebclient")
+							)		
+						)
 					));
 				}
 			}
 		}
-
 		return $sResult;	
 	}
 	

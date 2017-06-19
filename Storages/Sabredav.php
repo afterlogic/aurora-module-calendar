@@ -8,9 +8,9 @@
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
 
-namespace Aurora\Modules\Calendar\Storages\Sabredav;
+namespace Aurora\Modules\Calendar\Storages;
 
-class Storage extends \Aurora\Modules\Calendar\Storages\Storage
+class Sabredav extends Storage
 {
 	/**
 	 * @var array
@@ -243,13 +243,11 @@ class Storage extends \Aurora\Modules\Calendar\Storages\Storage
 	}
 
 	/**
-     * @return \CAccount
+     * @return \CUser
 	 */
 	public function getPublicAccount()
 	{
-		$oAccount = new \CAccount(new \CDomain());
-		$oAccount->Email = $this->getPublicUser();
-		return $oAccount;
+		return $this->getPublicUser();
 	}
 
 	/**
