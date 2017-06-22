@@ -217,6 +217,8 @@ class CCalendarHelper
 	{
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
+		
+//		$oUser = \Aurora\System\Api::getUserById($iUserId);
 
 		$oVCal =& $oVEvent->parent;
 
@@ -355,7 +357,7 @@ class CCalendarHelper
 			{
 				if (!isset($oVEvent->ORGANIZER))
 				{
-					$oVEvent->ORGANIZER = 'mailto:' . $oAccount->Email;
+					$oVEvent->ORGANIZER = 'mailto:' . $oUser->PublicId;
 				}
 				foreach($oEvent->Attendees as $oAttendee)
 				{
@@ -383,16 +385,15 @@ class CCalendarHelper
 				{
 					$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
 
-					if (($sAttendee !== $oAccount->Email) &&
+					if (($sAttendee !==  $oUser->PublicId) &&
 						(!isset($oAttendee['PARTSTAT']) || (isset($oAttendee['PARTSTAT']) && (string)$oAttendee['PARTSTAT'] !== 'DECLINED')))
 					{
-						$oApiCalendar = \Aurora\System\Api::Manager('calendar', 'sabredav');
-
 						$sStartDateFormat = $oVEvent->DTSTART->hasTime() ? 'D, F d, o, H:i' : 'D, F d, o';
-						$sStartDate = self::getStrDate($oVEvent->DTSTART, $oAccount->getDefaultStrTimeZone(), $sStartDateFormat);
+						$sStartDate = self::getStrDate($oVEvent->DTSTART, $oUser->DefaultTimeZone, $sStartDateFormat);
 
-						$oCalendar = $oApiCalendar->getCalendar($oAccount, $oEvent->IdCalendar);
-						$sHtml = self::createHtmlFromEvent($oEvent, $oAccount->Email, $sAttendee, $oCalendar->DisplayName, $sStartDate);
+						$oCalendar = \Aurora\System\Api::GetModule('Calendar')->GetCalendar($iUserId, $oEvent->IdCalendar);
+						
+						$sHtml = self::createHtmlFromEvent($oEvent, $oUser->PublicId, $sAttendee, $oCalendar->DisplayName, $sStartDate);
 
 						$oVCal->METHOD = 'REQUEST';
 //						self::sendAppointmentMessage($oAccount, $sAttendee, (string)$oVEvent->SUMMARY, $oVCal->serialize(), (string)$oVCal->METHOD, $sHtml);

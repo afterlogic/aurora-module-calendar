@@ -132,6 +132,24 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 	
 	/**
+	 * Loads calendar.
+	 *
+	 * @param int $UserId
+	 * @param string sCalendarId Calendar ID
+	 *
+	 * @return CCalendar|false $oCalendar
+	 */
+	public function GetCalendar($UserId, $CalendarId)
+	{
+		$oCalendar = $this->oApiCalendarManager->getCalendar($UserId, $CalendarId);
+		if ($oCalendar) 
+		{
+			$oCalendar = $this->oApiCalendarManager->populateCalendarShares($UserId, $oCalendar);
+		}
+		return $oCalendar;
+	}	
+	
+	/**
 	 * 
 	 * @param int $UserId
 	 * @param boolean $IsPublic
