@@ -1532,18 +1532,22 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && 
-					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
+					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar)
+			{
 				$oVCal = $aData['vcal'];
 
 				$iIndex = \CCalendarHelper::getBaseVEventIndex($oVCal->VEVENT);
-				if ($iIndex !== false) {
+				if ($iIndex !== false)
+				{
 					$oVEvent = $oVCal->VEVENT[$iIndex];
 
 					$sOrganizer = (isset($oVEvent->ORGANIZER)) ?
 							str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER)) : null;
 
-					if (isset($sOrganizer)) {
-						if ($sOrganizer === $sUserUUID->Email) {
+					if (isset($sOrganizer))
+					{
+						if ($sOrganizer === $sUserUUID->Email)
+						{
 							$oDateTimeNow = new DateTime("now");
 							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
 							$oDateTimeRepeat = \CCalendarHelper::getNextRepeat($oDateTimeNow, $oVEvent);
@@ -1551,8 +1555,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							$bEventFore = $oDateTimeEvent ? $oDateTimeEvent > $oDateTimeNow : false;
 							$bNextRepeatFore = $oDateTimeRepeat ? $oDateTimeRepeat > $oDateTimeNow : false;
 
-							if (isset($oVEvent->ATTENDEE) && ($bRrule ? $bNextRepeatFore : $bEventFore)) {
-								foreach($oVEvent->ATTENDEE as $oAttendee) {
+							if (isset($oVEvent->ATTENDEE) && ($bRrule ? $bNextRepeatFore : $bEventFore))
+							{
+								foreach($oVEvent->ATTENDEE as $oAttendee)
+								{
 									$sEmail = str_replace('mailto:', '', strtolower((string)$oAttendee));
 
 									$oVCal->METHOD = 'CANCEL';
@@ -1566,9 +1572,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					}
 				}
 				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $sEventId);
-				if ($oResult) {
-					$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
-					$oContactsModule->CallMethod('removeEventFromAllGroups', array($sCalendarId, $sEventId));
+				if ($oResult)
+				{
+					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module
+					//$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
+					//$oContactsModule->CallMethod('removeEventFromAllGroups', array($sCalendarId, $sEventId));
 				}
 			}
 		}
