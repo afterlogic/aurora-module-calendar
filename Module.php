@@ -12,7 +12,7 @@ namespace Aurora\Modules\Calendar;
 /**
  * @package Modules
  */
-class Module extends \Aurora\System\Module\AbstractModule
+class Module extends \Aurora\System\Module\AbstractLicensedModule
 {
 	public $oApiCalendarManager = null;
 	public $oApiFileCache = null;
@@ -27,14 +27,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		$this->oApiCalendarManager = new Manager('', $this);
 		$this->oApiFileCache = new \Aurora\System\Managers\Filecache();
-		
+
 		$this->AddEntries(array(
 				'invite' => 'EntryInvite',
 				'calendar-pub' => 'EntryCalendarPub',
 				'calendar-download' => 'EntryCalendarDownload'
 			)
 		);
-		
+
 		$this->extendObject('CUser', array(
 				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
 				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
@@ -44,7 +44,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', false)),
 			)
 		);
-		
+
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
@@ -978,5 +978,4 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}	
 	}	
-	
 }
