@@ -1637,7 +1637,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 //
 //		$aIdentities = $this->ApiUsersManager->getUserIdentities($sUserUUID->IdUser);
 //		if (is_array($aIdentities) && 0 < count($aIdentities)) {
-//			foreach ($aIdentities as /* @var $oIdentity \CIdentity */ $oIdentity) {
+//			foreach ($aIdentities as /* @var $oIdentity \CMailIdentity */ $oIdentity) {
 //				if ($oIdentity) {
 //					$aAccountEmails[] = $oIdentity->Email;
 //				}
