@@ -127,8 +127,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function populateCalendarShares($sUserUUID, $oCalendar)
 	{
-		// TODO
-/*		
 		if (!$oCalendar->Shared || $oCalendar->Shared && 
 				$oCalendar->Access === \ECalendarPermission::Write || $oCalendar->IsCalendarOwner($sUserUUID)) {
 			$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
@@ -151,7 +149,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		} else {
 			$oCalendar->IsDefault = false;
 		}
-*/
 		return $oCalendar;
 	}
 
