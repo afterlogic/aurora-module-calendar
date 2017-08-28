@@ -985,7 +985,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			if ($aData !== false && isset($aData['vcal']) && 
 					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oResult = $this->oStorage->moveEvent($sUserUUID, $sCalendarId, $sCalendarIdNew, $sEventId, $aData['vcal']->serialize());
-				$this->updateEventGroupByMoving($sCalendarId, $sEventId, $sCalendarIdNew);
+//				$this->updateEventGroupByMoving($sCalendarId, $sEventId, $sCalendarIdNew);
 				return true;
 			}
 			return false;
