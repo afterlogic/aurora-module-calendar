@@ -206,11 +206,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				header('Content-Disposition: attachment; filename="' . $sCalendarId . '.ics";');
 				header('Content-Transfer-Encoding: binary');
 				echo $sOutput;
-				return true;
 			}
 		}
-
-		return false;		
 	}
 	
 	/**
