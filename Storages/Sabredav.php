@@ -306,23 +306,26 @@ class Sabredav extends Storage
 	 */
 	public function getCalendars($sUserUUID)
 	{
-		$this->init($sUserUUID);
-
 		$aCalendars = array();
-		if (count($this->CalendarsCache) > 0 && isset($this->CalendarsCache[$sUserUUID])) {
-			$aCalendars = $this->CalendarsCache[$sUserUUID];
-		} else {
-			$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+		if (!empty($sUserUUID))
+		{
+			$this->init($sUserUUID);
 
-			foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
-				
-				$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-				if ($oCalendar) {
-					$aCalendars[$oCalendar->Id] = $oCalendar;
+			if (count($this->CalendarsCache) > 0 && isset($this->CalendarsCache[$sUserUUID])) {
+				$aCalendars = $this->CalendarsCache[$sUserUUID];
+			} else {
+				$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+
+				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
+
+					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+					if ($oCalendar) {
+						$aCalendars[$oCalendar->Id] = $oCalendar;
+					}
 				}
-			}
 
-			$this->CalendarsCache[$sUserUUID] = $aCalendars;
+				$this->CalendarsCache[$sUserUUID] = $aCalendars;
+			}
 		}
  		return $aCalendars;
 	}

@@ -48,6 +48,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
+		$this->subscribeEvent('Core::AfterDeleteUser', array($this, 'onAfterDeleteUser'));
 	}
 	
 	/**
@@ -974,5 +975,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				}
 			}
 		}	
-	}	
+	}
+
+	public function onAfterDeleteUser($aArgs, &$mResult)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+
+		$aUserCalendars = isset($aArgs["UUID"]) ? $this->GetCalendars($aArgs["UUID"]) : [];
+		if (isset($aUserCalendars["Calendars"]))
+		{
+			foreach ($aUserCalendars["Calendars"] as $oCalendar)
+			{
+				if ($oCalendar instanceof \CCalendar)
+				{
+					$this->DeleteCalendar($aArgs["UUID"], $oCalendar->Id);
+				}
+			}
+		}
+	}
 }
