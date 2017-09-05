@@ -755,7 +755,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					
 					$sAuthToken = isset($_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY] : '';
 					$sResult = strtr($sResult, array(
-						'{{AppVersion}}' => AURORA_APP_VERSION,
+						'{{AppVersion}}' => AU_APP_VERSION,
 						'{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
 						'{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
 						'{{IntegratorBody}}' => $oApiIntegrator->buildBody(
