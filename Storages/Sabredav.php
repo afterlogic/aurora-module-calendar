@@ -282,7 +282,7 @@ class Sabredav extends Storage
 	 */
 	public function getTenantAccount($sUserUUID)
 	{
-		$oTenantAccount = new \CAccount(new \CDomain());
+		$oTenantAccount = new \Aurora\Modules\StandardAuth\Classes\Account(new \CDomain());
 		$oTenantAccount->Email = $this->getTenantUser($sUserUUID);
 		$oTenantAccount->FriendlyName = \Aurora\System\Api::ClientI18N('CONTACTS/SHARED_TO_ALL', $oAccount);
 		

@@ -439,7 +439,7 @@ class Helper
 	}
 
 	/**
-	 * @param \CAccount $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
 	 * @param string $sTo
 	 * @param string $sSubject
 	 * @param string $sBody
@@ -482,7 +482,7 @@ class Helper
 	}
 
 	/**
-	 * @param CAccount $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
 	 * @param string $sTo
 	 * @param string $sSubject
 	 * @param string $sBody

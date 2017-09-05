@@ -54,9 +54,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @param CAccount $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
 	 *
-	 * @return CAccount|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Classes\Account|false $oAccount
 	 */
 	public function getTenantAccount($oAccount)
 	{
@@ -216,7 +216,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	
 	/**
 	 *
-	 * @param CAccount $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
 	 *
 	 * @return string|bool
 	 */
@@ -237,7 +237,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @return CAccount|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Classes\Account|false $oAccount
 	 */
 	public function getPublicAccount()
 	{
@@ -1298,7 +1298,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				
 		if (isset($sUserUUID) && is_int($sUserUUID)) {
 			$bDefaultAccountAsEmail = false;
-			/* @var $oDefaultAccount CAccount */
+			/* @var $oDefaultAccount \Aurora\Modules\StandardAuth\Classes\Account */
 			$oDefaultAccount = $this->ApiUsersManager->getDefaultAccount($sUserUUID);
 			$bIsDefaultAccount = true;
 		} else {
@@ -1409,11 +1409,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							if ($oToAccount) {
 								$bResult = ($this->processICS($oToAccount, $sBody, $sAttendee, true) !== false);
 							}
-							if ((!$oToAccount || !$bResult) && $oDefaultAccount instanceof \CAccount) {
+							if ((!$oToAccount || !$bResult) && $oDefaultAccount instanceof \Aurora\Modules\StandardAuth\Classes\Account) {
 								if (!$oAttendeeAccount) {
 									$oAttendeeAccount = $this->getAccountFromAccountList($sUserUUID, $sAttendee);
 								}
-								if (!($oAttendeeAccount instanceof \CAccount)) {
+								if (!($oAttendeeAccount instanceof \Aurora\Modules\StandardAuth\Classes\Account)) {
 									$oAttendeeAccount = $oDefaultAccount;
 								}
 								$bResult = \Aurora\Modules\Calendar\Classes\Helper::sendAppointmentMessage($oAttendeeAccount, $sTo, $sSubject, $sBody, $sMethod);
@@ -1792,10 +1792,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	
 	/**
 	 *
-	 * @param CAccount $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
 	 * @param string $sEmail
 	 *
-	 * @return CAccount|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Classes\Account|false $oAccount
 	 */
 	public function getAccountFromAccountList($oAccount, $sEmail)
 	{
