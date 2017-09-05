@@ -7,11 +7,13 @@
  * For full statements of the license see LICENSE file.
  */
 
+namespace Aurora\Modules\Calendar\Classes;
+
 /**
  * @package Calendar
  * @subpackage Classes
  */
-class CCalendar
+class Calendar
 {
 	public $Id;
 	public $IntId;
@@ -56,10 +58,10 @@ class CCalendar
 		$this->Order = $sOrder;
 		$this->Shared = false;
 		$this->SharedToAll = false;
-		$this->SharedToAllAccess = \ECalendarPermission::Read;
+		$this->SharedToAllAccess = \Aurora\Modules\Calendar\Enums\Permission::Read;
 		$this->Owner = '';
 		$this->Principals = array();
-		$this->Access = \ECalendarPermission::Write;
+		$this->Access = \Aurora\Modules\Calendar\Enums\Permission::Write;
 		$this->Shares = array();
 		$this->IsPublic = false;
 		$this->PubHash = null;
@@ -130,7 +132,7 @@ class CCalendar
 			$oCalendar->Shared = true;
 			if (isset($aProps['{http://sabredav.org/ns}read-only']))
 			{
-				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \ECalendarPermission::Read : \ECalendarPermission::Write;
+				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::Write;
 			}
 			if (isset($aProps['{http://calendarserver.org/ns/}summary']))
 			{

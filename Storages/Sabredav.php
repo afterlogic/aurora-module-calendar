@@ -115,10 +115,10 @@ class Sabredav extends Storage
 	 */
 	public function getCalendarAccess($sUserUUID, $sCalendarId)
 	{
-		$iResult = \ECalendarPermission::Read;
+		$iResult = \Aurora\Modules\Calendar\Enums\Permission::Read;
 		$oCalendar = $this->getCalendar($sUserUUID, $sCalendarId);
 		if ($oCalendar) {
-			$iResult = $oCalendar->Shared ? $oCalendar->Access : \ECalendarPermission::Write;
+			$iResult = $oCalendar->Shared ? $oCalendar->Access : \Aurora\Modules\Calendar\Enums\Permission::Write;
 		}
 		return $iResult;
 	}
@@ -150,7 +150,7 @@ class Sabredav extends Storage
     /**
      * @param \Sabre\CalDAV\Calendar $oCalDAVCalendar
 	 * 
-     * @return \CCalendar
+     * @return \Aurora\Modules\Calendar\Classes\Calendar
      */	
 	public function parseCalendar($oCalDAVCalendar)
 	{
@@ -159,13 +159,13 @@ class Sabredav extends Storage
 		}
 		$aProps = $oCalDAVCalendar->getProperties(array());
 		
-		$oCalendar = new \CCalendar($oCalDAVCalendar->getName());
+		$oCalendar = new \Aurora\Modules\Calendar\Classes\Calendar($oCalDAVCalendar->getName());
 		$oCalendar->IntId = $oCalDAVCalendar->getId();
 
 		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
 			$oCalendar->Shared = true;
 			if (isset($aProps['{http://sabredav.org/ns}read-only'])) {
-				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \ECalendarPermission::Read : \ECalendarPermission::Write;
+				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::Write;
 			}
 			if (isset($aProps['{http://calendarserver.org/ns/}summary'])) {
 				$oCalendar->Description = $aProps['{http://calendarserver.org/ns/}summary'];
@@ -214,7 +214,7 @@ class Sabredav extends Storage
 	 * @param string $sUserUUID
 	 * @param string $sCalendarId
 	 * 
-     * @return \CCalendar|bool
+     * @return \Aurora\Modules\Calendar\Classes\Calendar|bool
 	 */
 	public function getCalendar($sUserUUID, $sCalendarId)
 	{
@@ -340,9 +340,9 @@ class Sabredav extends Storage
 		$aCalendarNames = array();
 		$aCalendars = $this->getCalendars($sUserUUID);
 		if (is_array($aCalendars)) {
-			/* @var $oCalendar \CCalendar */
+			/* @var $oCalendar \Aurora\Modules\Calendar\Classes\Calendar */
 			foreach ($aCalendars as $oCalendar) {
-				if ($oCalendar instanceof \CCalendar) {
+				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
 					$aCalendarNames[$oCalendar->Id] = $oCalendar->DisplayName;
 				}
 			}
@@ -571,12 +571,12 @@ class Sabredav extends Storage
 			
 			if (count($oCalendar->Principals) > 0) {
 				foreach ($aShares as $aShare) {
-					if ($aShare['access'] === \ECalendarPermission::RemovePermission) {
+					if ($aShare['access'] === \Aurora\Modules\Calendar\Enums\Permission::RemovePermission) {
 						$remove[] = $aShare['email'];
 					} else {
 						$add[] = array(
 							'href' => $aShare['email'],
-							'readonly' => ($aShare['access'] === \ECalendarPermission::Read) ? 1 : 0,
+							'readonly' => ($aShare['access'] === \Aurora\Modules\Calendar\Enums\Permission::Read) ? 1 : 0,
 						);
 					}
 				}
@@ -596,7 +596,7 @@ class Sabredav extends Storage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPerms = \ECalendarPermission::RemovePermission)
+	public function updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPerms = \Aurora\Modules\Calendar\Enums\Permission::RemovePermission)
 	{
 		$this->init($sUserUUID);
 
@@ -606,14 +606,14 @@ class Sabredav extends Storage
 			if (count($oCalendar->Principals) > 0) {
 				$add = array();
 				$remove = array();
-				if ($iPerms === \ECalendarPermission::RemovePermission) {
+				if ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::RemovePermission) {
 					$remove[] = $sUserId;
 				} else {
 					$aItem['href'] = $sUserId;
-					if ($iPerms === \ECalendarPermission::Read) {
+					if ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::Read) {
 						$aItem['readonly'] = true;
 					}
-					elseif ($iPerms === \ECalendarPermission::Write) {
+					elseif ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::Write) {
 						$aItem['readonly'] = false;
 					}
 					$add[] = $aItem;
@@ -656,14 +656,14 @@ class Sabredav extends Storage
 	 */
 	public function publicCalendar($sUserUUID, $sCalendarId, $bIsPublic = false)
 	{
-		$iPermission = $bIsPublic ? \ECalendarPermission::Read : \ECalendarPermission::RemovePermission;
+		$iPermission = $bIsPublic ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission;
 		
 		return $this->updateCalendarShare($sUserUUID, $sCalendarId, $this->getPublicUser(), $iPermission);
 	}
 
 	/**
 	 * @param stirng $sUserUUID
-	 * @param \CCalendar $oCalendar
+	 * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
 	 * 
 	 * @return array
 	 */
@@ -679,7 +679,7 @@ class Sabredav extends Storage
 				$aResult[] = array(
 					'name' => basename($aShare['href']),
 					'email' => basename($aShare['href']),
-					'access' => $aShare['readOnly'] ? \ECalendarPermission::Read : \ECalendarPermission::Write
+					'access' => $aShare['readOnly'] ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::Write
 				);
 			}
 		}
@@ -845,7 +845,7 @@ class Sabredav extends Storage
 			);
 		}
 		
-		$aEvents = \CalendarParser::parseEvent($sUserUUID, $oCalendar, $oVCal, $oVCalOriginal);
+		$aEvents = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserUUID, $oCalendar, $oVCal, $oVCalOriginal);
 		
 		return $aEvents;
 	}
@@ -1084,7 +1084,7 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \ECalendarPermission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
 				$sData = $oVCal->serialize();
 				$oCalDAVCalendar->createFile($sEventId.'.ics', $sData);
 
@@ -1113,7 +1113,7 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \ECalendarPermission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
 				$oCalDAVCalendarObject = $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId);
 				if ($oCalDAVCalendarObject) {
 					$oChild = $oCalDAVCalendar->getChild($oCalDAVCalendarObject->getName());
@@ -1149,7 +1149,7 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \ECalendarPermission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
 				$oChild = $oCalDAVCalendar->getChild($sEventId . '.ics');
 				$sData = $oVCal->serialize();
 				$oChild->put($sData);
@@ -1181,7 +1181,7 @@ class Sabredav extends Storage
 			$oCalDAVCalendarNew = $this->getCalDAVCalendar($sNewCalendarId);
 			if ($oCalDAVCalendarNew) {
 				$oCalendar = $this->parseCalendar($oCalDAVCalendarNew);
-				if ($oCalendar->Access !== \ECalendarPermission::Read) {
+				if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
 					$oCalDAVCalendarNew->createFile($sEventId . '.ics', $sData);
 	
 					$oChild = $oCalDAVCalendar->getChild($sEventId . '.ics');
@@ -1212,7 +1212,7 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar) {
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \ECalendarPermission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
 				$oChild = $oCalDAVCalendar->getChild($sEventId.'.ics');
 				$oChild->delete();
 
@@ -1241,7 +1241,7 @@ class Sabredav extends Storage
 		if ($oCalDAVCalendar)
 		{
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \ECalendarPermission::Read)
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{
 				$oChild = $oCalDAVCalendar->getChild($sEventUrl);
 				$oChild->delete();

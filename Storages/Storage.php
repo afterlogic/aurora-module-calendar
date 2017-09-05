@@ -27,7 +27,7 @@ class Storage extends \Aurora\System\Managers\AbstractManagerStorage
 
 	public function getCalendarAccess($sUserUUID, $sCalendarId)
 	{
-		return \ECalendarPermission::Write;
+		return \Aurora\Modules\Calendar\Enums\Permission::Write;
 	}
 
 	/**
@@ -173,7 +173,7 @@ class Storage extends \Aurora\System\Managers\AbstractManagerStorage
 	 *
 	 * @return false
 	 */
-	public function updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPerms = \ECalendarPermission::RemovePermission)
+	public function updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPerms = \Aurora\Modules\Calendar\Enums\Permission::RemovePermission)
 	{
 		return false;
 	}

@@ -7,25 +7,27 @@
  * For full statements of the license see LICENSE file.
  */
 
+namespace Aurora\Modules\Calendar\Classes;
+
 /**
  * @internal
  * 
  * @package Calendar
  * @subpackage Classes
  */
-class CCalendarHelper
+class Helper
 {
 
 	/**
-	 * @param \CEvent $oEvent
-	 * @param DateTime $oNowDT
-	 * @param DateTime $oStartDT
+	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
+	 * @param \DateTime $oNowDT
+	 * @param \DateTime $oStartDT
 	 *
 	 * @return int|false
 	 */
 	public static function getActualReminderTime($oEvent, $oNowDT, $oStartDT)
 	{
-		$aReminders = CalendarParser::parseAlarms($oEvent);
+		$aReminders = \Aurora\Modules\Calendar\Classes\Parser::parseAlarms($oEvent);
 
 		$iNowTS = $oNowDT->getTimestamp();
 
@@ -51,13 +53,13 @@ class CCalendarHelper
 	}
 
 	/**
-	 * @param DateTime $sDtStart
+	 * @param \DateTime $sDtStart
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 * @param string $sUid Default value is **null**.
 	 *
-	 * @return DateTime
+	 * @return \DateTime
 	 */
-	public static function getNextRepeat(DateTime $sDtStart, $oVCal, $sUid = null)
+	public static function getNextRepeat(\DateTime $sDtStart, $oVCal, $sUid = null)
 	{
 		$oRecur = new \Sabre\VObject\Recur\EventIterator($oVCal, $sUid);
 		$oRecur->fastForward($sDtStart);
@@ -82,7 +84,7 @@ class CCalendarHelper
 	}
 
 	/**
-	 * @param DateTime $dt
+	 * @param \DateTime $dt
 	 * @param string $sTimeZone
 	 *
 	 * @return int|null
@@ -101,10 +103,10 @@ class CCalendarHelper
 	}
 
 	/**
-	 * @param DateTime $dt
+	 * @param \DateTime $dt
 	 * @param string $sTimeZone
 	 *
-	 * @return DateTime|null
+	 * @return \DateTime|null
 	 */
 	public static function getDateTime($dt, $sTimeZone = 'UTC')
 	{
@@ -115,13 +117,13 @@ class CCalendarHelper
 		}
 		if (isset($result))
 		{
-			$result->setTimezone(new DateTimeZone($sTimeZone));
+			$result->setTimezone(new \DateTimeZone($sTimeZone));
 		}
 		return $result;
 	}
 
 	/**
-	 * @param DateTime $dt
+	 * @param \DateTime $dt
 	 * @param string $format
 	 *
 	 * @return string
@@ -174,7 +176,7 @@ class CCalendarHelper
 	}
 
     /**
-	 * @param DateInterval $oInterval
+	 * @param \DateInterval $oInterval
 	 *
 	 * @return int
 	 */
@@ -209,7 +211,7 @@ class CCalendarHelper
 
 	/**
 	 * @param int $iUserId
-	 * @param \CEvent $oEvent
+	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
 	 * @param \Sabre\VObject\Component\VEvent $oVEvent
 	 */
 	public static function populateVCalendar($iUserId, $oEvent, &$oVEvent)
@@ -265,7 +267,7 @@ class CCalendarHelper
 			$sRRULE = '';
 			if (isset($oVEvent->RRULE) && null === $oEvent->RRule)
 			{
-				$oRRule = \CalendarParser::parseRRule($iUserId, $oVCal, (string)$oVEvent->UID);
+				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($iUserId, $oVCal, (string)$oVEvent->UID);
 				if ($oRRule && $oRRule instanceof \CRRule)
 				{
 					$sRRULE = (string) $oRRule;
@@ -307,16 +309,16 @@ class CCalendarHelper
 					$sStatus = '';
 					switch ($aItem['status'])
 					{
-						case \EAttendeeStatus::Accepted:
+						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Accepted:
 							$sStatus = 'ACCEPTED';
 							break;
-						case \EAttendeeStatus::Declined:
+						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Declined:
 							$sStatus = 'DECLINED';
 							break;
-						case \EAttendeeStatus::Tentative:
+						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Tentative:
 							$sStatus = 'TENTATIVE';
 							break;
-						case \EAttendeeStatus::Unknown:
+						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Unknown:
 							$sStatus = 'NEEDS-ACTION';
 							break;
 					}
@@ -408,7 +410,7 @@ class CCalendarHelper
 	 * @param mixed $mDateTime
 	 * @param string $sTimeZone
 	 *
-	 * @return DateTime
+	 * @return \DateTime
 	 */
 	public static function prepareDateTime($mDateTime, $sTimeZone)
 	{
@@ -416,7 +418,7 @@ class CCalendarHelper
 		if (is_numeric($mDateTime) && strlen($mDateTime) !== 8)
 		{
 			$oDateTime->setTimestamp($mDateTime);
-			$oDateTime->setTimezone(new DateTimeZone($sTimeZone));
+			$oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
 		}
 		else
 		{
@@ -531,7 +533,7 @@ class CCalendarHelper
 	}
 
 	/**
-	 * @param DateTime $dt
+	 * @param \DateTime $dt
 	 * @param string $sTimeZone
 	 * @param string $format
 	 *
@@ -553,7 +555,7 @@ class CCalendarHelper
 	}
 
 	/**
-	 * @param \CEvent $oEvent
+	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
 	 * @param string $sAccountEmail
 	 * @param string $sAttendee
 	 * @param string $sCalendarName

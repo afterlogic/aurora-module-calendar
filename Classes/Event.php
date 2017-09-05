@@ -7,6 +7,8 @@
  * For full statements of the license see LICENSE file.
  */
 
+namespace Aurora\Modules\Calendar\Classes;
+
 /**
  * @property mixed  $Id
  * @property mixed  $IdCalendar
@@ -25,7 +27,7 @@
  * @package Calendar
  * @subpackage Classes
  */
-class CEvent
+class Event
 {
 	public $Id;
 	public $IdCalendar;
@@ -151,13 +153,13 @@ class CRRule
     public function __toString()
 	{
 		$aPeriods = array(
-			EPeriodStr::Secondly,
-			EPeriodStr::Minutely,
-			EPeriodStr::Hourly,
-			EPeriodStr::Daily,
-			EPeriodStr::Weekly,
-			EPeriodStr::Monthly,
-			EPeriodStr::Yearly
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Secondly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Minutely,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Hourly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Daily,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Weekly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Monthly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
 
 		$sRule = '';
@@ -165,7 +167,7 @@ class CRRule
 		if (null !== $this->Period)
 		{
 			$iWeekNumber = null;
-			if (($this->Period == EPeriod::Monthly || $this->Period == EPeriod::Yearly) && (null !== $this->WeekNum))
+			if (($this->Period == \Aurora\Modules\Calendar\Enums\Period::Monthly || $this->Period == \Aurora\Modules\Calendar\Enums\Period::Yearly) && (null !== $this->WeekNum))
 			{
 				$iWeekNumber = ((int)$this->WeekNum < 0 || (int)$this->WeekNum > 4) ? 0 : (int)$this->WeekNum;
 			}
@@ -173,7 +175,7 @@ class CRRule
 			$sUntil = '';
 			if (null !== $this->Until)
 			{
-				$oDTUntil = CCalendarHelper::prepareDateTime($this->Until, $this->GetTimeZone());
+				$oDTUntil = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($this->Until, $this->GetTimeZone());
 				$sUntil = $oDTUntil->format('Ymd');
 			}
 
@@ -182,11 +184,11 @@ class CRRule
 
 			$sFreq = strtoupper($aPeriods[$this->Period + 2]);
 			$sRule = 'FREQ=' . $sFreq . ';INTERVAL=' . $iInterval;
-			if ($iEnd === ERepeatEnd::Count)
+			if ($iEnd === \Aurora\Modules\Calendar\Enums\RepeatEnd::Count)
 			{
 				$sRule .= ';COUNT=' . (null !== $this->Count) ? (int)$this->Count : 0;
 			}
-			else if ($iEnd === ERepeatEnd::Date)
+			else if ($iEnd === \Aurora\Modules\Calendar\Enums\RepeatEnd::Date)
 			{
 				$sRule .= ';UNTIL=' . $sUntil;
 			}

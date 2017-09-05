@@ -19,12 +19,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	
 	public function init() 
 	{
-		$this->incClass('helper');
-		$this->incClass('enum');
-		$this->incClass('calendar');
-		$this->incClass('event');
-		$this->incClass('parser');
-
 		$this->oApiCalendarManager = new Manager('', $this);
 		$this->oApiFileCache = new \Aurora\System\Managers\Filecache();
 
@@ -137,7 +131,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param int $UserId
 	 * @param string sCalendarId Calendar ID
 	 *
-	 * @return CCalendar|false $oCalendar
+	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false $oCalendar
 	 */
 	public function GetCalendar($UserId, $CalendarId)
 	{
@@ -229,7 +223,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		if ($mCalendarId)
 		{
 			$oCalendar = $this->oApiCalendarManager->getCalendar($UUID, $mCalendarId);
-			if ($oCalendar instanceof \CCalendar)
+			if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
 			{
 				$mResult = $oCalendar->toResponseArray($UUID);
 			}
@@ -278,7 +272,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param int $ShareToAllAccess
 	 * @return array|boolean
 	 */
-	public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \ECalendarPermission::Read)
+	public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \Aurora\Modules\Calendar\Enums\Permission::Read)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
@@ -287,13 +281,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		// Share calendar to all users
 		$aShares[] = array(
 			'email' => $this->oApiCalendarManager->getTenantUser($UserId),
-			'access' => $ShareToAll ? $ShareToAllAccess : \ECalendarPermission::RemovePermission
+			'access' => $ShareToAll ? $ShareToAllAccess : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
 		);
 		
 		// Public calendar
 		$aShares[] = array(
 			'email' => $this->oApiCalendarManager->getPublicUser(),
-			'access' => $IsPublic ? \ECalendarPermission::Read : \ECalendarPermission::RemovePermission
+			'access' => $IsPublic ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
 		);
 		
 		return $this->oApiCalendarManager->updateCalendarShares($UUID, $Id, $aShares);
@@ -392,7 +386,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
-		$oEvent = new \CEvent();
+		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 		$oEvent->IdCalendar = $newCalendarId;
 		$oEvent->Name = $subject;
 		$oEvent->Description = $description;
@@ -450,7 +444,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
 		$mResult = false;
 		
-		$oEvent = new \CEvent();
+		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 		$oEvent->IdCalendar = $calendarId;
 		$oEvent->Id = $uid;
 		$oEvent->Name = $subject;
@@ -509,7 +503,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		
 		if ($allEvents === 1)
 		{
-			$oEvent = new \CEvent();
+			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $calendarId;
 			$oEvent->Id = $uid;
 			$mResult = $this->oApiCalendarManager->updateExclusion($UUID, $oEvent, $recurrenceId, true);
@@ -966,7 +960,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			foreach($aCalendars['Calendars'] as $oCalendar)
 			{
-				if ($oCalendar instanceof \CCalendar)
+				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
 				{
 					$mResult['Dav']['Calendars'][] = array(
 						'Name' => $oCalendar->DisplayName,
@@ -986,7 +980,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			foreach ($aUserCalendars["Calendars"] as $oCalendar)
 			{
-				if ($oCalendar instanceof \CCalendar)
+				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
 				{
 					$this->DeleteCalendar($aArgs["UUID"], $oCalendar->Id);
 				}

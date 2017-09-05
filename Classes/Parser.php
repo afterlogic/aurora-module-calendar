@@ -7,17 +7,19 @@
  * For full statements of the license see LICENSE file.
  */
 
+namespace Aurora\Modules\Calendar\Classes;
+
 /**
  * @internal
  * 
  * @package Calendar
  * @subpackage Classes
  */
-class CalendarParser
+class Parser
 {
 	/**
 	 * @param int $iUserId
-	 * @param CCalendar $oCalendar
+	 * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 * @param \Sabre\VObject\Component\VCalendar $oVCalOriginal Default value is **null**.
 	 *
@@ -34,8 +36,8 @@ class CalendarParser
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if (isset($oVCalOriginal))
 		{
-			$aRules = CalendarParser::getRRules($iUserId, $oVCalOriginal);
-			$aExcludedRecurrences = CalendarParser::getExcludedRecurrences($oVCalOriginal);
+			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($iUserId, $oVCalOriginal);
+			$aExcludedRecurrences = \Aurora\Modules\Calendar\Classes\Parser::getExcludedRecurrences($oVCalOriginal);
 		}
 
 		if (isset($oVCal, $oVCal->VEVENT))
@@ -48,7 +50,7 @@ class CalendarParser
 				if (isset($oVEvent, $oVEvent->UID))
 				{
 					$sUid = (string)$oVEvent->UID;
-					$sRecurrenceId = CCalendarHelper::getRecurrenceId($oVEvent);
+					$sRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getRecurrenceId($oVEvent);
 
 					$sId = $sUid . '-' . $sRecurrenceId;
 					
@@ -105,9 +107,9 @@ class CalendarParser
 					$aDescription = $oVEvent->DESCRIPTION ? \Sabre\VObject\Parser\MimeDir::unescapeValue((string)$oVEvent->DESCRIPTION) : array('');
 					$aEvent['description'] = $aDescription[0];
 					$aEvent['location'] = $oVEvent->LOCATION ? (string)$oVEvent->LOCATION : '';
-					$aEvent['start'] = CCalendarHelper::getStrDate($oVEvent->DTSTART, $sTimeZone);
-					$aEvent['startTS'] = CCalendarHelper::getTimestamp($oVEvent->DTSTART, $sTimeZone);
-					$aEvent['end'] = CCalendarHelper::getStrDate($oVEvent->DTEND, $sTimeZone);
+					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEvent->DTSTART, $sTimeZone);
+					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEvent->DTSTART, $sTimeZone);
+					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEvent->DTEND, $sTimeZone);
 					$aEvent['allDay'] = $bAllDay;
 					$aEvent['owner'] = $sOwnerEmail;
 					$aEvent['ownerName'] = $sOwnerName;
@@ -141,7 +143,7 @@ class CalendarParser
 			{
 				if (isset($oVAlarm->TRIGGER) && $oVAlarm->TRIGGER instanceof \Sabre\VObject\Property\ICalendar\Duration)
 				{
-					$aResult[] = CCalendarHelper::getOffsetInMinutes($oVAlarm->TRIGGER->getDateInterval());
+					$aResult[] = \Aurora\Modules\Calendar\Classes\Helper::getOffsetInMinutes($oVAlarm->TRIGGER->getDateInterval());
 				}
 			}
 			rsort($aResult);
@@ -163,19 +165,19 @@ class CalendarParser
 		{
 			foreach($oVEvent->ATTENDEE as $oAttendee)
 			{
-				$iStatus = \EAttendeeStatus::Unknown;
+				$iStatus = \Aurora\Modules\Calendar\Enums\AttendeeStatus::Unknown;
 				if (isset($oAttendee['PARTSTAT']))
 				{
 					switch (strtoupper((string)$oAttendee['PARTSTAT']))
 					{
 						case 'ACCEPTED':
-							$iStatus = \EAttendeeStatus::Accepted;
+							$iStatus = \Aurora\Modules\Calendar\Enums\AttendeeStatus::Accepted;
 							break;
 						case 'DECLINED':
-							$iStatus = \EAttendeeStatus::Declined;
+							$iStatus = \Aurora\Modules\Calendar\Enums\AttendeeStatus::Declined;
 							break;
 						case 'TENTATIVE':
-							$iStatus = \EAttendeeStatus::Tentative;;
+							$iStatus = \Aurora\Modules\Calendar\Enums\AttendeeStatus::Tentative;;
 							break;
 					}
 				}
@@ -204,13 +206,13 @@ class CalendarParser
 
 		$aWeekDays = array('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA');
 		$aPeriods = array(
-			EPeriodStr::Secondly,
-			EPeriodStr::Minutely,
-			EPeriodStr::Hourly,
-			EPeriodStr::Daily,
-			EPeriodStr::Weekly,
-			EPeriodStr::Monthly,
-			EPeriodStr::Yearly
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Secondly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Minutely,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Hourly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Daily,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Weekly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Monthly,
+			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
 		
 		if (isset($oVEventBase->RRULE))
@@ -240,15 +242,15 @@ class CalendarParser
 			}
 			if (isset($oResult->Count))
 			{
-				$oResult->End = \ERepeatEnd::Count;
+				$oResult->End = \Aurora\Modules\Calendar\Enums\RepeatEnd::Count;
 			}
 			else if (isset($oResult->Until))
 			{
-				$oResult->End = \ERepeatEnd::Date;
+				$oResult->End = \Aurora\Modules\Calendar\Enums\RepeatEnd::Date;
 			}
 			else
 			{
-				$oResult->End = \ERepeatEnd::Infinity;
+				$oResult->End = \Aurora\Modules\Calendar\Enums\RepeatEnd::Infinity;
 			}
 
 			if (isset($aRules['BYDAY']) && is_array($aRules['BYDAY']))
@@ -276,8 +278,8 @@ class CalendarParser
 				}
 			}
 			
-			$oResult->StartBase = CCalendarHelper::getTimestamp($oVEventBase->DTSTART, $oUser->DefaultTimeZone);
-			$oResult->EndBase = CCalendarHelper::getTimestamp($oVEventBase->DTEND, $oUser->DefaultTimeZone);
+			$oResult->StartBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEventBase->DTSTART, $oUser->DefaultTimeZone);
+			$oResult->EndBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEventBase->DTEND, $oUser->DefaultTimeZone);
 		}
 
 		return $oResult;
@@ -297,7 +299,7 @@ class CalendarParser
 		{
 			if (isset($oVEventBase->RRULE))
 			{
-				$oRRule = CalendarParser::parseRRule($iUserId, $oVEventBase);
+				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($iUserId, $oVEventBase);
 				if ($oRRule)
 				{
 					$aResult[(string)$oVEventBase->UID] = $oRRule;
@@ -325,7 +327,7 @@ class CalendarParser
 
             if (isset($oComponent->{'RECURRENCE-ID'}))
 			{
-				$iRecurrenceId = CCalendarHelper::getRecurrenceId($oComponent);
+				$iRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getRecurrenceId($oComponent);
 				$aRecurrences[(string)$oComponent->UID . '-' . $iRecurrenceId] = $oComponent;
 			}
         }
