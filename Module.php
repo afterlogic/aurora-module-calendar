@@ -29,7 +29,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			)
 		);
 
-		$this->extendObject('CUser', array(
+		$this->extendObject('Aurora\Modules\Core\Classes\User', array(
 				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
 				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
 				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', false)),
@@ -924,7 +924,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 						$sTemptFile = md5($mResult['Body']).'.ics';
 						if ($this->oApiFileCache->put($UUID, $sTemptFile, $mResult['Body']))
 						{
-							$oIcs = \CApiMailIcs::createInstance();
+							$oIcs = \Aurora\Modules\Mail\Classes\Ics::createInstance();
 
 							$oIcs->Uid = $mResult['UID'];
 							$oIcs->Sequence = $mResult['Sequence'];

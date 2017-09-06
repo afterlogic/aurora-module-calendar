@@ -1625,7 +1625,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 //
 //		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
 //		if (is_array($aFetchers) && 0 < count($aFetchers)) {
-//			foreach ($aFetchers as /* @var $oFetcher \CFetcher */ $oFetcher) {
+//			foreach ($aFetchers as /* @var $oFetcher \Aurora\Modules\Mail\Classes\Fetcher */ $oFetcher) {
 //				if ($oFetcher) {
 //					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
 //				}
@@ -1634,7 +1634,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 //
 //		$aIdentities = $this->ApiUsersManager->getUserIdentities($sUserUUID->IdUser);
 //		if (is_array($aIdentities) && 0 < count($aIdentities)) {
-//			foreach ($aIdentities as /* @var $oIdentity \CMailIdentity */ $oIdentity) {
+//			foreach ($aIdentities as /* @var $oIdentity \Aurora\Modules\Mail\Classes\Identity */ $oIdentity) {
 //				if ($oIdentity) {
 //					$aAccountEmails[] = $oIdentity->Email;
 //				}

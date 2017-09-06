@@ -242,7 +242,7 @@ class Sabredav extends Storage
 	}
 
 	/**
-     * @return \CUser
+     * @return \Aurora\Modules\Core\Classes\User
 	 */
 	public function getPublicAccount()
 	{
