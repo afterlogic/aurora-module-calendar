@@ -892,7 +892,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$sGroupName = ltrim($sGroup, '#');
 				$oGroup = $oContactsModule->CallMethod('getGroupByName', array($sUserUUID->IdUser, $sGroupName));
 				if (!$oGroup) {
-					$oGroup = new \CGroup();
+					$oGroup = new \Aurora\Modules\Contacts\Classes\Group();
 					$oGroup->IdUser = $sUserUUID->IdUser;
 					$oGroup->Name = $sGroupName;
 					$oContactsModule->CallMethod('createGroup', array($oGroup));
