@@ -29,7 +29,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			)
 		);
 
-		$this->extendObject('Aurora\Modules\Core\Classes\User', array(
+		$this->extendObject(
+			'Aurora\Modules\Core\Classes\User', 
+			array(
 				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
 				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
 				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', false)),
