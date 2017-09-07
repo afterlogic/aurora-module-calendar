@@ -19,7 +19,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	
 	public function init() 
 	{
-		$this->oApiCalendarManager = new Manager('', $this);
+		$this->oApiCalendarManager = new Manager($this);
 		$this->oApiFileCache = new \Aurora\System\Managers\Filecache();
 
 		$this->AddEntries(array(
