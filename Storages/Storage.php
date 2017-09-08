@@ -9,7 +9,7 @@
 
 namespace Aurora\Modules\Calendar\Storages;
 
-class Storage extends \Aurora\System\Managers\AbstractManagerStorage
+class Storage extends \Aurora\System\Managers\AbstractStorage
 {
 	/**
 	 * @param string $sUserUUID
