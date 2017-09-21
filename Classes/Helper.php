@@ -268,7 +268,7 @@ class Helper
 			if (isset($oVEvent->RRULE) && null === $oEvent->RRule)
 			{
 				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($iUserId, $oVCal, (string)$oVEvent->UID);
-				if ($oRRule && $oRRule instanceof \CRRule)
+				if ($oRRule && $oRRule instanceof \Aurora\Modules\Calendar\Classes\RRule)
 				{
 					$sRRULE = (string) $oRRule;
 				}

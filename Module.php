@@ -403,7 +403,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		if ($aRRule)
 		{
 			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			$oRRule = new \CRRule($oUser);
+			$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
 		}
@@ -462,7 +462,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		if ($aRRule)
 		{
 			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			$oRRule = new \CRRule($oUser);
+			$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
 			$oRRule->Populate($aRRule);
 			$oEvent->RRule = $oRRule;
 		}

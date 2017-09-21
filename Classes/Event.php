@@ -17,7 +17,7 @@ namespace Aurora\Modules\Calendar\Classes;
  * @property bool   $AllDay
  * @property string $Name
  * @property string $Description
- * @property CRRule $RRule
+ * @property RRule $RRule
  * @property array  $Alarms
  * @property array  $Attendees;
  * @property bool $Deleted;
@@ -92,7 +92,7 @@ class CExclusion
  * @package Calendar
  * @subpackage Classes
  */
-class CRRule
+class RRule
 {
 	public $StartBase;
 	public $EndBase;
