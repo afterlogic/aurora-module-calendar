@@ -763,7 +763,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 						'{{IntegratorBody}}' => $oApiIntegrator->buildBody(
 							array(
 								'public_app' => true,
-								'modules_list' => array("CalendarWebclient")
+								'modules_list' => $oApiIntegrator->GetModulesForEntry('CalendarWebclient')
 							)		
 						)
 					));
