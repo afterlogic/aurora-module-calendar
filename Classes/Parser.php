@@ -115,7 +115,7 @@ class Parser
 					$aEvent['ownerName'] = $sOwnerName;
 					$aEvent['modified'] = false;
 					$aEvent['recurrenceId'] = $sRecurrenceId;
-					if (isset($aRules[$sUid]) && $aRules[$sUid] instanceof \Aurora\Modules\Calendar\Classes\RRule)
+					if (isset($aRules[$sUid]) && $aRules[$sUid] instanceof RRule)
 					{
 						$aEvent['rrule'] = $aRules[$sUid]->toArray();
 					}
@@ -198,7 +198,7 @@ class Parser
 	 * @param int $iUserId
 	 * @param \Sabre\VObject\Component\VEvent $oVEventBase
 	 *
-	 * @return \Aurora\Modules\Calendar\Classes\RRule|null
+	 * @return RRule|null
 	 */
 	public static function parseRRule($iUserId, $oVEventBase)
 	{
@@ -218,7 +218,7 @@ class Parser
 		if (isset($oVEventBase->RRULE))
 		{
 			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			$oResult = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
+			$oResult = new RRule($oUser);
 			$aRules = $oVEventBase->RRULE->getParts();
 			if (isset($aRules['FREQ']))
 			{
@@ -299,7 +299,7 @@ class Parser
 		{
 			if (isset($oVEventBase->RRULE))
 			{
-				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($iUserId, $oVEventBase);
+				$oRRule = Parser::parseRRule($iUserId, $oVEventBase);
 				if ($oRRule)
 				{
 					$aResult[(string)$oVEventBase->UID] = $oRRule;
