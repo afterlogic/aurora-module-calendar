@@ -1,8 +1,7 @@
 <?php
-
 namespace Aurora\Modules\Calendar;
 
-require_once "../../system/autoload.php";
+require_once dirname(__file__)."/../../system/autoload.php";
 \Aurora\System\Api::Init();
 
 class Reminder

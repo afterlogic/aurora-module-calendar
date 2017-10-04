@@ -117,6 +117,7 @@ class Helper
 		}
 		if (isset($result))
 		{
+			$sTimeZone = $sTimeZone === null ? 'UTC' : $sTimeZone;
 			$result->setTimezone(new \DateTimeZone($sTimeZone));
 		}
 		return $result;
