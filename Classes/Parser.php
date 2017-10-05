@@ -18,14 +18,14 @@ namespace Aurora\Modules\Calendar\Classes;
 class Parser
 {
 	/**
-	 * @param int $iUserId
+	 * @param string $sUUID
 	 * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 * @param \Sabre\VObject\Component\VCalendar $oVCalOriginal Default value is **null**.
 	 *
 	 * @return array
 	 */
-	public static function parseEvent($iUserId, $oCalendar, $oVCal, $oVCalOriginal = null)
+	public static function parseEvent($sUUID, $oCalendar, $oVCal, $oVCalOriginal = null)
 	{
 //		$ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
 
@@ -33,14 +33,14 @@ class Parser
 		$aRules = array();
 		$aExcludedRecurrences = array();
 
-		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByUUID($sUUID);
 		if (isset($oVCalOriginal))
 		{
-			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($iUserId, $oVCalOriginal);
+			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($sUUID, $oVCalOriginal);
 			$aExcludedRecurrences = \Aurora\Modules\Calendar\Classes\Parser::getExcludedRecurrences($oVCalOriginal);
 		}
 
-		if (isset($oVCal, $oVCal->VEVENT))
+		if (isset($oVCal, $oVCal->VEVENT, $oUser) && $oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
 			foreach ($oVCal->VEVENT as $oVEvent)
 			{
@@ -63,7 +63,7 @@ class Parser
 					$bIsAppointment = false;
 					$aEvent['attendees'] = array();
 					// TODO
-					if (/*$ApiCapabilityManager->isCalendarAppointmentsSupported($iUserId) && */isset($oVEvent->ATTENDEE))
+					if (/*$ApiCapabilityManager->isCalendarAppointmentsSupported($sUUID) && */isset($oVEvent->ATTENDEE))
 					{
 						$aEvent['attendees'] = self::parseAttendees($oVEvent);
 
@@ -195,12 +195,12 @@ class Parser
 	}
 
 	/**
-	 * @param int $iUserId
+	 * @param string $sUUID
 	 * @param \Sabre\VObject\Component\VEvent $oVEventBase
 	 *
 	 * @return RRule|null
 	 */
-	public static function parseRRule($iUserId, $oVEventBase)
+	public static function parseRRule($sUUID, $oVEventBase)
 	{
 		$oResult = null;
 
@@ -214,10 +214,9 @@ class Parser
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Monthly,
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
-		
-		if (isset($oVEventBase->RRULE))
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByUUID($sUUID);
+		if (isset($oVEventBase->RRULE, $oUser)  && $oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
-			$oUser = \Aurora\System\Api::getAuthenticatedUser();
 			$oResult = new RRule($oUser);
 			$aRules = $oVEventBase->RRULE->getParts();
 			if (isset($aRules['FREQ']))
@@ -286,12 +285,12 @@ class Parser
 	}
 
 	/**
-	 * @param int $iUserId
+	 * @param string $sUUID
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 *
 	 * @return array
 	 */
-	public static function getRRules($iUserId, $oVCal)
+	public static function getRRules($sUUID, $oVCal)
 	{
 		$aResult = array();
 		
@@ -299,7 +298,7 @@ class Parser
 		{
 			if (isset($oVEventBase->RRULE))
 			{
-				$oRRule = Parser::parseRRule($iUserId, $oVEventBase);
+				$oRRule = Parser::parseRRule($sUUID, $oVEventBase);
 				if ($oRRule)
 				{
 					$aResult[(string)$oVEventBase->UID] = $oRRule;
