@@ -948,6 +948,25 @@ class Sabredav extends Storage
 		return $mResult;
 	}
 
+	public function getTodoUrls($oCalendar)
+	{
+		return $oCalendar->calendarQuery(array(
+			'name' => 'VCALENDAR',
+			'comp-filters' => array(
+				array(
+					'name' => 'VTODO',
+					'comp-filters' => array(),
+					'prop-filters' => array(),
+					'is-not-defined' => false,
+					'time-range' => null,
+				),
+			),
+			'prop-filters' => array(),
+			'is-not-defined' => false,
+			'time-range' => null,
+		));
+	}
+	
 	/**
 	 * @param object $oCalendar
 	 * @param object $dStart
@@ -998,7 +1017,9 @@ class Sabredav extends Storage
 		
 		if ($oCalendar)
 		{
-			$aUrls = $this->getEventUrls($oCalendar, $dStart, $dEnd);
+			$aEventUrls = $this->getEventUrls($oCalendar, $dStart, $dEnd);
+			$aTodoUrls = $this->getTodoUrls($oCalendar);
+			$aUrls = array_merge($aEventUrls, $aTodoUrls);
 			
 			foreach ($aUrls as $sUrl)
 			{
@@ -1046,7 +1067,10 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 
 		if ($oCalDAVCalendar) {
-			$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
+
+			$aEventUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
+			$aTodoUrls = $this->getTodoUrls($oCalDAVCalendar);
+			$aUrls = array_merge($aEventUrls, $aTodoUrls);
 			
  			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 			$mResult = array();

@@ -851,7 +851,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 			$oVCal = new \Sabre\VObject\Component\VCalendar();
 
-			$oVCal->add('VEVENT', array(
+			$sType = 'VEVENT';
+			if ($oEvent->Type === 'todo')
+			{
+				$sType = 'VTODO';
+			}
+			
+			$oVCal->add($sType, array(
 				'SEQUENCE' => 0,
 				'TRANSP' => 'OPAQUE',
 				'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
@@ -922,17 +928,27 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$oVCal = $aData['vcal'];
 
 				if ($oVCal) {
-					$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVEventIndex($oVCal->VEVENT);
-					if ($iIndex !== false) {
-						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->VEVENT[$iIndex]);
+					if ($oEvent->Type === 'todo')
+					{
+						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->VTODO);
+					}
+					else
+					{
+						$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVEventIndex($oVCal->VEVENT);
+						if ($iIndex !== false) {
+							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->VEVENT[$iIndex]);
+						}
 					}
 					$oVCalCopy = clone $oVCal;
-					if (!isset($oEvent->RRule)) {
+					if (!isset($oEvent->RRule) && $oEvent->Type === 'event') {
 						unset($oVCalCopy->VEVENT);
-						foreach ($oVCal->VEVENT as $oVEvent) {
-                            $oVEvent->SEQUENCE = (int) $oVEvent->SEQUENCE->getValue() + 1;
-							if (!isset($oVEvent->{'RECURRENCE-ID'})) {
-								$oVCalCopy->add($oVEvent);
+						if (isset($oVCal->VEVENT))
+						{
+							foreach ($oVCal->VEVENT as $oVEvent) {
+								$oVEvent->SEQUENCE = (int) $oVEvent->SEQUENCE->getValue() + 1;
+								if (!isset($oVEvent->{'RECURRENCE-ID'})) {
+									$oVCalCopy->add($oVEvent);
+								}
 							}
 						}
 					}

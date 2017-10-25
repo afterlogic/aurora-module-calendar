@@ -40,9 +40,21 @@ class Parser
 			$aExcludedRecurrences = \Aurora\Modules\Calendar\Classes\Parser::getExcludedRecurrences($oVCalOriginal);
 		}
 
-		if (isset($oVCal, $oVCal->VEVENT, $oUser) && $oUser instanceof \Aurora\Modules\Core\Classes\User)
+		$VComponent = null;
+		$sType = 'event';
+		if (isset($oVCal->VEVENT))
 		{
-			foreach ($oVCal->VEVENT as $oVEvent)
+			$VComponent = $oVCal->VEVENT;
+		}
+		else if (isset($oVCal->VTODO))
+		{
+			$VComponent = $oVCal->VTODO;
+			$sType = 'todo';
+		}
+		
+		if (isset($oVCal, $VComponent, $oUser) && $oUser instanceof \Aurora\Modules\Core\Classes\User)
+		{
+			foreach ($VComponent as $oVEvent)
 			{
 				$sOwnerEmail = $oCalendar->Owner;
 				$aEvent = array();
@@ -53,6 +65,7 @@ class Parser
 					$sRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getRecurrenceId($oVEvent);
 
 					$sId = $sUid . '-' . $sRecurrenceId;
+					$aEvent['type'] = $sType;
 					
 					if (array_key_exists($sId, $aExcludedRecurrences))
 					{
@@ -92,11 +105,18 @@ class Parser
 
 					if (!isset($oVEvent->DTEND))
 					{
-						$dtStart = $oVEvent->DTSTART->getDateTime();
-						if ($dtStart)
+						if (!isset($oVEvent->DTSTART) && isset($oVEvent->CREATED))
 						{
-							$dtStart->add(new DateInterval('PT1H'));
-							$oVEvent->DTEND = $dtStart;
+							$oVEvent->DTSTART = $oVEvent->CREATED->getDateTime();
+						}
+						if (isset($oVEvent->DTSTART))
+						{
+							$dtStart = $oVEvent->DTSTART->getDateTime();
+							if ($dtStart)
+							{
+								$dtStart->add(new \DateInterval('PT1H'));
+								$oVEvent->DTEND = $dtStart;
+							}
 						}
 					}
 					

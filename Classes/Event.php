@@ -43,6 +43,7 @@ class Event
     public $Deleted;
 	public $Modified;
     public $Sequence;
+	public $Type;
 
 	public function __construct()
 	{
@@ -60,5 +61,6 @@ class Event
 		$this->Deleted		  = null;
 		$this->Modified		  = false;
         $this->Sequence       = 0;
+		$this->Type			  = 'event';
 	}
 }

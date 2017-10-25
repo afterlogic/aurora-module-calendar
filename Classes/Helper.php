@@ -167,13 +167,18 @@ class Helper
 	 */
 	public static function getRecurrenceId($oComponent)
 	{
+		$iTimestamp = 0;
 		$oRecurrenceId = $oComponent->DTSTART;
 		if ($oComponent->{'RECURRENCE-ID'})
 		{
 			$oRecurrenceId = $oComponent->{'RECURRENCE-ID'};
 		}
-		$dRecurrence = $oRecurrenceId->getDateTime();
-		return $dRecurrence->getTimestamp();
+		if (isset($oRecurrenceId))
+		{
+			$dRecurrence = $oRecurrenceId->getDateTime();
+			$iTimestamp = $dRecurrence->getTimestamp();
+		}
+		return $iTimestamp;
 	}
 
     /**
@@ -199,12 +204,15 @@ class Helper
 	public static function getBaseVEventIndex($oVEvents)
 	{
 		$iIndex = -1;
-		foreach($oVEvents as $oVEvent)
+		if (isset($oVEvents))
 		{
-			$iIndex++;
-			if (empty($oVEvent->{'RECURRENCE-ID'}))
+			foreach($oVEvents as $oVEvent)
 			{
-				break;
+				$iIndex++;
+				if (empty($oVEvent->{'RECURRENCE-ID'}))
+				{
+					break;
+				}
 			}
 		}
 		return ($iIndex >= 0) ? $iIndex : false;

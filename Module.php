@@ -384,7 +384,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @return array|boolean
 	 */
 	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS, 
-			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd)
+			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'event')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
@@ -398,7 +398,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->AllDay = $allDay;
 		$oEvent->Alarms = @json_decode($alarms, true);
 		$oEvent->Attendees = @json_decode($attendees, true);
-
+		$oEvent->Type = $type;
+		
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
 		{
