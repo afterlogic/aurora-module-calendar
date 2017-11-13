@@ -833,7 +833,7 @@ class Sabredav extends Storage
 	 * 
 	 * @return array
 	 */
-	public function getEventsFromVCalendar($sUserUUID, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand = true)
+	public function getEventsFromVCalendar($sUserUUID, $oCalendar, $oVCal, $dStart = null, $dEnd = null, $bExpand = true)
 	{
 		$oVCalOriginal = clone $oVCal;
 
@@ -948,7 +948,7 @@ class Sabredav extends Storage
 		return $mResult;
 	}
 
-	public function getTodoUrls($oCalendar)
+	public function getTasksUrls($oCalendar)
 	{
 		return $oCalendar->calendarQuery(array(
 			'name' => 'VCALENDAR',
@@ -1050,6 +1050,29 @@ class Sabredav extends Storage
 		return $aResult;
 	}
 
+	public function getItemsByUrls($sUserUUID, $oCalDAVCalendar, $aUrls, $dStart = null, $dEnd = null, $bExpand = false)
+	{
+		$mResult = array();
+		$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+		foreach ($aUrls as $sUrl) 
+		{
+			if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID])) {
+				$oCalDAVCalendarObject = $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID];
+			} else {
+				$oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
+				$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID] = $oCalDAVCalendarObject;		
+			}
+			$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
+			$aEvents = $this->getEventsFromVCalendar($sUserUUID, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+			foreach (array_keys($aEvents) as $key) {
+				$aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
+			}
+			$mResult = array_merge($mResult, $aEvents);
+		}
+		
+		return $mResult;
+	}
+	
 	/**
 	 * @param string $sUserUUID
 	 * @param string $sCalendarId
@@ -1068,27 +1091,26 @@ class Sabredav extends Storage
 
 		if ($oCalDAVCalendar) {
 
-			$aEventUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
-			$aTodoUrls = $this->getTodoUrls($oCalDAVCalendar);
-			$aUrls = array_merge($aEventUrls, $aTodoUrls);
-			
- 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			$mResult = array();
-			foreach ($aUrls as $sUrl) {
-				if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID])) {
-					$oCalDAVCalendarObject = $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID];
-				} else {
-					$oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
-					$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID] = $oCalDAVCalendarObject;		
-				}
-				$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
-				$aEvents = $this->getEventsFromVCalendar($sUserUUID, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
-				foreach (array_keys($aEvents) as $key) {
-					$aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
-				}
-				$mResult = array_merge($mResult, $aEvents);
-			}
+			$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
+			$mResult = $this->getItemsByUrls($sUserUUID, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
 		}
+
+		return $mResult;
+	}
+	
+	
+	public function getTasks($sUserUUID, $sCalendarId)
+	{
+		$this->init($sUserUUID);
+
+		$mResult = false;
+		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+
+		if ($oCalDAVCalendar) {
+
+			$aUrls = $this->getTasksUrls($oCalDAVCalendar);
+			$mResult = $this->getItemsByUrls($sUserUUID, $oCalDAVCalendar, $aUrls);
+		}		
 
 		return $mResult;
 	}

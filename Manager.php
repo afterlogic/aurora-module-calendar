@@ -650,6 +650,38 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		}
 		return $aResult;
 	}
+	
+	/**
+	 * Account object
+	 *
+	 * @param string $sUserUUID
+	 * @param array | string $mCalendarId Calendar ID
+	 * @param string $dStart Date range start
+	 * @param string $dFinish Date range end
+	 *
+	 * @return array|bool
+	 */
+	public function getTasks($sUserUUID, $mCalendarId)
+	{
+		$aResult = array();
+		try
+		{
+			$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
+
+			foreach ($mCalendarId as $sCalendarId) {
+				$aTasks = $this->oStorage->getTasks($sUserUUID, $sCalendarId);
+				if ($aTasks && is_array($aTasks)) {
+					$aResult = array_merge($aResult, $aTasks);
+				}
+			}
+		}
+		catch (Exception $oException)
+		{
+			$aResult = false;
+			$this->setLastException($oException);
+		}
+		return $aResult;
+	}	
 
 	/**
 	 * @param string $sUserUUID Account object
@@ -863,7 +895,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
 			));
 
-			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->VEVENT);
+			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->{$sType});
 
 			$oResult = $this->oStorage->createEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 

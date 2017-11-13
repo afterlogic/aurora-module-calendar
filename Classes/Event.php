@@ -44,6 +44,7 @@ class Event
 	public $Modified;
     public $Sequence;
 	public $Type;
+	public $Status;
 
 	public function __construct()
 	{
@@ -62,5 +63,6 @@ class Event
 		$this->Modified		  = false;
         $this->Sequence       = 0;
 		$this->Type			  = 'event';
+		$this->Status		  =	'NEEDS-ACTION';
 	}
 }

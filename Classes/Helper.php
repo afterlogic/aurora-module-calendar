@@ -227,6 +227,7 @@ class Helper
 	{
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
+		$oVEvent->STATUS = $oEvent->Status;
 		
 //		$oUser = \Aurora\System\Api::getUserById($iUserId);
 

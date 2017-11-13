@@ -336,7 +336,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		return $this->oApiCalendarManager->getBaseEvent($UUID, $calendarId, $uid);
 	}	
 	
-	
 	/**
 	 * 
 	 * @param int $UserId
@@ -366,6 +365,26 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		return $mResult;
 	}	
 	
+	/**
+	 * 
+	 * @param int $UserId
+	 * @param array $CalendarIds
+	 * @param int $Start
+	 * @param int $End
+	 * @param boolean $IsPublic
+	 * @param boolean $Expand
+	 * @return array|boolean
+	 */
+	public function GetTasks($UserId, $CalendarIds)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		
+		$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds);
+		
+		return $mResult;
+	}	
+		
 	/**
 	 * 
 	 * @param int $UserId
@@ -417,6 +436,52 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		
 		return $mResult;
 	}
+	
+	/**
+	 * 
+	 * @param int $UserId
+	 * @param string $CalendarId
+	 * @param string $Subject
+	 * @return array|boolean
+	 */
+	public function CreateTask($UserId, $CalendarId, $Subject)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+		$oEvent->IdCalendar = $CalendarId;
+		$oEvent->Name = $Subject;
+		$oEvent->Start = \time();
+		$oEvent->End = \time();
+		$oEvent->Type = 'todo';
+		
+		return $this->oApiCalendarManager->createEvent($UUID, $oEvent);
+	}
+	
+	/**
+	 * 
+	 * @param int $UserId
+	 * @param string $CalendarId
+	 * @param string $Subject
+	 * @param string $Sescription
+	 * @return array|boolean
+	 */
+	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+		$oEvent->IdCalendar = $CalendarId;
+		$oEvent->Id = $TaskId;
+		$oEvent->Name = $Subject;
+		$oEvent->Start = \time();
+		$oEvent->End = \time();
+		$oEvent->Type = 'todo';
+		$oEvent->Status = $Status ? 'COMPLETED' : '';
+		
+		return $this->oApiCalendarManager->updateEvent($UUID, $oEvent);
+	}
+	
 	
 	/**
 	 * 

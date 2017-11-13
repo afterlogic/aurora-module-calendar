@@ -225,6 +225,18 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	{
 		return array();
 	}
+	
+	/**
+	 * @param string $sUserUUID
+	 * @param string $sCalendarId
+	 *
+	 * @return array
+	 */
+	public function getTasks($sUserUUID, $sCalendarId)
+	{
+		return array();
+	}
+	
 
 	/**
 	}
