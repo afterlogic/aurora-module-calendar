@@ -506,7 +506,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function UpdateEvent($UserId, $newCalendarId, $calendarId, $uid, $subject, $description, 
 			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
-			$selectStart, $selectEnd)
+			$selectStart, $selectEnd, $type, $status)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
@@ -523,6 +523,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->AllDay = $allDay;
 		$oEvent->Alarms = @json_decode($alarms, true);
 		$oEvent->Attendees = @json_decode($attendees, true);
+		$oEvent->Type = $type;
+		if (!empty($status))
+		{
+			$oEvent->Status = $status;
+		}
 		
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)

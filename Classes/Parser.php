@@ -139,7 +139,13 @@ class Parser
 					{
 						$aEvent['rrule'] = $aRules[$sUid]->toArray();
 					}
-					$aEvent['status'] = $oVEvent->STATUS ? (string)$oVEvent->STATUS : '';
+					$bStatus = false;
+					if ($oVEvent->STATUS)
+					{
+						$sStatus = (string)$oVEvent->STATUS;
+						$bStatus = strtolower($sStatus) === 'completed' ? true : false; 
+					}
+					$aEvent['status'] = $bStatus;
 				}
 				
 				$aResult[] = $aEvent;

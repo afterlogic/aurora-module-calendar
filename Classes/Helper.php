@@ -227,7 +227,22 @@ class Helper
 	{
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
-		$oVEvent->STATUS = $oEvent->Status;
+		
+		if ($oEvent->Type === 'todo')
+		{
+			if ($oEvent->Status)
+			{
+				$oVEvent->STATUS = 'COMPLETED';
+				$oVEvent->{'PERCENT-COMPLETE'} = 100;
+				$oVEvent->COMPLETED = new \DateTime('now', new \DateTimeZone('UTC'));
+			}
+			else 
+			{
+				$oVEvent->STATUS = 'NEEDS-ACTION';
+				unset($oVEvent->{'PERCENT-COMPLETE'});
+				unset($oVEvent->COMPLETED);
+			}
+		}
 		
 //		$oUser = \Aurora\System\Api::getUserById($iUserId);
 

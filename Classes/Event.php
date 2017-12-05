@@ -63,6 +63,6 @@ class Event
 		$this->Modified		  = false;
         $this->Sequence       = 0;
 		$this->Type			  = 'event';
-		$this->Status		  =	'NEEDS-ACTION';
+		$this->Status		  =	false;
 	}
 }

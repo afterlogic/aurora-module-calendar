@@ -959,6 +959,20 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			if ($aData !== false) {
 				$oVCal = $aData['vcal'];
 
+				if ($oEvent->Type === 'todo' && isset($oVCal->VEVENT))
+				{
+					$sRawEventData = $oVCal->serialize();
+					$sRawEventData = str_replace('VEVENT', 'VTODO', $sRawEventData);
+					$oVCal = \Sabre\VObject\Reader::read($sRawEventData);
+				}
+				
+				if ($oEvent->Type === 'event' && isset($oVCal->VTODO))
+				{
+					$sRawEventData = $oVCal->serialize();
+					$sRawEventData = str_replace('VTODO', 'VEVENT', $sRawEventData);
+					$oVCal = \Sabre\VObject\Reader::read($sRawEventData);
+				}
+				
 				if ($oVCal) {
 					if ($oEvent->Type === 'todo')
 					{
