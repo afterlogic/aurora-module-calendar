@@ -57,6 +57,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		
 		$aSettings = array(
+			'AddDescriptionToTitle' => $this->getConfig('AddDescriptionToTitle', false),
 			'AllowAppointments' => $this->getConfig('AllowAppointments', true),
 			'AllowShare' => $this->getConfig('AllowShare', true),
 			'DefaultTab' => $this->getConfig('DefaultTab', 3),

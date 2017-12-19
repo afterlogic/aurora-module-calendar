@@ -3,6 +3,10 @@
 		false,
 		"bool"
 	],
+    "AddDescriptionToTitle": [
+		false,
+		"bool"
+	],
     "AllowAppointments": [
 		true,
 		"bool"
