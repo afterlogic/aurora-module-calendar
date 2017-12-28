@@ -319,12 +319,24 @@ class Reminder
 		{
 			$sDateFormat = 'd/m/Y';
 		}
+		else if ($oUser->DateFormat === \Aurora\System\Enums\DateFormat::MMDDYYYY)
+		{
+			$sDateFormat = 'm/d/Y';
+		}
 		else if ($oUser->DateFormat === \Aurora\System\Enums\DateFormat::DD_MONTH_YYYY)
 		{
 			$sDateFormat = 'd m Y';
 		}
+		else if ($oUser->DateFormat === \Aurora\System\Enums\DateFormat::MMDDYY)
+		{
+			$sDateFormat = 'm/d/y';
+		}
+		else if ($oUser->DateFormat === \Aurora\System\Enums\DateFormat::DDMMYY)
+		{
+			$sDateFormat = 'd/m/Y';
+		}
 
-		if ($oUser->DateFormat == \Aurora\System\Enums\TimeFormat::F24)
+		if ($oUser->TimeFormat == \Aurora\System\Enums\TimeFormat::F24)
 		{
 			$sTimeFormat = 'H:i';
 		}
