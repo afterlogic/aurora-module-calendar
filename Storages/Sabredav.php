@@ -1054,6 +1054,9 @@ class Sabredav extends Storage
 	{
 		$mResult = array();
 		$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+		
+		$oCalendar->IsPublic = ($sUserUUID === \Afterlogic\DAV\Constants::DAV_PUBLIC_PRINCIPAL);
+		
 		foreach ($aUrls as $sUrl) 
 		{
 			if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserUUID])) {

@@ -52,7 +52,7 @@ class Parser
 			$sType = 'todo';
 		}
 		
-		if (isset($oVCal, $VComponent, $oUser) && $oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if (isset($oVCal, $VComponent) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || $oCalendar->IsPublic))
 		{
 			foreach ($VComponent as $oVEvent)
 			{
@@ -84,15 +84,18 @@ class Parser
 						{
 							$sOwnerEmail = str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER));
 						}
-						$bIsAppointment = ($sOwnerEmail !== $oUser->PublicId);
+						$bIsAppointment = ($oUser instanceof \Aurora\Modules\Core\Classes\User && $sOwnerEmail !== $oUser->PublicId);
 					}
 					
 //					$oOwner = $ApiUsersManager->getAccountByEmail($sOwnerEmail);
 //					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
 					$sOwnerName = '';
-					if (isset($oUser))
+					$bAllDay = (isset($oVEvent->DTSTART) && !$oVEvent->DTSTART->hasTime());
+					$sTimeZone = 'UTC';
+					if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 					{
-						$sOwnerName  = ($oUser->Name) ? $oUser->Name : $oUser->PublicId;
+						$sOwnerName  = isset($oUser->Name) ? $oUser->Name : $oUser->PublicId;
+						$sTimeZone = ($bAllDay) ? 'UTC' : $oUser->DefaultTimeZone;
 					}
 					
 					$aEvent['appointment'] = $bIsAppointment;
@@ -100,8 +103,6 @@ class Parser
 					
 					$aEvent['alarms'] = self::parseAlarms($oVEvent);
 
-					$bAllDay = (isset($oVEvent->DTSTART) && !$oVEvent->DTSTART->hasTime());
-					$sTimeZone = ($bAllDay) ? 'UTC' : $oUser->DefaultTimeZone;
 
 					if (!isset($oVEvent->DTEND))
 					{
