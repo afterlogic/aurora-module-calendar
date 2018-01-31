@@ -419,7 +419,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Alarms = @json_decode($alarms, true);
 		$oEvent->Attendees = @json_decode($attendees, true);
 		$oEvent->Type = $type;
-		$oEvent->Status = $status;
+		$oEvent->Status = $status && $type === 'todo';
 		
 		$aRRule = @json_decode($rrule, true);
 		if ($aRRule)
@@ -528,7 +528,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Type = $type;
 		if (!empty($status))
 		{
-			$oEvent->Status = $status;
+			$oEvent->Status = $status && $type === 'todo';
 		}
 		
 		$aRRule = @json_decode($rrule, true);
