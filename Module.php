@@ -800,7 +800,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		$sResult = '';
 		
-		$oApiIntegrator = new \Aurora\Modules\Core\Managers\Integrator();
+		$oApiIntegrator = \Aurora\Modules\Core\Managers\Integrator::getInstance();
 		
 		if ($oApiIntegrator)
 		{
