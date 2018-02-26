@@ -33,7 +33,7 @@ class Parser
 		$aRules = array();
 		$aExcludedRecurrences = array();
 
-		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByUUID($sUUID);
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
 		if (isset($oVCalOriginal))
 		{
 			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($sUUID, $oVCalOriginal);

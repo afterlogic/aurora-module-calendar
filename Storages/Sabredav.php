@@ -74,8 +74,6 @@ class Sabredav extends Storage
 	{
 		if (!$this->_initialized($sUserUUID)) {
 			$this->UserUUID = $sUserUUID;
-//			\Afterlogic\DAV\Server::getInstance()->setAccount($iUserId);
-
 			$this->Principal = $this->getPrincipalInfo($sUserUUID);
 		}
 	}
