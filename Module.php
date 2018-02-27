@@ -380,7 +380,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public function GetTasks($UserId, $CalendarIds)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$UUID = \Aurora\System\Api::getUserUUIDById($UserId);
+		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
 		
 		$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds);
 		
