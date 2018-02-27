@@ -837,7 +837,7 @@ class Sabredav extends Storage
 
 		if ($bExpand && $dStart !== null && $dEnd !== null)
 		{
-			$oVCal->expand(
+			$oVCal = $oVCalOriginal->expand(
 				\Sabre\VObject\DateTimeParser::parse($dStart), 
 				\Sabre\VObject\DateTimeParser::parse($dEnd)
 			);

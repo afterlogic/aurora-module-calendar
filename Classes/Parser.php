@@ -345,7 +345,7 @@ class Parser
 	public static function getExcludedRecurrences($oVCal)
 	{
         $aRecurrences = array();
-        foreach($oVCal->children as $oComponent) {
+        foreach($oVCal->children() as $oComponent) {
 
             if (!$oComponent instanceof \Sabre\VObject\Component)
 			{
