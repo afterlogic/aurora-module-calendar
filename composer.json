@@ -3,8 +3,8 @@
    	"type": "aurora-module",
 	"require":{
 		"php":">=5.4.0",
-		"afterlogic/aurora-framework": "~0.6 || dev-master",
-		"afterlogic/aurora-module-dav": "~0.6 || dev-master"
+		"afterlogic/aurora-framework": "~0.8",
+		"afterlogic/aurora-module-dav": "~0.8"
 	},
 	"extra": {
 		"installer-name": "Calendar"
