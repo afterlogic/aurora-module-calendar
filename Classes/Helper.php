@@ -272,6 +272,11 @@ class Helper
 				}
 			}
 		}
+		else
+		{
+			unset($oVEvent->DTSTART);
+			unset($oVEvent->DTEND);
+		}
 
 		if (isset($oEvent->Name))
 		{
@@ -321,7 +326,7 @@ class Helper
 			}
 		}
 
-		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
+		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ 1<>1) // TODO
 		{
 			$aAttendees = array();
 			$aAttendeeEmails = array();

@@ -405,7 +405,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @return array|boolean
 	 */
 	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS, 
-			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'event', $status = false)
+			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'event', $status = false, $withDate = true)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -414,22 +414,25 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Name = $subject;
 		$oEvent->Description = $description;
 		$oEvent->Location = $location;
-		$oEvent->Start = $startTS;
-		$oEvent->End = $endTS;
-		$oEvent->AllDay = $allDay;
-		$oEvent->Alarms = @json_decode($alarms, true);
+		if ($withDate)
+		{
+			$oEvent->Start = $startTS;
+			$oEvent->End = $endTS;
+			$oEvent->AllDay = $allDay;
+			$oEvent->Alarms = @json_decode($alarms, true);
+			$aRRule = @json_decode($rrule, true);
+			if ($aRRule)
+			{
+				$oUser = \Aurora\System\Api::getAuthenticatedUser();
+				$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
+				$oRRule->Populate($aRRule);
+				$oEvent->RRule = $oRRule;
+			}
+		}
 		$oEvent->Attendees = @json_decode($attendees, true);
 		$oEvent->Type = $type;
 		$oEvent->Status = $status && $type === 'todo';
 		
-		$aRRule = @json_decode($rrule, true);
-		if ($aRRule)
-		{
-			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
-			$oRRule->Populate($aRRule);
-			$oEvent->RRule = $oRRule;
-		}
 
 		$mResult = $this->oApiCalendarManager->createEvent($UUID, $oEvent);
 		if ($mResult)
@@ -509,7 +512,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function UpdateEvent($UserId, $newCalendarId, $calendarId, $uid, $subject, $description, 
 			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
-			$selectStart, $selectEnd, $type, $status)
+			$selectStart, $selectEnd, $type, $status, $withDate)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -521,10 +524,21 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Name = $subject;
 		$oEvent->Description = $description;
 		$oEvent->Location = $location;
-		$oEvent->Start = $startTS;
-		$oEvent->End = $endTS;
-		$oEvent->AllDay = $allDay;
-		$oEvent->Alarms = @json_decode($alarms, true);
+		if ($withDate)
+		{
+			$oEvent->Start = $startTS;
+			$oEvent->End = $endTS;
+			$oEvent->AllDay = $allDay;
+			$oEvent->Alarms = @json_decode($alarms, true);
+			$aRRule = @json_decode($rrule, true);
+			if ($aRRule)
+			{
+				$oUser = \Aurora\System\Api::getAuthenticatedUser();
+				$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
+				$oRRule->Populate($aRRule);
+				$oEvent->RRule = $oRRule;
+			}
+		}
 		$oEvent->Attendees = @json_decode($attendees, true);
 		$oEvent->Type = $type;
 		if (!empty($status))
@@ -532,14 +546,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->Status = $status && $type === 'todo';
 		}
 		
-		$aRRule = @json_decode($rrule, true);
-		if ($aRRule)
-		{
-			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
-			$oRRule->Populate($aRRule);
-			$oEvent->RRule = $oRRule;
-		}
 		
 		if ($allEvents === 1)
 		{
