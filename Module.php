@@ -377,12 +377,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param boolean $Expand
 	 * @return array|boolean
 	 */
-	public function GetTasks($UserId, $CalendarIds)
+	public function GetTasks($UserId, $CalendarIds, $Completed = true, $Search = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
 		
-		$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds);
+		$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds, $Completed, $Search);
 		
 		return $mResult;
 	}	
@@ -472,7 +472,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param string $Sescription
 	 * @return array|boolean
 	 */
-	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status, $Completed = true, $Search = '')
+	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -485,7 +485,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Type = 'todo';
 		$oEvent->Status = $Status ? 'COMPLETED' : '';
 		
-		return $this->oApiCalendarManager->updateEvent($UUID, $oEvent, $Completed = true, $Search = '');
+		return $this->oApiCalendarManager->updateEvent($UUID, $oEvent);
 	}
 	
 	
