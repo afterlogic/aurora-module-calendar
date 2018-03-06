@@ -147,6 +147,7 @@ class Parser
 						$bStatus = strtolower($sStatus) === 'completed' ? true : false; 
 					}
 					$aEvent['status'] = $bStatus;
+					$aEvent['withDate'] = isset($oVEvent->DTSTART) && isset($oVEvent->DTEND);
 				}
 				
 				$aResult[] = $aEvent;

@@ -435,9 +435,19 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		
 
 		$mResult = $this->oApiCalendarManager->createEvent($UUID, $oEvent);
+		
 		if ($mResult)
 		{
-			$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
+			if ($oEvent->Type === 'todo')
+			{
+				$mResult = [
+					'Events' =>  [$this->GetBaseEvent($UserId, $newCalendarId, $mResult)]
+				];
+			}
+			else
+			{
+				$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
+			}
 		}
 		
 		return $mResult;
@@ -474,6 +484,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status)
 	{
+		$bResult = false;
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
@@ -485,7 +496,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Type = 'todo';
 		$oEvent->Status = $Status ? 'COMPLETED' : '';
 		
-		return $this->oApiCalendarManager->updateEvent($UUID, $oEvent);
+		if ($this->oApiCalendarManager->updateEvent($UUID, $oEvent))
+		{
+			return $this->GetBaseEvent($UserId, $CalendarId, $TaskId);
+		}
+		
+		return $bResult;
 	}
 	
 	
@@ -562,9 +578,17 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		if ($mResult)
 		{
-			$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
+			if ($oEvent->Type === 'todo')
+			{
+				$mResult = [
+					'Events' =>  [$this->GetBaseEvent($UserId, $oEvent->IdCalendar, $oEvent->Id)]
+				];
+			}
+			else
+			{
+				$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
+			}
 		}
-			
 		return $mResult;
 	}	
 	
