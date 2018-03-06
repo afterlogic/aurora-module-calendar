@@ -661,7 +661,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return array|bool
 	 */
-	public function getTasks($sUserUUID, $mCalendarId)
+	public function getTasks($sUserUUID, $mCalendarId, $bCompeted = true, $sSearch = '')
 	{
 		$aResult = array();
 		try
@@ -669,7 +669,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
 
 			foreach ($mCalendarId as $sCalendarId) {
-				$aTasks = $this->oStorage->getTasks($sUserUUID, $sCalendarId);
+				$aTasks = $this->oStorage->getTasks($sUserUUID, $sCalendarId,$bCompeted, $sSearch);
 				if ($aTasks && is_array($aTasks)) {
 					$aResult = array_merge($aResult, $aTasks);
 				}

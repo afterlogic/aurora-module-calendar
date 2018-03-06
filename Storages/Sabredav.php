@@ -1129,7 +1129,7 @@ class Sabredav extends Storage
 	}
 	
 	
-	public function getTasks($sUserUUID, $sCalendarId)
+	public function getTasks($sUserUUID, $sCalendarId, $bCompeted, $sSearch)
 	{
 		$this->init($sUserUUID);
 
@@ -1138,7 +1138,7 @@ class Sabredav extends Storage
 
 		if ($oCalDAVCalendar) {
 
-			$aUrls = $this->getTasksUrls($oCalDAVCalendar);
+			$aUrls = $this->getTasksUrls($oCalDAVCalendar, $bCompeted, $sSearch);
 			$mResult = $this->getItemsByUrls($sUserUUID, $oCalDAVCalendar, $aUrls);
 		}		
 

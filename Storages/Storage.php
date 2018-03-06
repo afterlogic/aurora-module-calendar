@@ -232,7 +232,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return array
 	 */
-	public function getTasks($sUserUUID, $sCalendarId)
+	public function getTasks($sUserUUID, $sCalendarId, $bCompeted, $sSearch)
 	{
 		return array();
 	}
