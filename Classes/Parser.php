@@ -243,7 +243,7 @@ class Parser
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Monthly,
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
-		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByUUID($sUUID);
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
 		if (isset($oVEventBase->RRULE, $oUser)  && $oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
 			$oResult = new RRule($oUser);
