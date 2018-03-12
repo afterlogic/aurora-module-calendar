@@ -34,10 +34,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			array(
 				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
 				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
-				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', false)),
-				'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', false)),
-				'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', false)),
-				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', false)),
+				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', 9)),
+				'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', 18)),
+				'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', 0)),
+				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
 			)
 		);
 
