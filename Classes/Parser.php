@@ -27,8 +27,6 @@ class Parser
 	 */
 	public static function parseEvent($sUUID, $oCalendar, $oVCal, $oVCalOriginal = null)
 	{
-//		$ApiUsersManager =\Aurora\System\Api::GetSystemManager('users');
-
 		$aResult = array();
 		$aRules = array();
 		$aExcludedRecurrences = array();
@@ -76,7 +74,7 @@ class Parser
 					$bIsAppointment = false;
 					$aEvent['attendees'] = array();
 					// TODO
-					if (/*$ApiCapabilityManager->isCalendarAppointmentsSupported($sUUID) && */isset($oVEvent->ATTENDEE))
+					if (1 != 1 && isset($oVEvent->ATTENDEE))
 					{
 						$aEvent['attendees'] = self::parseAttendees($oVEvent);
 
@@ -91,10 +89,9 @@ class Parser
 //					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
 					$sOwnerName = '';
 					$bAllDay = (isset($oVEvent->DTSTART) && !$oVEvent->DTSTART->hasTime());
-					$sTimeZone = 'UTC';
 					if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 					{
-						$sOwnerName  = isset($oUser->Name) ? $oUser->Name : $oUser->PublicId;
+						$sOwnerName  = !empty($oUser->Name) ? $oUser->Name : $oUser->PublicId;
 						$sTimeZone = ($bAllDay) ? 'UTC' : $oUser->DefaultTimeZone;
 					}
 					
@@ -115,7 +112,7 @@ class Parser
 							$dtStart = $oVEvent->DTSTART->getDateTime();
 							if ($dtStart)
 							{
-								$dtStart->add(new \DateInterval('PT1H'));
+								$dtStart = $dtStart->add(new \DateInterval('PT1H'));
 								$oVEvent->DTEND = $dtStart;
 							}
 						}

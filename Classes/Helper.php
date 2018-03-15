@@ -118,7 +118,7 @@ class Helper
 		if (isset($result))
 		{
 			$sTimeZone = $sTimeZone === null ? 'UTC' : $sTimeZone;
-			$result->setTimezone(new \DateTimeZone($sTimeZone));
+			$result = $result->setTimezone(new \DateTimeZone($sTimeZone));
 		}
 		return $result;
 	}
@@ -244,8 +244,6 @@ class Helper
 			}
 		}
 		
-//		$oUser = \Aurora\System\Api::getUserById($iUserId);
-
 		$oVCal =& $oVEvent->parent;
 
 		$oVEvent->UID = $oEvent->Id;
