@@ -641,7 +641,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		$sData = $this->oApiFileCache->get($UUID, $File);
+		$sData = $this->oApiFileCache->get($UUID, $File, '', $this->GetName());
 		if (!empty($sData))
 		{
 			$mCreateEventResult = $this->oApiCalendarManager->createEventFromRaw($UUID, $CalendarId, null, $sData);
@@ -693,7 +693,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			}
 			else if (!empty($File))
 			{
-				$sData = $this->oApiFileCache->get($UUID, $File);
+				$sData = $this->oApiFileCache->get($UUID, $File, '', $this->GetName());
 			}
 			if (!empty($sData))
 			{
@@ -898,7 +898,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		
 		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
 		{
-			$sData = $this->oApiFileCache->get($UUID, $File);
+			$sData = $this->oApiFileCache->get($UUID, $File, '', $this->GetName());
 			if (!empty($sData))
 			{
 				$mResult = $this->oApiCalendarManager->processICS($UserId, $sData, $FromEmail, true);
@@ -950,12 +950,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($bIsIcsExtension)
 			{
 				$sSavedName = 'import-post-' . md5($UploadData['name'] . $UploadData['tmp_name']);
-				if ($this->oApiFileCache->moveUploadedFile($UUID, $sSavedName, $UploadData['tmp_name']))
+				if ($this->oApiFileCache->moveUploadedFile($UUID, $sSavedName, $UploadData['tmp_name'], '', $this->GetName()))
 				{
 					$iImportedCount = $this->oApiCalendarManager->importToCalendarFromIcs(
 							$UUID,
 							$sCalendarId, 
-							$this->oApiFileCache->generateFullFilePath($UUID, $sSavedName)
+							$this->oApiFileCache->generateFullFilePath($UUID, $sSavedName, '', $this->GetName())
 					);
 
 					if (false !== $iImportedCount && -1 !== $iImportedCount)
@@ -967,7 +967,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 						$sError = 'unknown';
 					}
 
-					$this->oApiFileCache->clear($UUID, $sSavedName);
+					$this->oApiFileCache->clear($UUID, $sSavedName, '', $this->GetName());
 				}
 				else
 				{
@@ -1028,7 +1028,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
 					{
 						$sTemptFile = md5($mResult['Body']).'.ics';
-						if ($this->oApiFileCache->put($UUID, $sTemptFile, $mResult['Body']))
+						if ($this->oApiFileCache->put($UUID, $sTemptFile, $mResult['Body'], '', $this->GetName()))
 						{
 							$oIcs = \Aurora\Modules\Mail\Classes\Ics::createInstance();
 
