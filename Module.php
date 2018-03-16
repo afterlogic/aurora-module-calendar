@@ -678,7 +678,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
+		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ false) // TODO
 		{
 			$sData = '';
 			if (!empty($EventId))
@@ -896,7 +896,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		
-		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ true) // TODO
+		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ false) // TODO
 		{
 			$sData = $this->oApiFileCache->get($UUID, $File, '', $this->GetName());
 			if (!empty($sData))
@@ -1038,7 +1038,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
 							
 							// TODO
-							$oIcs->Type = (/*$oApiCapa->isCalendarAppointmentsSupported($oUser->EntityId)*/ true) ? $mResult['Action'] : 'SAVE';
+							$oIcs->Type = (/*$oApiCapa->isCalendarAppointmentsSupported($oUser->EntityId)*/ false) ? $mResult['Action'] : 'SAVE';
 							
 							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
 							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
