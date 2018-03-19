@@ -7,6 +7,10 @@
 		false,
 		"bool"
 	],
+    "AllowTasks": [
+		true,
+		"bool"
+	],
     "AllowAppointments": [
 		true,
 		"bool"

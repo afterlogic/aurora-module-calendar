@@ -59,6 +59,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aSettings = array(
 			'AddDescriptionToTitle' => $this->getConfig('AddDescriptionToTitle', false),
 			'AllowAppointments' => $this->getConfig('AllowAppointments', true),
+			'AllowTasks' => $this->getConfig('AllowTasks', true),
 			'AllowShare' => $this->getConfig('AllowShare', true),
 			'DefaultTab' => $this->getConfig('DefaultTab', 3),
 			'HighlightWorkingDays' => $this->getConfig('HighlightWorkingDays', true),
@@ -379,10 +380,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function GetTasks($UserId, $CalendarIds, $Completed = true, $Search = '')
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
-		$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds, $Completed, $Search);
+		$mResult = [];
+		if ($this->getConfig('AllowTasks', true))
+		{
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+			$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
+
+			$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds, $Completed, $Search);
+		}
 		
 		return $mResult;
 	}	
@@ -462,16 +467,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function CreateTask($UserId, $CalendarId, $Subject)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
-		$oEvent->IdCalendar = $CalendarId;
-		$oEvent->Name = $Subject;
-		$oEvent->Start = \time();
-		$oEvent->End = \time();
-		$oEvent->Type = 'todo';
+		$mResult = false;
+		if ($this->getConfig('AllowTasks', true))
+		{
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+			$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
+			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+			$oEvent->IdCalendar = $CalendarId;
+			$oEvent->Name = $Subject;
+			$oEvent->Start = \time();
+			$oEvent->End = \time();
+			$oEvent->Type = 'todo';
+			
+			$mResult = $this->oApiCalendarManager->createEvent($UUID, $oEvent);
+		}
 		
-		return $this->oApiCalendarManager->createEvent($UUID, $oEvent);
+		return $mResult;
 	}
 	
 	/**
@@ -485,20 +496,23 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status)
 	{
 		$bResult = false;
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
-		$oEvent->IdCalendar = $CalendarId;
-		$oEvent->Id = $TaskId;
-		$oEvent->Name = $Subject;
-		$oEvent->Start = \time();
-		$oEvent->End = \time();
-		$oEvent->Type = 'todo';
-		$oEvent->Status = $Status ? 'COMPLETED' : '';
-		
-		if ($this->oApiCalendarManager->updateEvent($UUID, $oEvent))
+		if ($this->getConfig('AllowTasks', true))
 		{
-			return $this->GetBaseEvent($UserId, $CalendarId, $TaskId);
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+			$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
+			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+			$oEvent->IdCalendar = $CalendarId;
+			$oEvent->Id = $TaskId;
+			$oEvent->Name = $Subject;
+			$oEvent->Start = \time();
+			$oEvent->End = \time();
+			$oEvent->Type = 'todo';
+			$oEvent->Status = $Status ? 'COMPLETED' : '';
+
+			if ($this->oApiCalendarManager->updateEvent($UUID, $oEvent))
+			{
+				return $this->GetBaseEvent($UserId, $CalendarId, $TaskId);
+			}
 		}
 		
 		return $bResult;
