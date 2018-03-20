@@ -1013,6 +1013,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					$oPart->ContentType() === 'text/calendar'){
 				
 				$aResult[] = $oPart;
+				break;
 			}
 		}
 	}
@@ -1038,7 +1039,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				$sData = $aDataItem['Data'];
 				if (!empty($sData))
 				{
-					$mResult = $this->oApiCalendarManager->processICS($UUID, $sData, $sFromEmail);
+					try
+					{
+						$mResult = $this->oApiCalendarManager->processICS($UUID, $sData, $sFromEmail);
+					}
+					catch (\Exception $oEx)
+					{
+						$mResult = false;
+					}
 					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
 					{
 						$sTemptFile = md5($mResult['Body']).'.ics';
