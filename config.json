@@ -8,7 +8,7 @@
 		"bool"
 	],
     "AllowTasks": [
-		true,
+		false,
 		"bool"
 	],
     "AllowAppointments": [
