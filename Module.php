@@ -493,7 +493,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param string $Sescription
 	 * @return array|boolean
 	 */
-	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status)
+	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status, $WithDate = false)
 	{
 		$bResult = false;
 		if ($this->getConfig('AllowTasks', true))
@@ -504,10 +504,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Id = $TaskId;
 			$oEvent->Name = $Subject;
-			$oEvent->Start = \time();
-			$oEvent->End = \time();
 			$oEvent->Type = 'todo';
 			$oEvent->Status = $Status ? 'COMPLETED' : '';
+			if ($WithDate)
+			{
+				$oEvent->Start = \time();
+				$oEvent->End = \time();
+			}
 
 			if ($this->oApiCalendarManager->updateEvent($UUID, $oEvent))
 			{
