@@ -1097,68 +1097,84 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oUser = \Aurora\System\Api::getAuthenticatedUser();
+			
 			$aData = $this->oStorage->getEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false && isset($aData['vcal']) && 
-					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
+					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) 
+				{
 				$oVCal = $aData['vcal'];
 				$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVEventIndex($oVCal->VEVENT);
-				if ($iIndex !== false) {
+				
+				if ($iIndex !== false) 
+				{
 					$oVCal->VEVENT[$iIndex]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
 					$oDTExdate = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
 					$oDTStart = $oVCal->VEVENT[$iIndex]->DTSTART->getDatetime();
 
 					$mIndex = \Aurora\Modules\Calendar\Classes\Helper::isRecurrenceExists($oVCal->VEVENT, $sRecurrenceId);
-					if ($bDelete) {
+					
+					if ($bDelete) 
+					{
 						// if exclude first event in occurrence
-						if ($oDTExdate == $oDTStart) {
-							$it = new \Sabre\VObject\RecurrenceIterator($oVCal, (string) $oVCal->VEVENT[$iIndex]->UID);
+						if ($oDTExdate == $oDTStart) 
+						{
+							$it = new \Sabre\VObject\Recur\EventIterator($oVCal, (string) $oVCal->VEVENT[$iIndex]->UID);
 							$it->fastForward($oDTStart);
 							$it->next();
 
-							if ($it->valid()) {
+							if ($it->valid()) 
+							{
 								$oEventObj = $it->getEventObject();
 							}
 
 							$oVCal->VEVENT[$iIndex]->DTSTART = $oEventObj->DTSTART;
 							$oVCal->VEVENT[$iIndex]->DTEND = $oEventObj->DTEND;
 						}
-
+						
 						$oVCal->VEVENT[$iIndex]->add('EXDATE', $oDTExdate);
 
-						if (false !== $mIndex) {
+						if (false !== $mIndex) 
+						{
 							$aVEvents = $oVCal->VEVENT;
 							unset($oVCal->VEVENT);
 
-							foreach($aVEvents as $oVEvent) {
-								if ($oVEvent->{'RECURRENCE-ID'}) {
+							foreach($aVEvents as $oVEvent) 
+							{
+								if ($oVEvent->{'RECURRENCE-ID'}) 
+								{
 									$iRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
-									if ($iRecurrenceId == (int) $sRecurrenceId) {
+									if ($iRecurrenceId == (int) $sRecurrenceId) 
+									{
 										continue;
 									}
 								}
 								$oVCal->add($oVEvent);
 							}
 						}
-					} else {
+					} 
+					else 
+					{
 						$oVEventRecur = null;
-						if ($mIndex === false) {
+						if ($mIndex === false) 
+						{
 							$oVEventRecur = $oVCal->add('VEVENT', array(
 								'SEQUENCE' => 1,
 								'TRANSP' => 'OPAQUE',
 								'RECURRENCE-ID' => $oDTExdate
 							));
-						} else if (isset($oVCal->VEVENT[$mIndex])) {
+						} 
+						else if (isset($oVCal->VEVENT[$mIndex])) 
+						{
 							$oVEventRecur = $oVCal->VEVENT[$mIndex];
 						}
-						if ($oVEventRecur) {
+						if ($oVEventRecur) 
+						{
 							$oEvent->RRule = null;
 							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVEventRecur);
 						}
 					}
-
-					return $this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
-
+					$this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $aData['url'], $oVCal);
 				}
 			}
 			return false;
@@ -1605,7 +1621,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 					if (isset($sOrganizer))
 					{
-						if ($sOrganizer === $sUserUUID->Email)
+						if ($sOrganizer === $sUserUUID)
 						{
 							$oDateTimeNow = new DateTime("now");
 							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
@@ -1630,7 +1646,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 				}
-				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $sEventId);
+				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $aData['url']);
 				if ($oResult)
 				{
 					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module

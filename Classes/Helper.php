@@ -147,9 +147,7 @@ class Helper
 		{
 			if (isset($oEvent->{'RECURRENCE-ID'}))
 			{
-				$recurrenceId = (string) self::getRecurrenceId($oEvent);
-
-				if ($recurrenceId === $sRecurrenceId)
+				if (self::getRecurrenceId($oEvent) === $sRecurrenceId)
 				{
 					$mResult = $mKey;
 					break;
