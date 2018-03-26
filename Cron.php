@@ -362,7 +362,7 @@ class Reminder
 
 				if (!isset($aCacheEvents[$sEventId]) && isset($oUser))
 				{
-					$aCacheEvents[$sEventId]['data'] = $this->oApiCalendarManager->getEvent($oUser->UUID, $sCalendarUri, $sEventId);
+					$aCacheEvents[$sEventId]['data'] = $this->oApiCalendarManager->getEvent($oUser->PublicId, $sCalendarUri, $sEventId);
 
 					$dt = new \DateTime();
 					$dt->setTimestamp($iStartTime);
