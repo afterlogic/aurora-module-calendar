@@ -460,6 +460,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	
 	/**
 	 * 
+	 * @param type $UserId
+	 * @param type $CalendarId
+	 * @param type $EventId
+	 * @param type $Data
+	 * @return type
+	 */
+	public function CreateEventFromData($UserId, $CalendarId, $EventId, $Data)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
+		
+		return $this->oApiCalendarManager->createEventFromRaw($UUID, $CalendarId, $EventId, $Data);
+	}
+	
+	/**
+	 * 
 	 * @param int $UserId
 	 * @param string $CalendarId
 	 * @param string $Subject

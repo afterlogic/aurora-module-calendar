@@ -839,7 +839,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oVCal = \Sabre\VObject\Reader::read($sData);
-			if ($oVCal && $oVCal->VEVENT) {
+			if ($oVCal && ($oVCal->VEVENT || $oVCal->VTODO)) {
 				if (!empty($sEventId)) {
 					$oResult = $this->oStorage->createEvent($sUserUUID, $sCalendarId, $sEventId, $oVCal);
 				} else {
@@ -849,6 +849,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							$aEvents[$sUid] = new \Sabre\VObject\Component\VCalendar();
 						}
 						$aEvents[$sUid]->add($oVEvent);
+					}
+					foreach ($oVCal->VTODO as $oVTodo) {
+						$sUid = (string)$oVTodo->UID;
+						if (!isset($aEvents[$sUid])) {
+							$aEvents[$sUid] = new \Sabre\VObject\Component\VCalendar();
+						}
+						$aEvents[$sUid]->add($oVTodo);
 					}
 
 					foreach ($aEvents as $sUid => $oVCalNew) {
