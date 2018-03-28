@@ -669,7 +669,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
 
 			foreach ($mCalendarId as $sCalendarId) {
-				$aTasks = $this->oStorage->getTasks($sUserUUID, $sCalendarId,$bCompeted, $sSearch);
+				$aTasks = $this->oStorage->getTasks($sUserUUID, $sCalendarId, $bCompeted, $sSearch);
 				if ($aTasks && is_array($aTasks)) {
 					$aResult = array_merge($aResult, $aTasks);
 				}
@@ -839,7 +839,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oVCal = \Sabre\VObject\Reader::read($sData);
-			if ($oVCal && ($oVCal->VEVENT || $oVCal->VTODO)) {
+			if ($oVCal && $oVCal->VEVENT) {
 				if (!empty($sEventId)) {
 					$oResult = $this->oStorage->createEvent($sUserUUID, $sCalendarId, $sEventId, $oVCal);
 				} else {
@@ -849,13 +849,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							$aEvents[$sUid] = new \Sabre\VObject\Component\VCalendar();
 						}
 						$aEvents[$sUid]->add($oVEvent);
-					}
-					foreach ($oVCal->VTODO as $oVTodo) {
-						$sUid = (string)$oVTodo->UID;
-						if (!isset($aEvents[$sUid])) {
-							$aEvents[$sUid] = new \Sabre\VObject\Component\VCalendar();
-						}
-						$aEvents[$sUid]->add($oVTodo);
 					}
 
 					foreach ($aEvents as $sUid => $oVCalNew) {
@@ -993,17 +986,34 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 					$oVCalCopy = clone $oVCal;
-					if (!isset($oEvent->RRule) && $oEvent->Type === 'event') {
-						unset($oVCalCopy->VEVENT);
-						if (isset($oVCal->VEVENT))
-						{
-							foreach ($oVCal->VEVENT as $oVEvent) {
-								$oVEvent->SEQUENCE = (int) $oVEvent->SEQUENCE->getValue() + 1;
-								if (!isset($oVEvent->{'RECURRENCE-ID'})) {
-									$oVCalCopy->add($oVEvent);
-								}
-							}
-						}
+					if (!isset($oEvent->RRule)) 
+                    {
+                        if ($oEvent->Type === 'event')
+                        {
+                            unset($oVCalCopy->VEVENT);
+                            if (isset($oVCal->VEVENT))
+                            {
+                                foreach ($oVCal->VEVENT as $oVEvent) {
+                                    $oVEvent->SEQUENCE = (int) $oVEvent->SEQUENCE->getValue() + 1;
+                                    if (!isset($oVEvent->{'RECURRENCE-ID'})) {
+                                        $oVCalCopy->add($oVEvent);
+                                    }
+                                }
+                            }
+                        }
+                        if ($oEvent->Type === 'todo')
+                        {
+                            unset($oVCalCopy->VTODO);
+                            if (isset($oVCal->VTODO))
+                            {
+                                foreach ($oVCal->VTODO as $oVTodo) {
+                                    $oVTodo->SEQUENCE = (int) $oVTodo->SEQUENCE->getValue() + 1;
+                                    if (!isset($oVTodo->{'RECURRENCE-ID'})) {
+                                        $oVCalCopy->add($oVTodo);
+                                    }
+                                }
+                            }
+                        }
 					}
 
 					$oResult = $this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCalCopy);
@@ -1104,84 +1114,68 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			
 			$aData = $this->oStorage->getEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false && isset($aData['vcal']) && 
-					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) 
-				{
+					$aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) {
 				$oVCal = $aData['vcal'];
 				$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVEventIndex($oVCal->VEVENT);
-				
-				if ($iIndex !== false) 
-				{
+				if ($iIndex !== false) {
 					$oVCal->VEVENT[$iIndex]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
 					$oDTExdate = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
 					$oDTStart = $oVCal->VEVENT[$iIndex]->DTSTART->getDatetime();
 
 					$mIndex = \Aurora\Modules\Calendar\Classes\Helper::isRecurrenceExists($oVCal->VEVENT, $sRecurrenceId);
-					
-					if ($bDelete) 
-					{
+					if ($bDelete) {
 						// if exclude first event in occurrence
-						if ($oDTExdate == $oDTStart) 
-						{
-							$it = new \Sabre\VObject\Recur\EventIterator($oVCal, (string) $oVCal->VEVENT[$iIndex]->UID);
+						if ($oDTExdate == $oDTStart) {
+							$it = new \Sabre\VObject\RecurrenceIterator($oVCal, (string) $oVCal->VEVENT[$iIndex]->UID);
 							$it->fastForward($oDTStart);
 							$it->next();
 
-							if ($it->valid()) 
-							{
+							if ($it->valid()) {
 								$oEventObj = $it->getEventObject();
 							}
 
 							$oVCal->VEVENT[$iIndex]->DTSTART = $oEventObj->DTSTART;
 							$oVCal->VEVENT[$iIndex]->DTEND = $oEventObj->DTEND;
 						}
-						
+
 						$oVCal->VEVENT[$iIndex]->add('EXDATE', $oDTExdate);
 
-						if (false !== $mIndex) 
-						{
+						if (false !== $mIndex) {
 							$aVEvents = $oVCal->VEVENT;
 							unset($oVCal->VEVENT);
 
-							foreach($aVEvents as $oVEvent) 
-							{
-								if ($oVEvent->{'RECURRENCE-ID'}) 
-								{
+							foreach($aVEvents as $oVEvent) {
+								if ($oVEvent->{'RECURRENCE-ID'}) {
 									$iRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
-									if ($iRecurrenceId == (int) $sRecurrenceId) 
-									{
+									if ($iRecurrenceId == (int) $sRecurrenceId) {
 										continue;
 									}
 								}
 								$oVCal->add($oVEvent);
 							}
 						}
-					} 
-					else 
-					{
+					} else {
 						$oVEventRecur = null;
-						if ($mIndex === false) 
-						{
+						if ($mIndex === false) {
 							$oVEventRecur = $oVCal->add('VEVENT', array(
 								'SEQUENCE' => 1,
 								'TRANSP' => 'OPAQUE',
 								'RECURRENCE-ID' => $oDTExdate
 							));
-						} 
-						else if (isset($oVCal->VEVENT[$mIndex])) 
-						{
+						} else if (isset($oVCal->VEVENT[$mIndex])) {
 							$oVEventRecur = $oVCal->VEVENT[$mIndex];
 						}
-						if ($oVEventRecur) 
-						{
+						if ($oVEventRecur) {
 							$oEvent->RRule = null;
 							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVEventRecur);
 						}
 					}
-					$this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $aData['url'], $oVCal);
+
+					return $this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
+
 				}
 			}
 			return false;
@@ -1628,7 +1622,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 					if (isset($sOrganizer))
 					{
-						if ($sOrganizer === $sUserUUID)
+						if ($sOrganizer === $sUserUUID->Email)
 						{
 							$oDateTimeNow = new DateTime("now");
 							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
@@ -1653,7 +1647,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 				}
-				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $aData['url']);
+				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $sEventId);
 				if ($oResult)
 				{
 					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module

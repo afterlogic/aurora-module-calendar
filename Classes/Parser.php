@@ -32,24 +32,28 @@ class Parser
 		$aExcludedRecurrences = array();
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
-		if (isset($oVCalOriginal))
-		{
-			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($sUUID, $oVCalOriginal);
-			$aExcludedRecurrences = \Aurora\Modules\Calendar\Classes\Parser::getExcludedRecurrences($oVCalOriginal);
-		}
 
 		$VComponent = null;
 		$sType = 'event';
+        $sComponent = 'VEVEN';
 		if (isset($oVCal->VEVENT))
 		{
+            $sComponent = 'VEVEN';
 			$VComponent = $oVCal->VEVENT;
 		}
 		else if (isset($oVCal->VTODO))
 		{
+            $sComponent = 'VTODO';
 			$VComponent = $oVCal->VTODO;
 			$sType = 'todo';
 		}
-		
+        
+        if (isset($oVCalOriginal))
+		{
+			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($sUUID, $oVCalOriginal, $sComponent);
+			$aExcludedRecurrences = \Aurora\Modules\Calendar\Classes\Parser::getExcludedRecurrences($oVCalOriginal);
+		}
+        
 		if (isset($oVCal, $VComponent) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || $oCalendar->IsPublic))
 		{
 			foreach ($VComponent as $oVEvent)
@@ -316,11 +320,11 @@ class Parser
 	 *
 	 * @return array
 	 */
-	public static function getRRules($sUUID, $oVCal)
+	public static function getRRules($sUUID, $oVCal, $sComponent = 'VEVENT')
 	{
 		$aResult = array();
 		
-		foreach($oVCal->getBaseComponents('VEVENT') as $oVEventBase)
+		foreach($oVCal->getBaseComponents($sComponent) as $oVEventBase)
 		{
 			if (isset($oVEventBase->RRULE))
 			{
