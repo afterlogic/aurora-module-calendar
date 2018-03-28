@@ -839,7 +839,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oVCal = \Sabre\VObject\Reader::read($sData);
-			if ($oVCal && $oVCal->VEVENT) {
+			if ($oVCal && ($oVCal->VEVENT || $oVCal->VTODO)) {
 				if (!empty($sEventId)) {
 					$oResult = $this->oStorage->createEvent($sUserUUID, $sCalendarId, $sEventId, $oVCal);
 				} else {
@@ -849,6 +849,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							$aEvents[$sUid] = new \Sabre\VObject\Component\VCalendar();
 						}
 						$aEvents[$sUid]->add($oVEvent);
+					}
+					foreach ($oVCal->VTODO as $oVTodo) {
+						$sUid = (string)$oVTodo->UID;
+						if (!isset($aEvents[$sUid])) {
+							$aEvents[$sUid] = new \Sabre\VObject\Component\VCalendar();
+						}
+						$aEvents[$sUid]->add($oVTodo);
 					}
 
 					foreach ($aEvents as $sUid => $oVCalNew) {
@@ -1173,9 +1180,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVEventRecur);
 						}
 					}
-
-					return $this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
-
+					$this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $aData['url'], $oVCal);
 				}
 			}
 			return false;
@@ -1622,7 +1627,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 					if (isset($sOrganizer))
 					{
-						if ($sOrganizer === $sUserUUID->Email)
+						if ($sOrganizer === $sUserUUID)
 						{
 							$oDateTimeNow = new DateTime("now");
 							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
@@ -1647,7 +1652,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 				}
-				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $sEventId);
+				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $aData['url']);
 				if ($oResult)
 				{
 					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module
@@ -1925,3 +1930,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		return $bResult;
 	}
 }
+
+
+
+
+
+

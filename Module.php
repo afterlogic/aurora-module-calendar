@@ -460,6 +460,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	
 	/**
 	 * 
+	 * @param type $UserId
+	 * @param type $CalendarId
+	 * @param type $EventId
+	 * @param type $Data
+	 * @return type
+	 */
+	public function CreateEventFromData($UserId, $CalendarId, $EventId, $Data)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
+		
+		return $this->oApiCalendarManager->createEventFromRaw($UUID, $CalendarId, $EventId, $Data);
+	}
+	
+	/**
+	 * 
 	 * @param int $UserId
 	 * @param string $CalendarId
 	 * @param string $Subject
@@ -493,7 +509,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param string $Sescription
 	 * @return array|boolean
 	 */
-	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status)
+	public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status, $WithDate = false)
 	{
 		$bResult = false;
 		if ($this->getConfig('AllowTasks', true))
@@ -504,10 +520,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Id = $TaskId;
 			$oEvent->Name = $Subject;
-			$oEvent->Start = \time();
-			$oEvent->End = \time();
 			$oEvent->Type = 'todo';
 			$oEvent->Status = $Status ? 'COMPLETED' : '';
+			if ($WithDate)
+			{
+				$oEvent->Start = \time();
+				$oEvent->End = \time();
+			}
 
 			if ($this->oApiCalendarManager->updateEvent($UUID, $oEvent))
 			{
@@ -1017,6 +1036,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					$oPart->ContentType() === 'text/calendar'){
 				
 				$aResult[] = $oPart;
+				break;
 			}
 		}
 	}
@@ -1042,7 +1062,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				$sData = $aDataItem['Data'];
 				if (!empty($sData))
 				{
-					$mResult = $this->oApiCalendarManager->processICS($UUID, $sData, $sFromEmail);
+					try
+					{
+						$mResult = $this->oApiCalendarManager->processICS($UUID, $sData, $sFromEmail);
+					}
+					catch (\Exception $oEx)
+					{
+						$mResult = false;
+					}
 					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
 					{
 						$sTemptFile = md5($mResult['Body']).'.ics';
