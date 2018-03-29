@@ -62,7 +62,7 @@ class Event
 		$this->Deleted		  = null;
 		$this->Modified		  = false;
         $this->Sequence       = 0;
-		$this->Type			  = 'event';
+		$this->Type			  = 'VEVENT';
 		$this->Status		  =	false;
 	}
 }

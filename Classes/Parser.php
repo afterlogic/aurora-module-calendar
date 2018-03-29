@@ -20,12 +20,12 @@ class Parser
 	/**
 	 * @param string $sUUID
 	 * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
-	 * @param \Sabre\VObject\Component\VCalendar $oVCal
-	 * @param \Sabre\VObject\Component\VCalendar $oVCalOriginal Default value is **null**.
+	 * @param \Sabre\VObject\Component\VCalendar $oExpandedVCal
+	 * @param \Sabre\VObject\Component\VCalendar $oVCal Default value is **null**.
 	 *
 	 * @return array
 	 */
-	public static function parseEvent($sUUID, $oCalendar, $oVCal, $oVCalOriginal = null)
+	public static function parseEvent($sUUID, $oCalendar, $oExpandedVCal, $oVCal = null)
 	{
 		$aResult = array();
 		$aRules = array();
@@ -33,58 +33,57 @@ class Parser
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
 
-		$VComponent = null;
-		$sType = 'event';
-        $sComponent = 'VEVEN';
-		if (isset($oVCal->VEVENT))
+        $sComponent = 'VEVENT';
+		if (isset($oExpandedVCal->{$sComponent}))
 		{
-            $sComponent = 'VEVEN';
-			$VComponent = $oVCal->VEVENT;
+			$sType = $sComponent;
 		}
-		else if (isset($oVCal->VTODO))
+		else 
 		{
-            $sComponent = 'VTODO';
-			$VComponent = $oVCal->VTODO;
-			$sType = 'todo';
-		}
-        
-        if (isset($oVCalOriginal))
-		{
-			$aRules = \Aurora\Modules\Calendar\Classes\Parser::getRRules($sUUID, $oVCalOriginal, $sComponent);
-			$aExcludedRecurrences = \Aurora\Modules\Calendar\Classes\Parser::getExcludedRecurrences($oVCalOriginal);
+			$sComponent = 'VTODO';
+			if (isset($oExpandedVCal->{$sComponent}))
+			{
+				$sType = $sComponent;
+			}
 		}
         
-		if (isset($oVCal, $VComponent) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || $oCalendar->IsPublic))
+        if (isset($oVCal))
 		{
-			foreach ($VComponent as $oVEvent)
+			$aRules = self::getRRules($sUUID, $oVCal, $sComponent);
+			$aExcludedRecurrences = self::getExcludedRecurrences($oVCal);
+		}
+        
+		if (isset($oExpandedVCal, $oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || $oCalendar->IsPublic))
+		{
+			foreach ($oExpandedVCal->{$sComponent} as $oVComponent)
 			{
 				$sOwnerEmail = $oCalendar->Owner;
 				$aEvent = array();
 				
-				if (isset($oVEvent, $oVEvent->UID))
+				if (isset($oVComponent, $oVComponent->UID))
 				{
-					$sUid = (string)$oVEvent->UID;
-					$sRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getRecurrenceId($oVEvent);
+					$sUid = (string)$oVComponent->UID;
+					$sRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getRecurrenceId($oVComponent);
 
 					$sId = $sUid . '-' . $sRecurrenceId;
 					$aEvent['type'] = $sType;
 					
 					if (array_key_exists($sId, $aExcludedRecurrences))
 					{
-						$oVEvent = $aExcludedRecurrences[$sId];
+						$oVComponent = $aExcludedRecurrences[$sId];
 						$aEvent['excluded'] = true;
 					}
 
 					$bIsAppointment = false;
 					$aEvent['attendees'] = array();
 					// TODO
-					if (1 != 1 && isset($oVEvent->ATTENDEE))
+					if (1 != 1 && isset($oVComponent->ATTENDEE))
 					{
-						$aEvent['attendees'] = self::parseAttendees($oVEvent);
+						$aEvent['attendees'] = self::parseAttendees($oVComponent);
 
-						if (isset($oVEvent->ORGANIZER))
+						if (isset($oVComponent->ORGANIZER))
 						{
-							$sOwnerEmail = str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER));
+							$sOwnerEmail = str_replace('mailto:', '', strtolower((string)$oVComponent->ORGANIZER));
 						}
 						$bIsAppointment = ($oUser instanceof \Aurora\Modules\Core\Classes\User && $sOwnerEmail !== $oUser->PublicId);
 					}
@@ -92,7 +91,7 @@ class Parser
 //					$oOwner = $ApiUsersManager->getAccountByEmail($sOwnerEmail);
 //					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
 					$sOwnerName = '';
-					$bAllDay = (isset($oVEvent->DTSTART) && !$oVEvent->DTSTART->hasTime());
+					$bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
 					if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 					{
 						$sOwnerName  = !empty($oUser->Name) ? $oUser->Name : $oUser->PublicId;
@@ -102,22 +101,21 @@ class Parser
 					$aEvent['appointment'] = $bIsAppointment;
 					$aEvent['appointmentAccess'] = 0;
 					
-					$aEvent['alarms'] = self::parseAlarms($oVEvent);
+					$aEvent['alarms'] = self::parseAlarms($oVComponent);
 
-
-					if (!isset($oVEvent->DTEND))
+					if (!isset($oVComponent->DTEND))
 					{
-						if (!isset($oVEvent->DTSTART) && isset($oVEvent->CREATED))
+						if (!isset($oVComponent->DTSTART) && isset($oVComponent->CREATED))
 						{
-							$oVEvent->DTSTART = $oVEvent->CREATED->getDateTime();
+							$oVComponent->DTSTART = $oVComponent->CREATED->getDateTime();
 						}
-						if (isset($oVEvent->DTSTART))
+						if (isset($oVComponent->DTSTART))
 						{
-							$dtStart = $oVEvent->DTSTART->getDateTime();
+							$dtStart = $oVComponent->DTSTART->getDateTime();
 							if ($dtStart)
 							{
 								$dtStart = $dtStart->add(new \DateInterval('PT1H'));
-								$oVEvent->DTEND = $dtStart;
+								$oVComponent->DTEND = $dtStart;
 							}
 						}
 					}
@@ -125,13 +123,13 @@ class Parser
 					$aEvent['calendarId'] = $oCalendar->Id;
 					$aEvent['id'] = $sId;
 					$aEvent['uid'] = $sUid;
-					$aEvent['subject'] = $oVEvent->SUMMARY ? (string)$oVEvent->SUMMARY : '';
-					$aDescription = $oVEvent->DESCRIPTION ? \Sabre\VObject\Parser\MimeDir::unescapeValue((string)$oVEvent->DESCRIPTION) : array('');
+					$aEvent['subject'] = $oVComponent->SUMMARY ? (string)$oVComponent->SUMMARY : '';
+					$aDescription = $oVComponent->DESCRIPTION ? \Sabre\VObject\Parser\MimeDir::unescapeValue((string)$oVComponent->DESCRIPTION) : array('');
 					$aEvent['description'] = $aDescription[0];
-					$aEvent['location'] = $oVEvent->LOCATION ? (string)$oVEvent->LOCATION : '';
-					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEvent->DTSTART, $sTimeZone);
-					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEvent->DTSTART, $sTimeZone);
-					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEvent->DTEND, $sTimeZone);
+					$aEvent['location'] = $oVComponent->LOCATION ? (string)$oVComponent->LOCATION : '';
+					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTSTART, $sTimeZone);
+					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTSTART, $sTimeZone);
+					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTEND, $sTimeZone);
 					$aEvent['allDay'] = $bAllDay;
 					$aEvent['owner'] = $sOwnerEmail;
 					$aEvent['ownerName'] = $sOwnerName;
@@ -142,13 +140,13 @@ class Parser
 						$aEvent['rrule'] = $aRules[$sUid]->toArray();
 					}
 					$bStatus = false;
-					if ($oVEvent->STATUS)
+					if ($oVComponent->STATUS)
 					{
-						$sStatus = (string)$oVEvent->STATUS;
+						$sStatus = (string)$oVComponent->STATUS;
 						$bStatus = strtolower($sStatus) === 'completed' ? true : false; 
 					}
 					$aEvent['status'] = $bStatus;
-					$aEvent['withDate'] = isset($oVEvent->DTSTART) && isset($oVEvent->DTEND);
+					$aEvent['withDate'] = isset($oVComponent->DTSTART) && isset($oVComponent->DTEND);
 				}
 				
 				$aResult[] = $aEvent;
@@ -159,17 +157,17 @@ class Parser
 	}
 
 	/**
-	 * @param \Sabre\VObject\Component\VEvent $oVEvent
+	 * @param \Sabre\VObject\Component $oVComponenet
 	 *
 	 * @return array
 	 */
-	public static function parseAlarms($oVEvent)
+	public static function parseAlarms($oVComponenet)
 	{
 		$aResult = array();
 		
-		if ($oVEvent->VALARM)
+		if ($oVComponenet->VALARM)
 		{
-			foreach($oVEvent->VALARM as $oVAlarm)
+			foreach($oVComponenet->VALARM as $oVAlarm)
 			{
 				if (isset($oVAlarm->TRIGGER) && $oVAlarm->TRIGGER instanceof \Sabre\VObject\Property\ICalendar\Duration)
 				{
@@ -183,17 +181,17 @@ class Parser
 	}
 
 	/**
-	 * @param \Sabre\VObject\Component\VEvent $oVEvent
+	 * @param \Sabre\VObject\Component $oVComponent
 	 *
 	 * @return array
 	 */
-	public static function parseAttendees($oVEvent)
+	public static function parseAttendees($oVComponent)
 	{
 		$aResult = array();
 		
-		if (isset($oVEvent->ATTENDEE))
+		if (isset($oVComponent->ATTENDEE))
 		{
-			foreach($oVEvent->ATTENDEE as $oAttendee)
+			foreach($oVComponent->ATTENDEE as $oAttendee)
 			{
 				$iStatus = \Aurora\Modules\Calendar\Enums\AttendeeStatus::Unknown;
 				if (isset($oAttendee['PARTSTAT']))
@@ -226,11 +224,11 @@ class Parser
 
 	/**
 	 * @param string $sUUID
-	 * @param \Sabre\VObject\Component\VEvent $oVEventBase
+	 * @param \Sabre\VObject\Component $oVComponentBase
 	 *
 	 * @return RRule|null
 	 */
-	public static function parseRRule($sUUID, $oVEventBase)
+	public static function parseRRule($sUUID, $oVComponentBase)
 	{
 		$oResult = null;
 
@@ -245,10 +243,10 @@ class Parser
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
-		if (isset($oVEventBase->RRULE, $oUser)  && $oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if (isset($oVComponentBase->RRULE, $oUser)  && $oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
 			$oResult = new RRule($oUser);
-			$aRules = $oVEventBase->RRULE->getParts();
+			$aRules = $oVComponentBase->RRULE->getParts();
 			if (isset($aRules['FREQ']))
 			{
 				$bIsPosiblePeriod = array_search(strtolower($aRules['FREQ']), array_map('strtolower', $aPeriods));
@@ -307,8 +305,8 @@ class Parser
 				}
 			}
 			
-			$oResult->StartBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEventBase->DTSTART, $oUser->DefaultTimeZone);
-			$oResult->EndBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEventBase->DTEND, $oUser->DefaultTimeZone);
+			$oResult->StartBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponentBase->DTSTART, $oUser->DefaultTimeZone);
+			$oResult->EndBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponentBase->DTEND, $oUser->DefaultTimeZone);
 		}
 
 		return $oResult;
@@ -317,6 +315,7 @@ class Parser
 	/**
 	 * @param string $sUUID
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
+	 * @param string $sComponent
 	 *
 	 * @return array
 	 */
@@ -324,14 +323,14 @@ class Parser
 	{
 		$aResult = array();
 		
-		foreach($oVCal->getBaseComponents($sComponent) as $oVEventBase)
+		foreach($oVCal->getBaseComponents($sComponent) as $oVComponentBase)
 		{
-			if (isset($oVEventBase->RRULE))
+			if (isset($oVComponentBase->RRULE))
 			{
-				$oRRule = Parser::parseRRule($sUUID, $oVEventBase);
+				$oRRule = self::parseRRule($sUUID, $oVComponentBase);
 				if ($oRRule)
 				{
-					$aResult[(string)$oVEventBase->UID] = $oRRule;
+					$aResult[(string)$oVComponentBase->UID] = $oRRule;
 				}
 			}
 		}
@@ -347,8 +346,8 @@ class Parser
 	public static function getExcludedRecurrences($oVCal)
 	{
         $aRecurrences = array();
-        foreach($oVCal->children() as $oComponent) {
-
+        foreach($oVCal->children() as $oComponent) 
+		{
             if (!$oComponent instanceof \Sabre\VObject\Component)
 			{
                 continue;

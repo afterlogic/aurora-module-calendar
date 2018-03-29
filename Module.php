@@ -378,7 +378,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param boolean $Expand
 	 * @return array|boolean
 	 */
-	public function GetTasks($UserId, $CalendarIds, $Completed = true, $Search = '')
+	public function GetTasks($UserId, $CalendarIds, $Completed = true, $Search = '', $Start = null, $End = null, $Expand = true)
 	{
 		$mResult = [];
 		if ($this->getConfig('AllowTasks', true))
@@ -386,7 +386,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
 
-			$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds, $Completed, $Search);
+			$mResult = $this->oApiCalendarManager->getTasks($UUID, $CalendarIds, $Completed, $Search, $Start, $End, $Expand);
 		}
 		
 		return $mResult;
@@ -410,7 +410,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @return array|boolean
 	 */
 	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS, 
-			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'event', $status = false, $withDate = true)
+			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$UUID = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -436,23 +436,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		$oEvent->Attendees = @json_decode($attendees, true);
 		$oEvent->Type = $type;
-		$oEvent->Status = $status && $type === 'todo';
+		$oEvent->Status = $status && $type === 'VTODO';
 		
 
 		$mResult = $this->oApiCalendarManager->createEvent($UUID, $oEvent);
 		
 		if ($mResult)
 		{
-			if ($oEvent->Type === 'todo')
-			{
-				$mResult = [
-					'Events' =>  [$this->GetBaseEvent($UserId, $newCalendarId, $mResult)]
-				];
-			}
-			else
-			{
-				$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
-			}
+			$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
 		}
 		
 		return $mResult;
@@ -493,7 +484,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->Name = $Subject;
 			$oEvent->Start = \time();
 			$oEvent->End = \time();
-			$oEvent->Type = 'todo';
+			$oEvent->Type = 'VTODO';
 			
 			$mResult = $this->oApiCalendarManager->createEvent($UUID, $oEvent);
 		}
@@ -520,7 +511,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Id = $TaskId;
 			$oEvent->Name = $Subject;
-			$oEvent->Type = 'todo';
+			$oEvent->Type = 'VTODO';
 			$oEvent->Status = $Status ? 'COMPLETED' : '';
 			if ($WithDate)
 			{
@@ -592,7 +583,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Type = $type;
 		if (!empty($status))
 		{
-			$oEvent->Status = $status && $type === 'todo';
+			$oEvent->Status = $status && $type === 'VTODO';
 		}
 		
 		if ($allEvents === 1)
@@ -611,20 +602,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		if ($mResult)
 		{
 				$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
-
-/*            
-            if ($oEvent->Type === 'todo')
-			{
-				$mResult = [
-					'Events' =>  [$this->GetBaseEvent($UserId, $oEvent->IdCalendar, $oEvent->Id)]
-				];
-			}
-			else
-			{
-				$mResult = $this->oApiCalendarManager->getExpandedEvent($UUID, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
-			}
- * 
- */
 		}
 		return $mResult;
 	}	

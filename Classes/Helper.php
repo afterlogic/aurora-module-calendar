@@ -135,19 +135,19 @@ class Helper
 	}
 
 	/**
-	 * @param \Sabre\VObject\Component\VEvent $oVEvent
+	 * @param \Sabre\VObject\Component $oVComponent
 	 * @param string $sRecurrenceId
 	 *
 	 * @return mixed
 	 */
-	public static function isRecurrenceExists($oVEvent, $sRecurrenceId)
+	public static function isRecurrenceExists($oVComponent, $sRecurrenceId)
 	{
 		$mResult = false;
-		foreach($oVEvent as $mKey => $oEvent)
+		foreach($oVComponent as $mKey => $oComponent)
 		{
-			if (isset($oEvent->{'RECURRENCE-ID'}))
+			if (isset($oComponent->{'RECURRENCE-ID'}))
 			{
-				if (self::getRecurrenceId($oEvent) === $sRecurrenceId)
+				if (self::getRecurrenceId($oComponent) === $sRecurrenceId)
 				{
 					$mResult = $mKey;
 					break;
@@ -199,15 +199,15 @@ class Helper
 		return $iMinutes;
 	}
 
-	public static function getBaseVEventIndex($oVEvents)
+	public static function getBaseVComponentIndex($oVComponent)
 	{
 		$iIndex = -1;
-		if (isset($oVEvents))
+		if (isset($oVComponent))
 		{
-			foreach($oVEvents as $oVEvent)
+			foreach($oVComponent as $oComponent)
 			{
 				$iIndex++;
-				if (empty($oVEvent->{'RECURRENCE-ID'}))
+				if (empty($oComponent->{'RECURRENCE-ID'}))
 				{
 					break;
 				}
@@ -226,7 +226,7 @@ class Helper
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
 		
-		if ($oEvent->Type === 'todo')
+		if ($oEvent->Type === 'VTODO')
 		{
 			if ($oEvent->Status)
 			{
