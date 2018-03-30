@@ -923,14 +923,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$oEvent->Id = \Sabre\DAV\UUIDUtil::getUUID();
 
 			$oVCal = new \Sabre\VObject\Component\VCalendar();
-
-			$oVCal->add($oEvent->Type, array(
+			$sComponent = $oEvent->Type;
+			$oVCal->add($sComponent, array(
 				'SEQUENCE' => 0,
 				'TRANSP' => 'OPAQUE',
 				'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
 			));
 
-			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->{$oEvent->Type});
+			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->$sComponent);
 
 			$oResult = $this->oStorage->createEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 
