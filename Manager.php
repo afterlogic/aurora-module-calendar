@@ -278,17 +278,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 
 	/**
-	 *
-	 * @param array $a
-	 * @param array $b
-	 * @return int
-	 */
-	public function ___qSortCallback ($a, $b)
-	{
-		return ($a['is_default'] === '1' ? -1 : 1);
-	}
-
-	/**
 	 * Creates new calendar.
 	 *
 	 * @param string $sUserUUID

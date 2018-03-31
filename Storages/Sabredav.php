@@ -72,7 +72,8 @@ class Sabredav extends Storage
 	 */
 	public function init($sUserUUID)
 	{
-		if (!$this->_initialized($sUserUUID)) {
+		if (!$this->_initialized($sUserUUID)) 
+		{
 			$this->UserUUID = $sUserUUID;
 			$this->Principal = $this->getPrincipalInfo($sUserUUID);
 		}
@@ -95,11 +96,16 @@ class Sabredav extends Storage
 	{
 		$aPrincipal = array();
 
-		$aPrincipalProperties = \Afterlogic\DAV\Backend::Principal()->getPrincipalByPath(\Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $sUserUUID);
-		if (isset($aPrincipalProperties['uri'])) {
+		$aPrincipalProperties = \Afterlogic\DAV\Backend::Principal()->getPrincipalByPath(
+			\Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $sUserUUID
+		);
+		if (isset($aPrincipalProperties['uri'])) 
+		{
 			$aPrincipal['uri'] = $aPrincipalProperties['uri'];
 			$aPrincipal['id'] = $aPrincipalProperties['id'];
-		} else {
+		} 
+		else 
+		{
 			$aPrincipal['uri'] = \Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $sUserUUID;
 			$aPrincipal['id'] = -1;
 		}
@@ -115,7 +121,8 @@ class Sabredav extends Storage
 	{
 		$iResult = \Aurora\Modules\Calendar\Enums\Permission::Read;
 		$oCalendar = $this->getCalendar($sUserUUID, $sCalendarId);
-		if ($oCalendar) {
+		if ($oCalendar) 
+		{
 			$iResult = $oCalendar->Shared ? $oCalendar->Access : \Aurora\Modules\Calendar\Enums\Permission::Write;
 		}
 		return $iResult;
@@ -132,11 +139,15 @@ class Sabredav extends Storage
 	{
 		$oCalendar = false;
 		list(, $sCalendarId) = \Sabre\HTTP\URLUtil::splitPath($sPath);
-		if (count($this->CalDAVCalendarsCache) > 0 && isset($this->CalDAVCalendarsCache[$sCalendarId][$this->UserUUID])) {
+		if (count($this->CalDAVCalendarsCache) > 0 && isset($this->CalDAVCalendarsCache[$sCalendarId][$this->UserUUID])) 
+		{
 			$oCalendar = $this->CalDAVCalendarsCache[$sCalendarId][$this->UserUUID];
-		} else {
+		} 
+		else 
+		{
 			$oCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
-			if (isset($oCalendars) && $oCalendars->childExists($sCalendarId)) {
+			if (isset($oCalendars) && $oCalendars->childExists($sCalendarId)) 
+			{
 				$oCalendar = $oCalendars->getChild($sCalendarId);
 				$this->CalDAVCalendarsCache[$sCalendarId][$this->UserUUID] = $oCalendar;
 			}
@@ -152,7 +163,8 @@ class Sabredav extends Storage
      */	
 	public function parseCalendar($oCalDAVCalendar)
 	{
-		if (!($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar)) {
+		if (!($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar)) 
+		{
 			return false;
 		}
 		$aProps = $oCalDAVCalendar->getProperties(array());
@@ -160,35 +172,47 @@ class Sabredav extends Storage
 		$oCalendar = new \Aurora\Modules\Calendar\Classes\Calendar($oCalDAVCalendar->getName());
 		$oCalendar->IntId = $oCalDAVCalendar->getId();
 
-		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
+		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) 
+		{
 			$oCalendar->Shared = true;
-			if (isset($aProps['{http://sabredav.org/ns}read-only'])) {
+			if (isset($aProps['{http://sabredav.org/ns}read-only'])) 
+			{
 				$oCalendar->Access = $aProps['{http://sabredav.org/ns}read-only'] ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::Write;
 			}
-			if (isset($aProps['{http://calendarserver.org/ns/}summary'])) {
+			if (isset($aProps['{http://calendarserver.org/ns/}summary'])) 
+			{
 				$oCalendar->Description = $aProps['{http://calendarserver.org/ns/}summary'];
 			}
-		} else {
-			if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'])) {
+		} 
+		else 
+		{
+			if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'])) 
+			{
 				$oCalendar->Description = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'];
 			}
 		}
 
-		if (isset($aProps['{DAV:}displayname'])) {
+		if (isset($aProps['{DAV:}displayname'])) 
+		{
 			$oCalendar->DisplayName = $aProps['{DAV:}displayname'];
 		}
-		if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag'])) {
+		if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag'])) 
+		{
 			$oCalendar->CTag = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag'];
 		}
-		if (isset($aProps['{http://apple.com/ns/ical/}calendar-color'])) {
+		if (isset($aProps['{http://apple.com/ns/ical/}calendar-color'])) 
+		{
 			$oCalendar->Color = $aProps['{http://apple.com/ns/ical/}calendar-color'];
 		}
 		if (isset($aProps['{http://apple.com/ns/ical/}calendar-order'])) {
 			$oCalendar->Order = $aProps['{http://apple.com/ns/ical/}calendar-order'];
 		}
-		if (isset($aProps['{http://sabredav.org/ns}owner-principal'])) {
+		if (isset($aProps['{http://sabredav.org/ns}owner-principal'])) 
+		{
 			$oCalendar->Principals = array($aProps['{http://sabredav.org/ns}owner-principal']);
-		} else {
+		} 
+		else 
+		{
 			$oCalendar->Principals = array($oCalDAVCalendar->getOwner());
 		}
 
@@ -220,11 +244,15 @@ class Sabredav extends Storage
 
 		$oCalDAVCalendar = null;
 		$oCalendar = false;
-		if (count($this->CalendarsCache) > 0 && isset($this->CalendarsCache[$this->UserUUID][$sCalendarId])) {
+		if (count($this->CalendarsCache) > 0 && isset($this->CalendarsCache[$this->UserUUID][$sCalendarId])) 
+		{
 			$oCalendar = $this->CalendarsCache[$this->UserUUID][$sCalendarId];
-		} else {
+		} 
+		else 
+		{
 			$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-			if ($oCalDAVCalendar) {
+			if ($oCalDAVCalendar) 
+			{
 				$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 			}
 		}
@@ -309,15 +337,20 @@ class Sabredav extends Storage
 		{
 			$this->init($sUserUUID);
 
-			if (count($this->CalendarsCache) > 0 && isset($this->CalendarsCache[$sUserUUID])) {
+			if (count($this->CalendarsCache) > 0 && isset($this->CalendarsCache[$sUserUUID])) 
+			{
 				$aCalendars = $this->CalendarsCache[$sUserUUID];
-			} else {
+			} 
+			else 
+			{
 				$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 
-				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
+				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) 
+				{
 
 					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-					if ($oCalendar) {
+					if ($oCalendar) 
+					{
 						$aCalendars[$oCalendar->Id] = $oCalendar;
 					}
 				}
@@ -337,10 +370,13 @@ class Sabredav extends Storage
 	{
 		$aCalendarNames = array();
 		$aCalendars = $this->getCalendars($sUserUUID);
-		if (is_array($aCalendars)) {
+		if (is_array($aCalendars)) 
+		{
 			/* @var $oCalendar \Aurora\Modules\Calendar\Classes\Calendar */
-			foreach ($aCalendars as $oCalendar) {
-				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
+			foreach ($aCalendars as $oCalendar) 
+			{
+				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) 
+				{
 					$aCalendarNames[$oCalendar->Id] = $oCalendar->DisplayName;
 				}
 			}
@@ -399,9 +435,11 @@ class Sabredav extends Storage
 		$bOnlyColor = ($sName === null && $sDescription === null && $iOrder === null);
 
 		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
-		if ($oUserCalendars->childExists($sCalendarId)) {
+		if ($oUserCalendars->childExists($sCalendarId)) 
+		{
 			$oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
-			if ($oCalDAVCalendar) {
+			if ($oCalDAVCalendar) 
+			{
 				$aCalendarProperties = $oCalDAVCalendar->getProperties([]);
 				$sPrincipal = $oCalDAVCalendar->getOwner(); 
 
@@ -414,22 +452,29 @@ class Sabredav extends Storage
 				$bSharedToMe = ($bShared && !$bSharedToAll && !$bIsOwner);
 				
 				$aUpdateProperties = array();
-				if ($bSharedToMe) {
+				if ($bSharedToMe) 
+				{
 					$aUpdateProperties = array(
 						'href' => $sUserUUID,
 						'color' => $sColor,
 					);
-					if (!$bOnlyColor) {
+					if (!$bOnlyColor) 
+					{
 						$aUpdateProperties['displayname'] = $sName;
 						$aUpdateProperties['summary'] = $sDescription;
 						$aUpdateProperties['color'] = $sColor;
 					}
-				} else {
-					if ($bOnlyColor) {
+				} 
+				else 
+				{
+					if ($bOnlyColor) 
+					{
 						$aUpdateProperties = array(
 							'{http://apple.com/ns/ical/}calendar-color' => $sColor
 						);
-					} else {
+					} 
+					else 
+					{
 						$aUpdateProperties = array(
 							'{DAV:}displayname' => $sName,
 							'{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description' => $sDescription,
@@ -480,12 +525,17 @@ class Sabredav extends Storage
 		$this->init($sUserUUID);
 
 		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
-		if ($oUserCalendars->childExists($sCalendarId)) {
+		if ($oUserCalendars->childExists($sCalendarId)) 
+		{
 			$oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
-			if ($oCalDAVCalendar) {
-				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
+			if ($oCalDAVCalendar) 
+			{
+				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) 
+				{
 					$this->unsubscribeCalendar($sUserUUID, $sCalendarId);
-				} else {
+				} 
+				else 
+				{
 					$oCalDAVCalendar->delete();
 				}
 
@@ -506,13 +556,19 @@ class Sabredav extends Storage
 	{
 		$this->init($sUserUUID);
 
-		if (is_array($this->Principal) && count($this->Principal)) {
+		if (is_array($this->Principal) && count($this->Principal)) 
+		{
 			$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
-			foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
-				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar) {
-					if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) {
+			foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) 
+			{
+				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar) 
+				{
+					if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) 
+					{
 						//$this->unsubscribeCalendar($iUserId, $sCalendarId);
-					} else {
+					} 
+					else 
+					{
 						$oCalDAVCalendar->delete();
 					}
 				}
@@ -531,7 +587,8 @@ class Sabredav extends Storage
 		$this->init($sUserUUID);
 
 		$oCalendar = $this->getCalendar($sUserUUID, $sCalendarId);
-		if ($oCalendar) {
+		if ($oCalendar) 
+		{
 			$this->getBackend()->updateShares($oCalendar->IntId, array(), array($sUserUUID->Email));
 		}
 
@@ -551,7 +608,8 @@ class Sabredav extends Storage
 
 		$oCalendar = $this->getCalendar($sUserUUID, $sCalendarId);
 
-		if ($oCalendar) {
+		if ($oCalendar) 
+		{
 			$aCalendarUsers = $this->getCalendarUsers($sUserUUID, $oCalendar);
 			$aSharesEmails = array_map(function ($aItem) {
 				return $aItem['email'];
@@ -561,24 +619,30 @@ class Sabredav extends Storage
 			$remove = array();
 			
 			// add to delete list
-			foreach($aCalendarUsers as $aCalendarUser) {
-				if (!in_array($aCalendarUser['email'], $aSharesEmails)) {
+			foreach($aCalendarUsers as $aCalendarUser) 
+			{
+				if (!in_array($aCalendarUser['email'], $aSharesEmails)) 
+				{
 					$remove[] = $aCalendarUser['email'];
 				}
 			}
 			
-			if (count($oCalendar->Principals) > 0) {
-				foreach ($aShares as $aShare) {
-					if ($aShare['access'] === \Aurora\Modules\Calendar\Enums\Permission::RemovePermission) {
+			if (count($oCalendar->Principals) > 0) 
+			{
+				foreach ($aShares as $aShare) 
+				{
+					if ($aShare['access'] === \Aurora\Modules\Calendar\Enums\Permission::RemovePermission) 
+					{
 						$remove[] = $aShare['email'];
-					} else {
+					} 
+					else 
+					{
 						$add[] = array(
 							'href' => $aShare['email'],
 							'readonly' => ($aShare['access'] === \Aurora\Modules\Calendar\Enums\Permission::Read) ? 1 : 0,
 						);
 					}
 				}
-				
 				$this->getBackend()->updateShares($oCalendar->IntId, $add, $remove);
 			}
 		}
@@ -600,18 +664,25 @@ class Sabredav extends Storage
 
 		$oCalendar = $this->getCalendar($sUserUUID, $sCalendarId);
 
-		if ($oCalendar) {
-			if (count($oCalendar->Principals) > 0) {
+		if ($oCalendar) 
+		{
+			if (count($oCalendar->Principals) > 0) 
+			{
 				$add = array();
 				$remove = array();
-				if ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::RemovePermission) {
+				if ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::RemovePermission) 
+				{
 					$remove[] = $sUserId;
-				} else {
+				} 
+				else 
+				{
 					$aItem['href'] = $sUserId;
-					if ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::Read) {
+					if ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::Read) 
+					{
 						$aItem['readonly'] = true;
 					}
-					elseif ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::Write) {
+					elseif ($iPerms === \Aurora\Modules\Calendar\Enums\Permission::Write) 
+					{
 						$aItem['readonly'] = false;
 					}
 					$add[] = $aItem;
@@ -636,10 +707,9 @@ class Sabredav extends Storage
 
 		$oCalendar = $this->getCalendar($sUserUUID, $sCalendarId);
 
-		if ($oCalendar) {
-			if (count($oCalendar->Principals) > 0) {
-				$this->updateCalendarShares($sUserUUID, $sCalendarId, array());
-			}
+		if ($oCalendar && count($oCalendar->Principals) > 0) 
+		{
+			$this->updateCalendarShares($sUserUUID, $sCalendarId, array());
 		}
 
 		return true;
@@ -670,10 +740,12 @@ class Sabredav extends Storage
 		$aResult = array();
 		$this->init($sUserUUID);
 
-		if ($oCalendar != null) {
+		if ($oCalendar != null) 
+		{
 			$aShares = $this->getBackend()->getShares($oCalendar->IntId);
 
-			foreach($aShares as $aShare) {
+			foreach($aShares as $aShare) 
+			{
 				$aResult[] = array(
 					'name' => basename($aShare['href']),
 					'email' => basename($aShare['href']),
@@ -697,15 +769,18 @@ class Sabredav extends Storage
 
 		$mResult = false;
 		$oCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalendar) {
+		if ($oCalendar) 
+		{
 			$aCollectedTimezones = array();
 
 			$aTimezones = array();
 			$aObjects = array();
 
-			foreach ($oCalendar->getChildren() as $oChild) {
+			foreach ($oCalendar->getChildren() as $oChild) 
+			{
 				$oNodeComp = \Sabre\VObject\Reader::read($oChild->get());
-				foreach($oNodeComp->children() as $oNodeChild) {
+				foreach($oNodeComp->children() as $oNodeChild) 
+				{
 					switch($oNodeChild->name) 
 					{
 						case 'VEVENT' :
@@ -729,10 +804,12 @@ class Sabredav extends Storage
 			}
 
 			$oVCal = new \Sabre\VObject\Component\VCalendar();
-			foreach($aTimezones as $oTimezone) {
+			foreach($aTimezones as $oTimezone) 
+			{
 				$oVCal->add($oTimezone);
 			}
-			foreach($aObjects as $oObject) {
+			foreach($aObjects as $oObject) 
+			{
 				$oVCal->add($oObject);
 			}
 
@@ -755,18 +832,22 @@ class Sabredav extends Storage
 
 		$mResult = false;
 		$oCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalendar) {
+		if ($oCalendar) 
+		{
 			// You can either pass a readable stream, or a string.
 			$h = fopen($sTempFileName, 'r');
 			$splitter = new \Sabre\VObject\Splitter\ICalendar($h);
 
 			$iCount = 0;
-			while($oVCalendar = $splitter->getNext()) {
+			while($oVCalendar = $splitter->getNext()) 
+			{
 				$oVEvents = $oVCalendar->getBaseComponents('VEVENT');
-				if (isset($oVEvents) && 0 < count($oVEvents)) {
+				if (isset($oVEvents) && 0 < count($oVEvents)) 
+				{
 					$sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
 					
-					if (!$oCalendar->childExists($sUid . '.ics')) {
+					if (!$oCalendar->childExists($sUid . '.ics')) 
+					{
 						$oVEvents[0]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 						$oCalendar->createFile($sUid . '.ics', $oVCalendar->serialize());
 						$iCount++;
@@ -902,9 +983,11 @@ class Sabredav extends Storage
 			'CTag' => 1
 		);
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalDAVCalendar) {
+		if ($oCalDAVCalendar) 
+		{
 			$oCalDAVCalendarObject = $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId);
-			if ($oCalDAVCalendarObject) {
+			if ($oCalDAVCalendarObject) 
+			{
 				$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
 				
 				$oCalendar = $this->parseCalendar($oCalDAVCalendar);
@@ -927,8 +1010,10 @@ class Sabredav extends Storage
 	public function findEventInCalendars($sUserUUID,  $sEventId, $aCalendars)
 	{
 		$aEventCalendarIds = array();
-		foreach (array_keys($aCalendars) as $sKey) {
-			if ($this->eventExists($sUserUUID, $sKey, $sEventId)) {
+		foreach (array_keys($aCalendars) as $sKey) 
+		{
+			if ($this->eventExists($sUserUUID, $sKey, $sEventId)) 
+			{
 				$aEventCalendarIds[] = $sKey;
 			}
 		}
@@ -949,7 +1034,8 @@ class Sabredav extends Storage
 		$this->init($sUserUUID);
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalDAVCalendar && $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId) !== false) {
+		if ($oCalDAVCalendar && $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId) !== false) 
+		{
 			$bResult = true;
 		}
 		
@@ -1161,8 +1247,8 @@ class Sabredav extends Storage
 		$mResult = false;
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 
-		if ($oCalDAVCalendar) {
-
+		if ($oCalDAVCalendar) 
+		{
 			$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
 			$mResult = $this->getItemsByUrls($sUserUUID, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
 		}
@@ -1202,9 +1288,11 @@ class Sabredav extends Storage
 		$sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalDAVCalendar) {
+		if ($oCalDAVCalendar) 
+		{
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
+			{
 				$sData = $oVCal->serialize();
 				$oCalDAVCalendar->createFile($sEventUrl, $sData);
 
@@ -1233,19 +1321,25 @@ class Sabredav extends Storage
 		$sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalDAVCalendar) {
+		if ($oCalDAVCalendar) 
+		{
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
+			{
 				$oCalDAVCalendarObject = $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId);
-				if ($oCalDAVCalendarObject) {
+				if ($oCalDAVCalendarObject) 
+				{
 					$oChild = $oCalDAVCalendar->getChild($oCalDAVCalendarObject->getName());
-					if ($oChild) {
+					if ($oChild) 
+					{
 						$oChild->put($sData);
 						$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
 						unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 						return true;
 					}
-				} else {
+				} 
+				else 
+				{
 					$oCalDAVCalendar->createFile($sEventUrl, $sData);
 					$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
 					return true;
@@ -1306,11 +1400,14 @@ class Sabredav extends Storage
 		$sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalDAVCalendar) {
+		if ($oCalDAVCalendar) 
+		{
 			$oCalDAVCalendarNew = $this->getCalDAVCalendar($sNewCalendarId);
-			if ($oCalDAVCalendarNew) {
+			if ($oCalDAVCalendarNew) 
+			{
 				$oCalendar = $this->parseCalendar($oCalDAVCalendarNew);
-				if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
+				if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
+				{
 					$oCalDAVCalendarNew->createFile($sEventUrl, $sData);
 	
 					$oChild = $oCalDAVCalendar->getChild($sEventUrl);
@@ -1341,9 +1438,11 @@ class Sabredav extends Storage
 		$sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
 
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
-		if ($oCalDAVCalendar) {
+		if ($oCalDAVCalendar) 
+		{
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
+			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
+			{
 				$oChild = $oCalDAVCalendar->getChild($sEventUrl);
 				$oChild->delete();
 
