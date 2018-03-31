@@ -552,7 +552,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function UpdateEvent($UserId, $newCalendarId, $calendarId, $uid, $subject, $description, 
 			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
-			$selectStart, $selectEnd, $type, $status, $withDate)
+			$selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
