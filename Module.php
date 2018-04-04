@@ -1104,14 +1104,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
 
-		$aUserCalendars = isset($aArgs["PublicId"]) ? $this->Decorator()->GetCalendars($aArgs["PublicId"]) : [];
+		
+		$aUserCalendars = isset($aArgs["User"]) ? $this->Decorator()->GetCalendars($aArgs["User"]->PublicId) : [];
 		if (isset($aUserCalendars["Calendars"]))
 		{
 			foreach ($aUserCalendars["Calendars"] as $oCalendar)
 			{
 				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
 				{
-					$this->Decorator()->DeleteCalendar($aArgs["PublicId"], $oCalendar->Id);
+					$this->Decorator()->DeleteCalendar($aArgs["User"]->PublicId, $oCalendar->Id);
 				}
 			}
 		}
