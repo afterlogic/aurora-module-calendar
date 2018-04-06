@@ -68,7 +68,7 @@ class Parser
 					$sId = $sUid . '-' . $sRecurrenceId;
 					$aEvent['type'] = $sType;
 					
-					if (array_key_exists($sId, $aExcludedRecurrences))
+					if (array_key_exists($sId, $aExcludedRecurrences) && isset($oVComponent->{'RECURRENCE-ID'}))
 					{
 						$oVComponent = $aExcludedRecurrences[$sId];
 						$aEvent['excluded'] = true;
@@ -157,17 +157,17 @@ class Parser
 	}
 
 	/**
-	 * @param \Sabre\VObject\Component $oVComponenet
+	 * @param \Sabre\VObject\Component $oVComponent
 	 *
 	 * @return array
 	 */
-	public static function parseAlarms($oVComponenet)
+	public static function parseAlarms($oVComponent)
 	{
 		$aResult = array();
 		
-		if ($oVComponenet->VALARM)
+		if ($oVComponent->VALARM)
 		{
-			foreach($oVComponenet->VALARM as $oVAlarm)
+			foreach($oVComponent->VALARM as $oVAlarm)
 			{
 				if (isset($oVAlarm->TRIGGER) && $oVAlarm->TRIGGER instanceof \Sabre\VObject\Property\ICalendar\Duration)
 				{

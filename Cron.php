@@ -343,7 +343,7 @@ class Reminder
 		
 		return $sDateFormat.' '.$sTimeFormat;
 	}
-	
+
 	public function GetReminders($iStart, $iEnd)
 	{
 		$aReminders = $this->oApiCalendarManager->getReminders($iStart, $iEnd);
@@ -359,6 +359,7 @@ class Reminder
 				$sCalendarUri = $aReminder['calendaruri'];
 				$sEventId = $aReminder['eventid'];
 				$iStartTime = $aReminder['starttime'];
+				$iReminderTime = $aReminder['time'];
 
 				if (!isset($aCacheEvents[$sEventId]) && isset($oUser))
 				{
@@ -366,52 +367,31 @@ class Reminder
 
 					$dt = new \DateTime();
 					$dt->setTimestamp($iStartTime);
-					$sDefaultTimeZone = new \DateTimeZone($oUser->DefaultTimeZone ? : 'UTC');
-					$dt->setTimezone($sDefaultTimeZone);
+					$oDefaultTimeZone = new \DateTimeZone($oUser->DefaultTimeZone ? : 'UTC');
+					$dt->setTimezone($oDefaultTimeZone);
 
-					$aEventClear = Array();
+					$aEventClear = [];
 					if (is_array($aCacheEvents[$sEventId]['data']))
 					{
-						foreach ($aCacheEvents[$sEventId]['data'] as $key =>$val)
+						$CurrentEvent = null;
+						foreach ($aCacheEvents[$sEventId]['data'] as $key =>$aEvent)
 						{
 							if (is_int($key))
 							{
-								$aEventClear[$key] = $val['id'];
-
-								if (is_array($val['alarms']))
+								if (empty($CurrentEvent))
 								{
-									$oNowDT = new \DateTime('now', $sDefaultTimeZone);
-
-									$oStarReminderDT = new \DateTime();
-									$oStarReminderDT->setTimestamp($val['startTS'] - max($val['alarms']) * 60);
-									$oStarReminderDT->setTimezone($sDefaultTimeZone);
-
-									$oStarEventDT = new \DateTime();
-									$oStarEventDT->setTimestamp($val['startTS']);
-									$oStarEventDT->setTimezone($sDefaultTimeZone);
-
-									if ($oNowDT->getTimestamp() < $oStarReminderDT->getTimestamp() || !($oNowDT->format('H:i:s') >= $oStarReminderDT->format('H:i:s') && $oNowDT->format('H:i:s') <= $oStarEventDT->format('H:i:s')))
-									{ //start - ( max(alarms) * 60 ) > now OR StarReminderTime >= now >= StarEventTime
-										unset($aCacheEvents[$sEventId]['data'][$key]);
-									}
+									$CurrentEvent = $aEvent;
 								}
+								elseif (isset($aEvent['excluded']) && $this->EventHasReminder($aEvent, $iReminderTime))
+								{
+									$CurrentEvent = $aEvent;
+								}
+								unset($aCacheEvents[$sEventId]['data'][$key]);
 							}
 						}
-						//clearing of the doubles of excluded event 
-						$aCountEventClear = array_count_values($aEventClear);
-						foreach ($aCountEventClear as $key => $value)
+						if (!empty($CurrentEvent))
 						{
-							if ($value > 1)
-							{
-								$aDoubles = array_keys($aEventClear, $key);
-								foreach ($aDoubles as $val)
-								{
-									if (isset($aCacheEvents[$sEventId]['data'][$val]) && !isset($aCacheEvents[$sEventId]['data'][$val]['excluded']))
-									{
-										unset($aCacheEvents[$sEventId]['data'][$val]);
-									}
-								}
-							}
+							$aCacheEvents[$sEventId]['data'][0] = $CurrentEvent;
 						}
 					}
 					$aCacheEvents[$sEventId]['time'] = $dt->format($this->getDateTimeFormat($oUser));
@@ -426,16 +406,28 @@ class Reminder
 		return $aEvents;
 	}
 
+	public function EventHasReminder($aEvent, $iReminderTime)
+	{
+		foreach ($aEvent['alarms'] as $iAlarm)
+		{
+			if ($aEvent['startTS'] - $iAlarm * 60 === (int) $iReminderTime)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function Execute()
 	{
 		\Aurora\System\Api::Log('---------- Start cron script', \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
 		$oTimeZoneUTC = new \DateTimeZone('UTC');
-		$oNowDT_UTC = new \DateTime('now', $oTimeZoneUTC);
-		$iNowTS_UTC = $oNowDT_UTC->getTimestamp();
+		$oNowDT_UTC = new \DateTimeImmutable('now', $oTimeZoneUTC);
+		$iNowTS = $oNowDT_UTC->getTimestamp();
 
 		$oStartDT_UTC = clone $oNowDT_UTC;
-		$oStartDT_UTC->sub(new \DateInterval('PT30M'));
+		$oStartDT_UTC = $oStartDT_UTC->sub(new \DateInterval('PT30M'));
 
 		if (file_exists($this->sCurRunFilePath))
 		{
@@ -443,19 +435,19 @@ class Reminder
 			$sCurRunFileTS = fread($handle, 10);
 			if (!empty($sCurRunFileTS) && is_numeric($sCurRunFileTS))
 			{
-				$oStartDT_UTC = new \DateTime("@$sCurRunFileTS");
+				$oStartDT_UTC = new \DateTimeImmutable("@$sCurRunFileTS");
 			}
 		}
 
-		$iStartTS_UTC = $oStartDT_UTC->getTimestamp();
+		$iStartTS = $oStartDT_UTC->getTimestamp();
 
-		if ($iNowTS_UTC >= $iStartTS_UTC)
+		if ($iNowTS >= $iStartTS)
 		{
 			\Aurora\System\Api::Log('Start time: '.$oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 			\Aurora\System\Api::Log('End time: '.$oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
-			
-			$aEvents = $this->GetReminders($iStartTS_UTC, $iNowTS_UTC);
-			
+
+			$aEvents = $this->GetReminders($iStartTS, $iNowTS);
+
 			foreach ($aEvents as $sEmail => $aUserCalendars)
 			{
 				foreach ($aUserCalendars as $sCalendarUri => $aUserEvents)
@@ -482,26 +474,33 @@ class Reminder
 										$sEventName = $aEvent['subject'];
 										$sEventText = $aEvent['description'];
 										$bAllDay = $aEvent['allDay'];
+										$sDate = $aUserEvent['time'];
 
-										if (isset($vCal->getBaseComponent('VEVENT')->RRULE) && $iEventStartTS < $iNowTS_UTC)
+										if (isset($vCal->getBaseComponent('VEVENT')->RRULE) && $iEventStartTS < $iNowTS)
 										{ // the correct date for repeatable events
-											$oEventStartDT = new \DateTime();
-											$oEventStartDT->setTimestamp($iEventStartTS);
-											$oEventStartDT->setTimezone($oTimeZoneUTC);
-											$oEventStartDT = new \DateTime($oNowDT_UTC->format('Y-m-d') . ' ' . $oEventStartDT->format('H:i:s'), $oTimeZoneUTC);
-											$iEventStartTS = $oEventStartDT->getTimestamp();
-											$oEventStartDT->setTimezone(new \DateTimeZone($oUser->DefaultTimeZone ? : 'UTC'));
-											$sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
+											$aBaseEvents = $vCal->getBaseComponents('VEVENT');
+											if (isset($aBaseEvents[0]))
+											{
+												$oEventStartDT = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oNowDT_UTC, $aBaseEvents[0]);
+												$sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
+												if ($bAllDay)
+												{
+													$sDate = $oEventStartDT->format('d m Y');
+												}
+												else
+												{
+													$sDate = $oEventStartDT->format('d m Y H:i');
+												}
+												$iEventStartTS = $oEventStartDT->getTimestamp();
+											}
 										}
 
-										$sDate = $aUserEvent['time'];
-										
-										$sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS_UTC, $bAllDay);
+										$sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay);
 										
 										$aUsers = array(
 											$oUser->IdUser => $oUser
 										);
-										
+
 										$aCalendarUsers = $this->oApiCalendarManager->getCalendarUsers($oUser, $oCalendar);
 										if (0 < count($aCalendarUsers))
 										{
@@ -514,14 +513,14 @@ class Reminder
 												}
 											}
 										}
-										
-										foreach ($aUsers as $oUsertem)
+
+										foreach ($aUsers as $oUserItem)
 										{
-											$bIsMessageSent = $this->sendMessage($oUsertem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
+											$bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
 											if ($bIsMessageSent)
 											{
-												$this->oApiCalendarManager->updateReminder($oUsertem->PublicId, $sCalendarUri, $sEventId, $vCal->serialize());
-												\Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUsertem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+												$this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId, $vCal->serialize());
+												\Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
 											}
 											else
 											{
@@ -540,7 +539,7 @@ class Reminder
 				}
 			}
 
-			file_put_contents($this->sCurRunFilePath, $iNowTS_UTC);
+			file_put_contents($this->sCurRunFilePath, $iNowTS);
 		}
 
 		\Aurora\System\Api::Log('---------- End cron script', \Aurora\System\Enums\LogLevel::Full, 'cron-');

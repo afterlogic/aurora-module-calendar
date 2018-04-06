@@ -748,7 +748,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				{
 					$oVCal = $aData['vcal'];
 					$oCalendar = $this->oStorage->getCalendar($sUserUUID, $sCalendarId);
-					$mResult = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserUUID, $oCalendar, $oVCal);
+					$mResult = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserUUID, $oCalendar, $oVCal, $oVCal);
 					$mResult['vcal'] = $oVCal;
 				}
 			}
@@ -912,7 +912,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$oEvent->Id = \Sabre\DAV\UUIDUtil::getUUID();
 
 			$oVCal = new \Sabre\VObject\Component\VCalendar();
-			$sComponent = $oEvent->Type;
+			$sComponent = !empty($oEvent->Type) ? $oEvent->Type : 'VEVENT';
 			$oVCal->add($sComponent, array(
 				'SEQUENCE' => 0,
 				'TRANSP' => 'OPAQUE',
@@ -1219,7 +1219,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVEventRecur);
 						}
 					}
-					$this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $aData['url'], $oVCal);
+					$this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 					return true;
 				}
 			}
@@ -1723,7 +1723,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					{
 						if ($sOrganizer === $sUserUUID)
 						{
-							$oDateTimeNow = new DateTime("now");
+							$oDateTimeNow = new DateTimeImmutable("now");
 							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
 							$oDateTimeRepeat = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oDateTimeNow, $oVEvent);
 							$bRrule = isset($oVEvent->RRULE);
@@ -1746,7 +1746,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 				}
-				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $aData['url']);
+				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $sEventId);
 				if ($oResult)
 				{
 					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module

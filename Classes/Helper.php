@@ -25,7 +25,7 @@ class Helper
 	 *
 	 * @return int|false
 	 */
-	public static function getActualReminderTime($oEvent, $oNowDT, $oStartDT)
+	public static function getActualReminderTime($oEvent, $oNowDT, $oStartDT, $iWorkDayStartsOffset = 0, $iOffset = 0)
 	{
 		$aReminders = \Aurora\Modules\Calendar\Classes\Parser::parseAlarms($oEvent);
 
@@ -38,12 +38,12 @@ class Helper
 			$aRemindersTime = array();
 			foreach ($aReminders as $iReminder)
 			{
-				$aRemindersTime[] = $iStartEventTS - $iReminder * 60;
+				$aRemindersTime[] = $iStartEventTS + $iWorkDayStartsOffset - $iReminder * 60;
 			}
 			sort($aRemindersTime);
 			foreach ($aRemindersTime as $iReminder)
 			{
-				if ($iReminder > $iNowTS)
+				if ($iReminder > $iNowTS + $iOffset)
 				{
 					return $iReminder;
 				}
@@ -59,13 +59,28 @@ class Helper
 	 *
 	 * @return \DateTime
 	 */
-	public static function getNextRepeat(\DateTime $sDtStart, $oVCal, $sUid = null)
+	public static function getNextRepeat(\DateTimeImmutable $sDtStart, $oVCal, $sUid = null)
 	{
 		$oRecur = new \Sabre\VObject\Recur\EventIterator($oVCal, $sUid);
 		$oRecur->fastForward($sDtStart);
 		return $oRecur->current();
 	}
 
+	/**
+	 * @param DateTime $sDtStart
+	 * @param \Sabre\VObject\Component\VCalendar $oVCal
+	 * @param string $sUid Default value is **null**.
+	 *
+	 * @return DateTime
+	 */
+	public static function getRRuleIteratorNextRepeat(\DateTimeImmutable $sDtStart, $oVCal, $sUid = null)
+	{
+		$oRecur = new \Sabre\VObject\Recur\EventIterator($oVCal, $sUid);
+		$oRecur->fastForward($sDtStart);
+		$oRecur->next();
+		return $oRecur->current();
+	}
+	
 	/**
 	 * @param int $iData
 	 * @param int $iMin
