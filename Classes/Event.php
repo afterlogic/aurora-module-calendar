@@ -2,14 +2,14 @@
 /**
  * This code is licensed under AfterLogic Software License.
  * For full statements of the license see LICENSE file.
- * 
- * @license https://afterlogic.com/products/common-licensing AfterLogic Software License
- * @copyright Copyright (c) 2018, Afterlogic Corp.
  */
 
 namespace Aurora\Modules\Calendar\Classes;
 
 /**
+ * @license https://afterlogic.com/products/common-licensing AfterLogic Software License
+ * @copyright Copyright (c) 2018, Afterlogic Corp.
+ *
  * @property mixed  $Id
  * @property mixed  $IdCalendar
  * @property string $Start
