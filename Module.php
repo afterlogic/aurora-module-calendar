@@ -168,8 +168,32 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		else 
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-			$sPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-			$mCalendars = $this->oApiCalendarManager->getCalendars($sPublicId);
+			$oUser = \Aurora\System\Api::getUserById($UserId);
+			if ($oUser)
+			{
+				$mCalendars = $this->oApiCalendarManager->getCalendars($oUser->PublicId);
+				if (is_array($mCalendars))
+				{
+					foreach ($mCalendars as $CalendarKey => $oCalendar)
+					{
+						foreach ($oCalendar->Shares as $ShareKey => $aShare)
+						{
+							if ($aShare['email'] === $this->oApiCalendarManager->getTenantUser())
+							{
+								if (!$oCalendar->SharedToAll)
+								{
+									unset($mCalendars[$CalendarKey]);
+								}
+								else 
+								{
+									unset($oCalendar->Shares[$ShareKey]);
+								}
+							}
+						}
+					}
+				}
+			}
+			
 		}
 		
 		if ($mCalendars) 
@@ -281,20 +305,25 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$aShares = $Shares;
+		$aShares = json_decode($Shares, true) ;
 		
 		// Share calendar to all users
-		$aShares[] = array(
-			'email' => $this->oApiCalendarManager->getTenantUser($UserId),
-			'access' => $ShareToAll ? $ShareToAllAccess : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
-		);
-		
+		if ($ShareToAll)
+		{
+			$aShares[] = array(
+				'email' => $this->oApiCalendarManager->getTenantUser(),
+				'access' => $ShareToAllAccess
+			);
+		}
+
 		// Public calendar
-		$aShares[] = array(
-			'email' => $this->oApiCalendarManager->getPublicUser(),
-			'access' => $IsPublic ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
-		);
-		
+		if ($IsPublic)
+		{
+			$aShares[] = array(
+				'email' => $this->oApiCalendarManager->getPublicUser(),
+				'access' => \Aurora\Modules\Calendar\Enums\Permission::Read
+			);
+		}
 		return $this->oApiCalendarManager->updateCalendarShares($sUserPublicId, $Id, $aShares);
 	}		
 	

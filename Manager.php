@@ -30,7 +30,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	
 	protected function isCalendarSharingSupported($sUserUUID)
 	{
-		return false; // TODO
+		return true; // TODO
 	}
 	
 	/**
@@ -111,58 +111,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oCalendar = $this->oStorage->getCalendar($oUserId, $sCalendarId);
-			if ($oCalendar) 
-			{
-				$oCalendar = $this->populateCalendarShares($oUserId, $oCalendar);
-			}
 		}
 		catch (Exception $oException)
 		{
 			$oCalendar = false;
 			$this->setLastException($oException);
-		}
-		return $oCalendar;
-	}
-
-	/**
-	 * @param string $sUserUUID
-	 * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
-	 *
-	 * @return \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
-	 */
-	public function populateCalendarShares($sUserUUID, $oCalendar)
-	{
-		if (!$oCalendar->Shared || $oCalendar->Shared && 
-				$oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Write || $oCalendar->IsCalendarOwner($sUserUUID)) 
-		{
-			$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
-			$aUsers = $this->getCalendarUsers($sUserUUID, $oCalendar);
-
-			$aShares = array();
-			if ($aUsers && is_array($aUsers)) 
-			{
-				foreach ($aUsers as $aUser) 
-				{
-					if ($aUser['email'] === $this->GetPublicUser()) 
-					{
-						$oCalendar->IsPublic = true;
-					} 
-					else if ($aUser['email'] === $this->getTenantUser($sUserUUID)) 
-					{
-						$oCalendar->SharedToAll = true;
-						$oCalendar->SharedToAllAccess = (int) $aUser['access'];
-					} 
-					else 
-					{
-						$aShares[] = $aUser;
-					}
-				}
-			}
-			$oCalendar->Shares = $aShares;
-		} 
-		else 
-		{
-			$oCalendar->IsDefault = false;
 		}
 		return $oCalendar;
 	}
@@ -231,23 +184,21 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	
 	/**
 	 *
-	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
-	 *
 	 * @return string|bool
 	 */
-	public function getTenantUser($oAccount)
+	public function getTenantUser()
 	{
-		$oResult = null;
+		$mResult = null;
 		try
 		{
-			$oResult = $this->oStorage->getTenantUser($oAccount);
+			$mResult = $this->oStorage->getTenantUser();
 		}
 		catch (Exception $oException)
 		{
-			$oResult = false;
+			$mResult = false;
 			$this->setLastException($oException);
 		}
-		return $oResult;
+		return $mResult;
 	}
 
 	/**
@@ -1643,47 +1594,15 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		$oResult = array();
 		try
 		{
-			$oCalendars = array();
-			$oCalendarsOwn = $this->oStorage->getCalendars($sUserUUID);
-
-			if ($this->isCalendarSharingSupported($sUserUUID)) 
-			{
-				$oCalendarsSharedToAll = array();
-
-				$aCalendarsSharedToAllIds = array_map(
-					function($oCalendar) {
-						if ($oCalendar->SharedToAll) 
-						{
-							return $oCalendar->IntId;
-						}
-					},
-					$oCalendarsOwn
-				);
-
-				foreach ($oCalendarsOwn as $oCalendarOwn) 
-				{
-					if (in_array($oCalendarOwn->IntId, $aCalendarsSharedToAllIds)) 
-					{
-						$oCalendarOwn->Shared = true;
-						$oCalendarOwn->SharedToAll = true;
-					}
-					$oCalendarsSharedToAll[$oCalendarOwn->IntId] = $oCalendarOwn;
-				}
-				$oCalendars = $oCalendarsSharedToAll;
-			} 
-			else 
-			{
-				$oCalendars = $oCalendarsOwn;
-			}
+			$aCalendars = $this->oStorage->getCalendars($sUserUUID);
 
 			$bDefault = false;
-			foreach ($oCalendars as $oCalendar) 
+			foreach ($aCalendars as $oCalendar) 
 			{
 				if (!$bDefault && $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
 				{
 					$oCalendar->IsDefault = $bDefault = true;
 				}
-				$oCalendar = $this->populateCalendarShares($sUserUUID, $oCalendar);
 				$oResult[] = $oCalendar;
 			}
 		}

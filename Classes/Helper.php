@@ -53,7 +53,7 @@ class Helper
 	}
 
 	/**
-	 * @param \DateTime $sDtStart
+	 * @param \DateTimeImmutable $sDtStart
 	 * @param \Sabre\VObject\Component\VCalendar $oVCal
 	 * @param string $sUid Default value is **null**.
 	 *
