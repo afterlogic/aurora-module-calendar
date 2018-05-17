@@ -182,12 +182,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							{
 								if (!$oCalendar->SharedToAll)
 								{
+									$mCalendars[$CalendarKey]->Shared = true;
+									$mCalendars[$CalendarKey]->SharedToAll = true;
+								}
+								else if ($oUser->PublicId === $oCalendar->Owner) 
+								{
 									unset($mCalendars[$CalendarKey]);
 								}
-								else 
-								{
-									unset($oCalendar->Shares[$ShareKey]);
-								}
+								unset($oCalendar->Shares[$ShareKey]);
 							}
 						}
 					}
@@ -313,6 +315,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$aShares[] = array(
 				'email' => $this->oApiCalendarManager->getTenantUser(),
 				'access' => $ShareToAllAccess
+			);
+		}
+		else
+		{
+			$aShares[] = array(
+				'email' => $this->oApiCalendarManager->getTenantUser(),
+				'access' => \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
 			);
 		}
 
