@@ -76,8 +76,7 @@ class Parser
 
 					$bIsAppointment = false;
 					$aEvent['attendees'] = array();
-					// TODO
-					if (1 != 1 && isset($oVComponent->ATTENDEE))
+					if (isset($oVComponent->ATTENDEE))
 					{
 						$aEvent['attendees'] = self::parseAttendees($oVComponent);
 
@@ -88,13 +87,11 @@ class Parser
 						$bIsAppointment = ($oUser instanceof \Aurora\Modules\Core\Classes\User && $sOwnerEmail !== $oUser->PublicId);
 					}
 					
-//					$oOwner = $ApiUsersManager->getAccountByEmail($sOwnerEmail);
-//					$sOwnerName = ($oOwner) ? $oOwner->FriendlyName : '';
-					$sOwnerName = '';
+					$oOwner = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sOwnerEmail);
+					$sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Classes\User) ? $oOwner->Name : '';
 					$bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
 					if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 					{
-						$sOwnerName  = !empty($oUser->Name) ? $oUser->Name : $oUser->PublicId;
 						$sTimeZone = ($bAllDay) ? 'UTC' : $oUser->DefaultTimeZone;
 					}
 					
