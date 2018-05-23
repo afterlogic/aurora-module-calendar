@@ -94,7 +94,22 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function getPublicCalendar($sCalendarId)
 	{
-		return $this->getCalendar($this->getPublicAccount(), $sCalendarId);
+		$oCalendar = false;
+		try
+		{
+			$oCalDAVCalendar = $this->oStorage->getPublicCalendar($sCalendarId);
+			if ($oCalDAVCalendar)
+			{
+				$oCalendar = $this->oStorage->parseCalendar($oCalDAVCalendar);
+			}
+			
+		}
+		catch (Exception $oException)
+		{
+			$oCalendar = false;
+			$this->setLastException($oException);
+		}
+		return $oCalendar;
 	}
 
 	/**
@@ -459,6 +474,30 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 	
 	/**
+	 * Set/unset calendar as public.
+	 *
+	 * @param string $sUserUUID Account object
+	 * @param string $sCalendarId Calendar ID
+	 * @param bool $bIsPublic If set to **true**, calendar is made public; if **false**, setting as public gets cancelled
+	 *
+	 * @return bool
+	 */
+	public function getPublishStatus($sCalendarId)
+	{
+		$oResult = null;
+		try
+		{
+			$oResult = $this->oStorage->getPublishStatus($sCalendarId);
+		}
+		catch (Exception $oException)
+		{
+			$oResult = false;
+			$this->setLastException($oException);
+		}
+		return $oResult;
+	}
+
+	/**
 	 * (Aurora only) Removes sharing calendar with the specific user account.
 	 *
 	 * @param string $sUserUUID Account object
@@ -561,20 +600,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 
 	/**
-	 * Returns list of events of public calendar within date range.
-	 *
-	 * @param string $sCalendarId Calendar ID
-	 * @param string $dStart Date range start
-	 * @param string $dFinish Date range end
-	 *
-	 * @return array|bool
-	 */
-	public function getPublicEvents($sCalendarId, $dStart = null, $dFinish = null)
-	{
-		return $this->getEvents($this->getPublicAccount(), $sCalendarId, $dStart, $dFinish);
-	}
-
-	/**
 	 * Account object
 	 *
 	 * @param string $sUserUUID
@@ -609,6 +634,39 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		}
 		return $aResult;
 	}
+	
+	/**
+	 * @param array | string $mCalendarId Calendar ID
+	 * @param string $dStart Date range start
+	 * @param string $dFinish Date range end
+	 *
+	 * @return array|bool
+	 */
+	public function getPublicEvents($mCalendarId, $dStart = null, $dFinish = null)
+	{
+		$aResult = array();
+		try
+		{
+			$dStart = ($dStart != null) ? date('Ymd\T000000\Z', $dStart  - 86400) : null;
+			$dFinish = ($dFinish != null) ? date('Ymd\T235959\Z', $dFinish) : null;
+			$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
+
+			foreach ($mCalendarId as $sCalendarId) 
+			{
+				$aEvents = $this->oStorage->getPublicEvents($sCalendarId, $dStart, $dFinish);
+				if ($aEvents && is_array($aEvents)) 
+				{
+					$aResult = array_merge($aResult, $aEvents);
+				}
+			}
+		}
+		catch (Exception $oException)
+		{
+			$aResult = false;
+			$this->setLastException($oException);
+		}
+		return $aResult;
+	}	
 	
 	/**
 	 * Account object
@@ -1599,6 +1657,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$bDefault = false;
 			foreach ($aCalendars as $oCalendar) 
 			{
+				$oCalendar->IsPublic = $this->oStorage->getPublishStatus($oCalendar->Id);
 				if (!$bDefault && $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
 				{
 					$oCalendar->IsDefault = $bDefault = true;

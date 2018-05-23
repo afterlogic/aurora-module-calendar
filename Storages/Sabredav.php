@@ -251,6 +251,8 @@ class Sabredav extends Storage
 					\Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read;
 		}
 		
+		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
+		
 		return $oCalendar;
 	}
 	
@@ -327,6 +329,18 @@ class Sabredav extends Storage
 		return $sCalendarId;
 	}
 
+	public function getPublicCalendar($sCalendar) 
+	{
+		$oCalendar = false;
+		$aCalendar = $this->getBackend()->getPublicCalendar($sCalendar);
+		if ($aCalendar)
+		{
+			$oCalendar = new \Afterlogic\DAV\CalDAV\PublicCalendar($this->getBackend(), $aCalendar);
+		}
+		
+		return $oCalendar;
+	}
+	
 	/**
 	 * @param string $sUserUUID
 	 * 
@@ -682,17 +696,24 @@ class Sabredav extends Storage
 	}
 	
 	/**
-	 * @param string $sUserUUID
 	 * @param string $sCalendarId
 	 * @param bool $bIsPublic Default value is **false**.
 	 * 
 	 * @return bool
 	 */
-	public function publicCalendar($sUserUUID, $sCalendarId, $bIsPublic = false)
+	public function publicCalendar($sCalendarId, $bIsPublic = false)
 	{
-		$iPermission = $bIsPublic ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission;
-		
-		return $this->updateCalendarShare($sUserUUID, $sCalendarId, $this->getPublicUser(), $iPermission);
+		return $this->getBackend()->setPublishStatus($sCalendarId, $bIsPublic);
+	}
+
+	/**
+	 * @param string $sCalendarId
+	 * 
+	 * @return bool
+	 */
+	public function getPublishStatus($sCalendarId)
+	{
+		return $this->getBackend()->getPublishStatus($sCalendarId);
 	}
 
 	/**
@@ -1223,6 +1244,58 @@ class Sabredav extends Storage
 
 		return $mResult;
 	}
+	
+	public function getPublicItemsByUrls($oCalDAVCalendar, $aUrls, $dStart = null, $dEnd = null, $bExpand = false)
+	{
+		$mResult = array();
+		$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+		
+		$oCalendar->IsPublic = true;
+		
+		foreach ($aUrls as $sUrl) 
+		{
+			if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner])) 
+			{
+				$oCalDAVCalendarObject = $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner];
+			} 
+			else 
+			{
+				$oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
+				$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner] = $oCalDAVCalendarObject;		
+			}
+			$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
+			$aEvents = $this->getEventsFromVCalendar($oCalendar->Owner, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+			foreach (array_keys($aEvents) as $key) 
+			{
+				$aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
+			}
+			$mResult = array_merge($mResult, $aEvents);
+		}
+		
+		return $mResult;
+	}	
+	
+	/**
+	 * @param string $sCalendarId
+	 * @param string $dStart
+	 * @param string $dEnd
+	 * @param bool $bExpand
+	 * 
+	 * @return array|bool
+	 */
+	public function getPublicEvents($sCalendarId, $dStart, $dEnd, $bExpand = true)
+	{
+		$mResult = false;
+		$oCalDAVCalendar = $this->getPublicCalendar($sCalendarId);
+
+		if ($oCalDAVCalendar) 
+		{
+			$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
+			$mResult = $this->getPublicItemsByUrls($oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
+		}
+
+		return $mResult;
+	}	
 	
 	
 	public function getTasks($sUserUUID, $sCalendarId, $bCompeted, $sSearch, $dStart = null, $dEnd = null, $bExpand = true)

@@ -188,7 +188,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return false
 	 */
-	public function publicCalendar($sUserUUID, $sCalendarId, $bIsPublic)
+	public function publicCalendar($sCalendarId, $bIsPublic)
 	{
 		return false;
 	}
@@ -213,6 +213,18 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 * @return array
 	 */
 	public function getEvents($sUserUUID, $sCalendarId, $dStart, $dFinish)
+	{
+		return array();
+	}
+
+	/**
+	 * @param string $sCalendarId
+	 * @param string $dStart
+	 * @param string $dFinish
+	 *
+	 * @return array
+	 */
+	public function getPublicEvents($sCalendarId, $dStart, $dFinish)
 	{
 		return array();
 	}

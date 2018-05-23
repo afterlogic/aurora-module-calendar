@@ -343,11 +343,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param boolean $IsPublic
 	 * @return array|boolean
 	 */
-	public function UpdateCalendarPublic($UserId, $Id, $IsPublic)
+	public function UpdateCalendarPublic($Id, $IsPublic)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		return $this->oApiCalendarManager->publicCalendar($sUserPublicId, $Id, $IsPublic);
+		return $this->oApiCalendarManager->publicCalendar($Id, $IsPublic);
 	}		
 
 	/**
@@ -393,8 +392,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		if ($IsPublic)
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-			$oPublicAccount = $this->oApiCalendarManager->getPublicAccount();
-			$mResult = $this->oApiCalendarManager->getEvents($oPublicAccount, $CalendarIds, $Start, $End, $Expand);
+			$mResult = $this->oApiCalendarManager->getPublicEvents($CalendarIds, $Start, $End, $Expand);
 		}
 		else
 		{
