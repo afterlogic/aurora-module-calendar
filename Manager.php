@@ -16,9 +16,9 @@ namespace Aurora\Modules\Calendar;
 class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
 	/*
-	 * @type $ApiUsersManager CApiUsersManager
+	 * @type $oApiUsersManager
 	 */
-	protected $ApiUsersManager;
+	protected $oApiUsersManager;
 
 	/**
 	 * @param \Aurora\System\Module\AbstractModule $oModule
@@ -26,6 +26,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
 	{
 		parent::__construct($oModule, new Storages\Sabredav($this));
+		$this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->oApiUsersManager;
 	}
 	
 	protected function isCalendarSharingSupported($sUserUUID)
@@ -44,14 +45,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function getCalendarAccess($sUserUUID, $sCalendarId)
 	{
 		$oResult = null;
-		try
+		$oUser = \Aurora\System\Api::getUserById($sUserUUID);
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
-			$oResult = $this->oStorage->getCalendarAccess($sUserUUID, $sCalendarId);
-		}
-		catch (Exception $oException)
-		{
-			$oResult = false;
-			$this->setLastException($oException);
+			$oResult = $this->oStorage->getCalendarAccess($oUser->PublicId, $sCalendarId);
 		}
 		return $oResult;
 	}
@@ -115,17 +112,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Loads calendar.
 	 *
-	 * @param int $oUserId Account object
+	 * @param int $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false $oCalendar
 	 */
-	public function getCalendar($oUserId, $sCalendarId)
+	public function getCalendar($sUserPublicId, $sCalendarId)
 	{
 		$oCalendar = false;
 		try
 		{
-			$oCalendar = $this->oStorage->getCalendar($oUserId, $sCalendarId);
+			$oCalendar = $this->oStorage->getCalendar($sUserPublicId, $sCalendarId);
 		}
 		catch (Exception $oException)
 		{
@@ -158,17 +155,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * (Aurora only) Returns list of user account the calendar was shared with.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar Calendar object
 	 *
 	 * @return array|bool
 	 */
-	public function getCalendarUsers($sUserUUID, $oCalendar)
+	public function getCalendarUsers($sUserPublicId, $oCalendar)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->getCalendarUsers($sUserUUID, $oCalendar);
+			$mResult = $this->oStorage->getCalendarUsers($sUserPublicId, $oCalendar);
 		}
 		catch (Exception $oException)
 		{
@@ -238,19 +235,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Returns list of calendars for the account.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return array
 	 */
-	public function getUserCalendars($sUserUUID)
+	public function getUserCalendars($sUserPublicId)
 	{
-		return $this->oStorage->getCalendars($sUserUUID);
+		return $this->oStorage->getCalendars($sUserPublicId);
 	}
 
 	/**
 	 * Creates new calendar.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sName Name of the calendar
 	 * @param string $sDescription Description of the calendar
 	 * @param int $iOrder Ordinal number of the calendar in calendars list
@@ -258,12 +255,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false
 	 */
-	public function createCalendar($sUserUUID, $sName, $sDescription, $iOrder, $sColor)
+	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->createCalendar($sUserUUID, $sName, $sDescription, $iOrder, $sColor);
+			$oResult = $this->oStorage->createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor);
 		}
 		catch (Exception $oException)
 		{
@@ -276,7 +273,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Updates calendar properties.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sName Name of the calendar
 	 * @param string $sDescription Description of the calendar
@@ -285,12 +282,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false
 	 */
-	public function updateCalendar($sUserUUID, $sCalendarId, $sName, $sDescription, $iOrder, $sColor)
+	public function updateCalendar($sUserPublicId, $sCalendarId, $sName, $sDescription, $iOrder, $sColor)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->updateCalendar($sUserUUID, $sCalendarId, $sName, $sDescription, $iOrder, $sColor);
+			$oResult = $this->oStorage->updateCalendar($sUserPublicId, $sCalendarId, $sName, $sDescription, $iOrder, $sColor);
 		}
 		catch (Exception $oException)
 		{
@@ -325,18 +322,18 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Change color of the calendar.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sColor New color code
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarColor($sUserUUID, $sCalendarId, $sColor)
+	public function updateCalendarColor($sUserPublicId, $sCalendarId, $sColor)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->updateCalendarColor($sUserUUID, $sCalendarId, $sColor);
+			$oResult = $this->oStorage->updateCalendarColor($sUserPublicId, $sCalendarId, $sColor);
 		}
 		catch (Exception $oException)
 		{
@@ -349,17 +346,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Deletes calendar.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return bool
 	 */
-	public function deleteCalendar($sUserUUID, $sCalendarId)
+	public function deleteCalendar($sUserPublicId, $sCalendarId)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->deleteCalendar($sUserUUID, $sCalendarId);
+			$oResult = $this->oStorage->deleteCalendar($sUserPublicId, $sCalendarId);
 		}
 		catch (Exception $oException)
 		{
@@ -372,19 +369,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Removes calendar from list of those shared with the specific account. [Aurora only.](http://dev.afterlogic.com/aurora)
 	 *
-	 * @param string $sUserUUID Account object
+	 * @param string $sUserPublicId Account object
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return bool
 	 */
-	public function unsubscribeCalendar($sUserUUID, $sCalendarId)
+	public function unsubscribeCalendar($sUserPublicId, $sCalendarId)
 	{
 		$oResult = null;
-		if ($this->isCalendarSharingSupported($sUserUUID))
+		if ($this->isCalendarSharingSupported($sUserPublicId))
 		{
 			try
 			{
-				$oResult = $this->oStorage->unsubscribeCalendar($sUserUUID, $sCalendarId);
+				$oResult = $this->oStorage->unsubscribeCalendar($sUserPublicId, $sCalendarId);
 			}
 			catch (Exception $oException)
 			{
@@ -398,7 +395,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * (Aurora only) Share or remove sharing calendar with all users.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param bool $bShareToAll If set to **true**, add sharing; if **false**, sharing is removed
 	 * @param int $iPermission Permissions set for the account. Accepted values:
@@ -408,22 +405,22 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShareToAll($sUserUUID, $sCalendarId, $bShareToAll, $iPermission)
+	public function updateCalendarShareToAll($sUserPublicId, $sCalendarId, $bShareToAll, $iPermission)
 	{
-		$sUserId = $this->getTenantUser($sUserUUID);
+		$sUserId = $this->getTenantUser($sUserPublicId);
 		$aShares[] = array(
 			'name' => $sUserId,
 			'email' => $sUserId,
 			'access' => $bShareToAll ? $iPermission : \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
 		);
 
-		return $this->updateCalendarShares($sUserUUID, $sCalendarId, $aShares);
+		return $this->updateCalendarShares($sUserPublicId, $sCalendarId, $aShares);
 	}
 
 	/**
 	 * (Aurora only) Share or remove sharing calendar with the listed users.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param array $aShares Array defining list of users and permissions. Each array item needs to have the following keys:
 	 *		["email"] - email which denotes user the calendar is shared to;
@@ -431,14 +428,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShares($sUserUUID, $sCalendarId, $aShares)
+	public function updateCalendarShares($sUserPublicId, $sCalendarId, $aShares)
 	{
 		$oResult = null;
-		if ($this->isCalendarSharingSupported($sUserUUID)) 
+		if ($this->isCalendarSharingSupported($sUserPublicId))
 		{
 			try
 			{
-				$oResult = $this->oStorage->updateCalendarShares($sUserUUID, $sCalendarId, $aShares);
+				$oResult = $this->oStorage->updateCalendarShares($sUserPublicId, $sCalendarId, $aShares);
 			}
 			catch (Exception $oException)
 			{
@@ -452,18 +449,18 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Set/unset calendar as public.
 	 *
-	 * @param string $sUserUUID Account object
+	 * @param string $sUserPublicId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param bool $bIsPublic If set to **true**, calendar is made public; if **false**, setting as public gets cancelled
 	 *
 	 * @return bool
 	 */
-	public function publicCalendar($sUserUUID, $sCalendarId, $bIsPublic = false)
+	public function publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic = false)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->publicCalendar($sUserUUID, $sCalendarId, $bIsPublic);
+			$oResult = $this->oStorage->publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic);
 		}
 		catch (Exception $oException)
 		{
@@ -500,18 +497,18 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * (Aurora only) Removes sharing calendar with the specific user account.
 	 *
-	 * @param string $sUserUUID Account object
+	 * @param string $sUserPublicId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sUserId User ID
 	 *
 	 * @return bool
 	 */
-	public function deleteCalendarShare($sUserUUID, $sCalendarId, $sUserId)
+	public function deleteCalendarShare($sUserPublicId, $sCalendarId, $sUserId)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->updateCalendarShare($sUserUUID, $sCalendarId, $sUserId);
+			$oResult = $this->updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId);
 		}
 		catch (Exception $oException)
 		{
@@ -524,7 +521,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Share or remove sharing calendar with the specific user account. [Aurora only.](http://dev.afterlogic.com/aurora)
 	 *
-	 * @param string $sUserUUID Account object
+	 * @param string $sUserPublicId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sUserId User Id
 	 * @param int $iPermission Permissions set for the account. Accepted values:
@@ -534,14 +531,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPermission)
+	public function updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId, $iPermission)
 	{
 		$oResult = null;
-		if ($this->isCalendarSharingSupported($sUserUUID)) 
+		if ($this->isCalendarSharingSupported($sUserPublicId))
 		{
 			try
 			{
-				$oResult = $this->oStorage->updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPermission);
+				$oResult = $this->oStorage->updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId, $iPermission);
 			}
 			catch (Exception $oException)
 			{
@@ -555,17 +552,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Returns calendar data as ICS data.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 *
 	 * @return string|bool
 	 */
-	public function exportCalendarToIcs($sUserUUID, $sCalendarId)
+	public function exportCalendarToIcs($sUserPublicId, $sCalendarId)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->exportCalendarToIcs($sUserUUID, $sCalendarId);
+			$mResult = $this->oStorage->exportCalendarToIcs($sUserPublicId, $sCalendarId);
 		}
 		catch (Exception $oException)
 		{
@@ -578,18 +575,18 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Populates calendar from .ICS file.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sTempFileName .ICS file name data are imported from
 	 *
 	 * @return int|bool integer (number of events added)
 	 */
-	public function importToCalendarFromIcs($sUserUUID, $sCalendarId, $sTempFileName)
+	public function importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->importToCalendarFromIcs($sUserUUID, $sCalendarId, $sTempFileName);
+			$mResult = $this->oStorage->importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName);
 		}
 		catch (Exception $oException)
 		{
@@ -671,14 +668,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Account object
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param array | string $mCalendarId Calendar ID
 	 * @param string $dStart Date range start
 	 * @param string $dFinish Date range end
 	 *
 	 * @return array|bool
 	 */
-	public function getTasks($sUserUUID, $mCalendarId, $bCompeted = true, $sSearch = '', $dStart = null, $dFinish = null, $bExpand = true)
+	public function getTasks($sUserPublicId, $mCalendarId, $bCompeted = true, $sSearch = '', $dStart = null, $dFinish = null, $bExpand = true)
 	{
 		$aResult = array();
 		try
@@ -689,7 +686,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 			foreach ($mCalendarId as $sCalendarId) 
 			{
-				$aTasks = $this->oStorage->getTasks($sUserUUID, $sCalendarId, $bCompeted, $sSearch, $dStart, $dFinish, $bExpand);
+				$aTasks = $this->oStorage->getTasks($sUserPublicId, $sCalendarId, $bCompeted, $sSearch, $dStart, $dFinish, $bExpand);
 				if ($aTasks && is_array($aTasks)) 
 				{
 					$aResult = array_merge($aResult, $aTasks);
@@ -705,7 +702,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}	
 
 	/**
-	 * @param string $sUserUUID Account object
+	 * @param string $sUserPublicId Account object
 	 * @param mixed $mCalendarId
 	 * @param object $dStart
 	 * @param object $dEnd
@@ -713,7 +710,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return string
 	 */
-	public function getEventsInfo($sUserUUID, $mCalendarId, $dStart = null, $dEnd = null, $bGetData = false)
+	public function getEventsInfo($sUserPublicId, $mCalendarId, $dStart = null, $dEnd = null, $bGetData = false)
 	{
 		$aResult = array();
 		try
@@ -724,7 +721,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 			foreach ($mCalendarId as $sCalendarId)
 			{
-				$aEvents = $this->oStorage->getEventsInfo($sUserUUID, $sCalendarId, $dStart, $dEnd, $bGetData);
+				$aEvents = $this->oStorage->getEventsInfo($sUserPublicId, $sCalendarId, $dStart, $dEnd, $bGetData);
 				if ($aEvents && is_array($aEvents))
 				{
 					$aResult = array_merge($aResult, $aEvents);
@@ -742,26 +739,26 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Return specific event.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return array|bool
 	 */
-	public function getEvent($sUserUUID, $sCalendarId, $sEventId)
+	public function getEvent($sUserPublicId, $sCalendarId, $sEventId)
 	{
 		$mResult = null;
 		try
 		{
 			$mResult = array();
-			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
 			if ($aData !== false) 
 			{
 				if (isset($aData['vcal'])) 
 				{
 					$oVCal = $aData['vcal'];
-					$oCalendar = $this->oStorage->getCalendar($sUserUUID, $sCalendarId);
-					$mResult = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserUUID, $oCalendar, $oVCal, $oVCal);
+					$oCalendar = $this->oStorage->getCalendar($sUserPublicId, $sCalendarId);
+					$mResult = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oVCal, $oVCal);
 					$mResult['vcal'] = $oVCal;
 				}
 			}
@@ -780,33 +777,33 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * For recurring event, gets a base one.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return array|bool
 	 */
-	public function getBaseEvent($sUserUUID, $sCalendarId, $sEventId)
+	public function getBaseEvent($sUserPublicId, $sCalendarId, $sEventId)
 	{
 		$mResult = null;
 		try
 		{
 			$mResult = array();
-			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
 			if ($aData !== false) 
 			{
 				if (isset($aData['vcal'])) 
 				{
 					$oVCal = $aData['vcal'];
 					$oVCalOriginal = clone $oVCal;
-					$oCalendar = $this->oStorage->getCalendar($sUserUUID, $sCalendarId);
+					$oCalendar = $this->oStorage->getCalendar($sUserPublicId, $sCalendarId);
 					$oVEvent = $oVCal->getBaseComponents('VEVENT');
 					if (isset($oVEvent[0])) 
 					{
 						unset($oVCal->VEVENT);
 						$oVCal->VEVENT = $oVEvent[0];
 					}
-					$oEvent = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserUUID, $oCalendar, $oVCal, $oVCalOriginal);
+					$oEvent = \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oVCal, $oVCalOriginal);
 					if (isset($oEvent[0])) 
 					{
 						$mResult = $oEvent[0];
@@ -825,7 +822,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * For recurring event, gets all occurences within a date range.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 * @param string $dStart Date range start
@@ -833,7 +830,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return array|bool
 	 */
-	public function getExpandedEvent($sUserUUID, $sCalendarId, $sEventId, $dStart = null, $dEnd = null)
+	public function getExpandedEvent($sUserPublicId, $sCalendarId, $sEventId, $dStart = null, $dEnd = null)
 	{
 		$mResult = null;
 
@@ -841,7 +838,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$dStart = ($dStart != null) ? date('Ymd\T000000\Z', $dStart/*  + 86400*/) : null;
 			$dEnd = ($dEnd != null) ? date('Ymd\T235959\Z', $dEnd) : null;
-			$mResult = $this->oStorage->getExpandedEvent($sUserUUID, $sCalendarId, $sEventId, $dStart, $dEnd);
+			$mResult = $this->oStorage->getExpandedEvent($sUserPublicId, $sCalendarId, $sEventId, $dStart, $dEnd);
 		}
 		catch (Exception $oException)
 		{
@@ -852,14 +849,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param array $sData
 	 *
 	 * @return mixed
 	 */
-	public function createEventFromRaw($sUserUUID, $sCalendarId, $sEventId, $sData)
+	public function createEventFromRaw($sUserPublicId, $sCalendarId, $sEventId, $sData)
 	{
 		$oResult = null;
 		$aEvents = array();
@@ -870,7 +867,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			{
 				if (!empty($sEventId)) 
 				{
-					$oResult = $this->oStorage->createEvent($sUserUUID, $sCalendarId, $sEventId, $oVCal);
+					$oResult = $this->oStorage->createEvent($sUserPublicId, $sCalendarId, $sEventId, $oVCal);
 				} 
 				else 
 				{
@@ -895,7 +892,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 					foreach ($aEvents as $sUid => $oVCalNew) 
 					{
-						$this->oStorage->createEvent($sUserUUID, $sCalendarId, $sUid, $oVCalNew);
+						$this->oStorage->createEvent($sUserPublicId, $sCalendarId, $sUid, $oVCalNew);
 					}
 					$oResult = true;
 				}
@@ -912,12 +909,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Creates event from event object.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent Event object
 	 *
 	 * @return mixed
 	 */
-	public function createEvent($sUserUUID, $oEvent)
+	public function createEvent($sUserPublicId, $oEvent)
 	{
 		$oResult = null;
 		try
@@ -925,20 +922,34 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$oEvent->Id = \Sabre\DAV\UUIDUtil::getUUID();
 
 			$oVCal = new \Sabre\VObject\Component\VCalendar();
-			$sComponent = !empty($oEvent->Type) ? $oEvent->Type : 'VEVENT';
-			$oVCal->add($sComponent, array(
-				'SEQUENCE' => 0,
-				'TRANSP' => 'OPAQUE',
-				'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
-			));
+			$sComponentName = !empty($oEvent->Type) ? $oEvent->Type : 'VEVENT';
+			$oComponent = new \Sabre\VObject\Component\VEvent(
+				$oVCal,
+				$sComponentName,
+				[
+					'SEQUENCE' => 0,
+					'TRANSP' => 'OPAQUE',
+					'DTSTAMP' => new \DateTime('now', new \DateTimeZone('UTC')),
+				],
+				true
+			);
+			$oVCal->add($oComponent);
 
-			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->$sComponent);
-
-			$oResult = $this->oStorage->createEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
+			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->$sComponentName);
+			$aArgs = [
+				'sUserPublicId' => $sUserPublicId,
+				'oEvent' => $oEvent
+			];
+			$this->GetModule()->broadcastEvent(
+				'populateVCalendar',
+				$aArgs,
+				$oVCal->$sComponentName
+			);
+			$oResult = $this->oStorage->createEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 
 			if ($oResult) 
 			{
-				$this->updateEventGroups($sUserUUID, $oEvent);
+				$this->updateEventGroups($sUserPublicId, $oEvent);
 			}
 		}
 		catch (Exception $oException)
@@ -950,29 +961,29 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
 	 */
-	public function updateEventGroups($sUserUUID, $oEvent)
+	public function updateEventGroups($sUserPublicId, $oEvent)
 	{
 		$aGroups = \Aurora\Modules\Calendar\Classes\Helper::findGroupsHashTagsFromString($oEvent->Name);
 		$aGroupsDescription = \Aurora\Modules\Calendar\Classes\Helper::findGroupsHashTagsFromString($oEvent->Description);
 		$aGroups = array_merge($aGroups, $aGroupsDescription);
 		$aGroupsLocation = \Aurora\Modules\Calendar\Classes\Helper::findGroupsHashTagsFromString($oEvent->Location);
 		$aGroups = array_merge($aGroups, $aGroupsLocation);
-
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 
 		$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
-		if ($oContactsModule) 
+		if ($oContactsModule && $oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
 			foreach ($aGroups as $sGroup) 
 			{
 				$sGroupName = ltrim($sGroup, '#');
-				$oGroup = $oContactsModule->CallMethod('getGroupByName', array($sUserUUID->IdUser, $sGroupName));
+				$oGroup = $oContactsModule->CallMethod('getGroupByName', array($sGroupName, $oUser->IdUser));
 				if (!$oGroup) 
 				{
 					$oGroup = new \Aurora\Modules\Contacts\Classes\Group();
-					$oGroup->IdUser = $sUserUUID->IdUser;
+					$oGroup->IdUser = $oUser->IdUser;
 					$oGroup->Name = $sGroupName;
 					$oContactsModule->CallMethod('createGroup', array($oGroup));
 				}
@@ -986,17 +997,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Update events using event object.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent Event object
 	 *
 	 * @return bool
 	 */
-	public function updateEvent($sUserUUID, $oEvent)
+	public function updateEvent($sUserPublicId, $oEvent)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id);
+			$aData = $this->oStorage->getEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false) 
 			{
 				$oVCal = $aData['vcal'];
@@ -1022,7 +1033,16 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVComponentIndex($oVCal->{$sComponent});
 					if ($iIndex !== false) 
 					{
-						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVCal->{$sComponent}[$iIndex]);
+						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->{$sComponent}[$iIndex]);
+						$aArgs = [
+							'sUserPublicId' => $sUserPublicId,
+							'oEvent' => $oEvent
+						];
+						$this->GetModule()->broadcastEvent(
+							'populateVCalendar',
+							$aArgs,
+							$oVCal->{$sComponent}[$iIndex]
+						);
 					}
 					
 					$oVCalResult = clone $oVCal;
@@ -1042,10 +1062,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 
-					$oResult = $this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCalResult);
+					$oResult = $this->oStorage->updateEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $oVCalResult);
 					if ($oResult) 
 					{
-						$this->updateEventGroups($sUserUUID, $oEvent);
+						$this->updateEventGroups($sUserPublicId, $oEvent);
 					}
 
 				}
@@ -1060,37 +1080,37 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 	
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sEventUrl
 	 * @param string $sData
 	 * 
 	 * @return bool
 	 */
-	public function updateEventRaw($sUserUUID, $sCalendarId, $sEventUrl, $sData)
+	public function updateEventRaw($sUserPublicId, $sCalendarId, $sEventUrl, $sData)
 	{
-		return $this->oStorage->updateEventRaw($sUserUUID, $sCalendarId, $sEventUrl, $sData);
+		return $this->oStorage->updateEventRaw($sUserPublicId, $sCalendarId, $sEventUrl, $sData);
 	}
 	
 	/**
 	 * Moves event to a different calendar.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Current calendar ID
 	 * @param string $sCalendarIdNew New calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return bool
 	 */
-	public function moveEvent($sUserUUID, $sCalendarId, $sCalendarIdNew, $sEventId)
+	public function moveEvent($sUserPublicId, $sCalendarId, $sCalendarIdNew, $sEventId)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && $aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) 
 			{
-				$oResult = $this->oStorage->moveEvent($sUserUUID, $sCalendarId, $sCalendarIdNew, $sEventId, $aData['vcal']->serialize());
+				$oResult = $this->oStorage->moveEvent($sUserPublicId, $sCalendarId, $sCalendarIdNew, $sEventId, $aData['vcal']->serialize());
 //				$this->updateEventGroupByMoving($sCalendarId, $sEventId, $sCalendarIdNew);
 				return true;
 			}
@@ -1132,20 +1152,20 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Updates or deletes exclusion from recurring event.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent Event object
 	 * @param string $sRecurrenceId Recurrence ID
 	 * @param bool $bDelete If **true**, exclusion is deleted
 	 *
 	 * @return bool
 	 */
-	public function updateExclusion($sUserUUID, $oEvent, $sRecurrenceId, $bDelete = false)
+	public function updateExclusion($sUserPublicId, $oEvent, $sRecurrenceId, $bDelete = false)
 	{
 		$oResult = null;
 		try
 		{
 			$oUser = \Aurora\System\Api::getAuthenticatedUser();
-			$aData = $this->oStorage->getEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id);
+			$aData = $this->oStorage->getEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id);
 			if ($aData !== false && isset($aData['vcal']) && $aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) 
 			{
 				$oVCal = $aData['vcal'];
@@ -1229,10 +1249,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						if ($oVEventRecur) 
 						{
 							$oEvent->RRule = null;
-							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserUUID, $oEvent, $oVEventRecur);
+							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVEventRecur);
+							$aArgs = [
+								'sUserPublicId' => $sUserPublicId,
+								'oEvent' => $oEvent
+							];
+							$this->GetModule()->broadcastEvent(
+								'populateVCalendar',
+								$aArgs,
+								$oVEventRecur
+							);
 						}
 					}
-					$this->oStorage->updateEvent($sUserUUID, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
+					$this->oStorage->updateEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
 					return true;
 				}
 			}
@@ -1249,20 +1278,20 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * deleteExclusion
 	 *
-	 * @param string $sUserUUID Account object
+	 * @param string $sUserPublicId Account object
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 * @param string $iRecurrenceId Recurrence ID
 	 *
 	 * @return bool
 	 */
-	public function deleteExclusion($sUserUUID, $sCalendarId, $sEventId, $iRecurrenceId)
+	public function deleteExclusion($sUserPublicId, $sCalendarId, $sEventId, $iRecurrenceId)
 	{
 		$oResult = null;
 		try
 		{
-			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
-			$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserUUID);
+			$aData = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
+			$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 			if ($oUser && $aData !== false && isset($aData['vcal']) && $aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar) 
 			{
 				
@@ -1289,7 +1318,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					}
 					$oVCal->add($oVComponent);
 				}
-				return $this->oStorage->updateEvent($sUserUUID, $sCalendarId, $sEventId, $oVCal);
+				return $this->oStorage->updateEvent($sUserPublicId, $sCalendarId, $sEventId, $oVCal);
 			}
 			return false;
 		}
@@ -1389,270 +1418,29 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 
 	/**
-	 * Processing response to event invitation. [Aurora only.](http://dev.afterlogic.com/aurora)
-	 *
-	 * @param string $sUserUUID
-	 * @param string $sCalendarId Calendar ID
-	 * @param string $sEventId Event ID
-	 * @param string $sAttendee Attendee identified by email address
-	 * @param string $sAction Appointment actions. Accepted values:
-	 *		- "ACCEPTED"
-	 *		- "DECLINED"
-	 *		- "TENTATIVE"
-	 *
-	 * @return bool
-	 */
-	public function updateAppointment($sUserUUID, $sCalendarId, $sEventId, $sAttendee, $sAction)
-	{
-		$oResult = null;
-		try
-		{
-			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
-			if ($aData !== false) 
-			{
-				$oVCal = $aData['vcal'];
-				$oVCal->METHOD = 'REQUEST';
-				return $this->appointmentAction($sUserUUID, $sAttendee, $sAction, $sCalendarId, $oVCal->serialize());
-			}
-		}
-		catch (Exception $oException)
-		{
-			$oResult = false;
-			$this->setLastException($oException);
-		}
-		return $oResult;
-	}
-
-	/**
-	 * Allows for responding to event invitation (accept / decline / tentative). [Aurora only.](http://dev.afterlogic.com/aurora)
-	 *
-	 * @param int|string $sUserUUID Account object
-	 * @param string $sAttendee Attendee identified by email address
-	 * @param string $sAction Appointment actions. Accepted values:
-	 *		- "ACCEPTED"
-	 *		- "DECLINED"
-	 *		- "TENTATIVE"
-	 * @param string $sCalendarId Calendar ID
-	 * @param string $sData ICS data of the response
-	 * @param bool $bExternal If **true**, it is assumed attendee is external to the system
-	 *
-	 * @return bool
-	 */
-	public function appointmentAction($sUserUUID, $sAttendee, $sAction, $sCalendarId, $sData, $bExternal = false)
-	{
-		$oDefaultAccount = null;
-		$oAttendeeAccount = null;
-		$bDefaultAccountAsEmail = false;
-		$bIsDefaultAccount = false;
-				
-		if (isset($sUserUUID) && is_int($sUserUUID)) 
-		{
-			$bDefaultAccountAsEmail = false;
-			/* @var $oDefaultAccount \Aurora\Modules\StandardAuth\Classes\Account */
-			$oDefaultAccount = $this->ApiUsersManager->getDefaultAccount($sUserUUID);
-			$bIsDefaultAccount = true;
-		} 
-		else 
-		{
-			$oAttendeeAccount = $this->ApiUsersManager->getAccountByEmail($sAttendee);
-			if ($oAttendeeAccount) 	
-			{
-				$bDefaultAccountAsEmail = false;
-				$oDefaultAccount = $oAttendeeAccount;
-			} 
-			else 
-			{
-				$bDefaultAccountAsEmail = true;
-			}
-		}
-		if (!$bDefaultAccountAsEmail && !$bIsDefaultAccount) 
-		{
-			$oCalendar = $this->getDefaultCalendar($oDefaultAccount);
-			if ($oCalendar) 
-			{
-				$sCalendarId = $oCalendar['Id'];
-			}
-		}
-
-		$bResult = false;
-		$sEventId = null;
-		try
-		{
-			$sTo = $sSubject = $sBody = $sSummary = '';
-
-			$oVCal = \Sabre\VObject\Reader::read($sData);
-			if ($oVCal) 
-			{
-				$sMethod = $sMethodOriginal = (string) $oVCal->METHOD;
-				$aVEvents = $oVCal->getBaseComponents('VEVENT');
-
-				if (isset($aVEvents) && count($aVEvents) > 0) 
-				{
-					$oVEvent = $aVEvents[0];
-					$sEventId = (string)$oVEvent->UID;
-					$bAllDay = (isset($oVEvent->DTSTART) && !$oVEvent->DTSTART->hasTime());
-
-					if (isset($oVEvent->SUMMARY)) 
-					{
-						$sSummary = (string)$oVEvent->SUMMARY;
-					}
-					if (isset($oVEvent->ORGANIZER)) {
-						$sTo = str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER));
-					}
-					if (strtoupper($sMethod) === 'REQUEST') 
-					{
-						$sMethod = 'REPLY';
-						$sSubject = $sSummary;
-
-//						unset($oVEvent->ATTENDEE);
-						$sPartstat = strtoupper($sAction);
-						switch ($sPartstat)
-						{
-							case 'ACCEPTED':
-								$sSubject = 'Accepted: '. $sSubject;
-								break;
-							case 'DECLINED':
-								$sSubject = 'Declined: '. $sSubject;
-								break;
-							case 'TENTATIVE':
-								$sSubject = 'Tentative: '. $sSubject;
-								break;
-						}
-
-						$sCN = '';
-						if (isset($oDefaultAccount) && $sAttendee ===  $oDefaultAccount->Email) 
-						{
-							if (!empty($oDefaultAccount->FriendlyName)) 
-							{
-								$sCN = $oDefaultAccount->FriendlyName;
-							} 
-							else 
-							{
-								$sCN = $sAttendee;
-							}
-						}
-						
-						foreach($oVEvent->ATTENDEE as $oAttendee) 
-						{
-							$sEmail = str_replace('mailto:', '', strtolower((string)$oAttendee));
-							if (strtolower($sEmail) === strtolower($sAttendee)) 
-							{
-								$oAttendee['CN'] = $sCN;
-								$oAttendee['PARTSTAT'] = $sPartstat;
-								$oAttendee['RESPONDED-AT'] = gmdate("Ymd\THis\Z");
-							}
-						}
-						
-/*
-						$oVEvent->add('ATTENDEE', 'mailto:'.$sAttendee, array(
-							'CN' => $sCN,
-							'PARTSTAT' => $sPartstat,
-							'RESPONDED-AT' => gmdate("Ymd\THis\Z")
-						));
- * 
- */
-					}
-
-					$oVCal->METHOD = $sMethod;
-					$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
-
-					$sBody = $oVCal->serialize();
-
-					if ($sCalendarId !== false && $bExternal === false && !$bDefaultAccountAsEmail) 
-					{
-						unset($oVCal->METHOD);
-						
-						if ($sAttendee === $oDefaultAccount->Email) 
-						{
-							if (strtoupper($sAction) == 'DECLINED' || strtoupper($sMethod) == 'CANCEL') 
-							{
-								$this->deleteEvent($oDefaultAccount, $sCalendarId, $sEventId);
-							}
-						} 
-						else 
-						{
-							$this->oStorage->updateEventRaw($oDefaultAccount, $sCalendarId, $sEventId, $oVCal->serialize());
-						}
-					}
-
-					if (strtoupper($sMethodOriginal) == 'REQUEST'/* && (strtoupper($sAction) !== 'DECLINED')*/) 
-					{
-						if (!empty($sTo) && !empty($sBody)) 
-						{
-							$oToAccount = $this->ApiUsersManager->getAccountByEmail($sTo);
-							if ($oToAccount) 
-							{
-								$bResult = ($this->processICS($oToAccount, $sBody, $sAttendee, true) !== false);
-							}
-							if ((!$oToAccount || !$bResult) && $oDefaultAccount instanceof \Aurora\Modules\StandardAuth\Classes\Account) 
-							{
-								if (!$oAttendeeAccount) 
-								{
-									$oAttendeeAccount = $this->getAccountFromAccountList($sUserUUID, $sAttendee);
-								}
-								if (!($oAttendeeAccount instanceof \Aurora\Modules\StandardAuth\Classes\Account)) 
-								{
-									$oAttendeeAccount = $oDefaultAccount;
-								}
-								$bResult = \Aurora\Modules\Calendar\Classes\Helper::sendAppointmentMessage($oAttendeeAccount, $sTo, $sSubject, $sBody, $sMethod);
-							}
-						}
-					} 
-					else 
-					{
-						$bResult = true;
-					}
-				}
-			}
-
-			if (!$bResult) 
-			{
-				\Aurora\System\Api::Log('Ics Appointment Action FALSE result!', \Aurora\System\Enums\LogLevel::Error);
-				if ($sUserUUID) 
-				{
-					\Aurora\System\Api::Log('Email: '.$sUserUUID->Email.', Action: '. $sAction.', Data:', \Aurora\System\Enums\LogLevel::Error);
-				}
-				\Aurora\System\Api::Log($sData, \Aurora\System\Enums\LogLevel::Error);
-			} 
-			else 
-			{
-				$bResult = $sEventId;
-			}
-
-			return $bResult;
-		}
-		catch (Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
-		return $bResult;
-	}
-	
-	/**
 	 * Returns default calendar of the account.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false $oCalendar
 	 */
-	public function getDefaultCalendar($sUserUUID)
+	public function getDefaultCalendar($sUserPublicId)
 	{
-		$aCalendars = $this->getCalendars($sUserUUID);
+		$aCalendars = $this->getCalendars($sUserPublicId);
 		return (is_array($aCalendars) && isset($aCalendars[0])) ? $aCalendars[0] : false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return bool
 	 */
-	public function getCalendars($sUserUUID)
+	public function getCalendars($sUserPublicId)
 	{
 		$oResult = array();
 		try
 		{
-			$aCalendars = $this->oStorage->getCalendars($sUserUUID);
+			$aCalendars = $this->oStorage->getCalendars($sUserPublicId);
 
 			$bDefault = false;
 			foreach ($aCalendars as $oCalendar) 
@@ -1677,58 +1465,32 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	/**
 	 * Deletes event.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventId Event ID
 	 *
 	 * @return bool
 	 */
-	public function deleteEvent($sUserUUID, $sCalendarId, $sEventId)
+	public function deleteEvent($sUserPublicId, $sCalendarId, $sEventId)
 	{
 		$oResult = false;
-		try
+
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
-			$aData = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
+			$aData = $this->oStorage->getEvent($oUser->PublicId, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && $aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar)
 			{
 				$oVCal = $aData['vcal'];
-
-				$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVComponentIndex($oVCal->VEVENT);
-				if ($iIndex !== false)
-				{
-					$oVEvent = $oVCal->VEVENT[$iIndex];
-
-					$sOrganizer = (isset($oVEvent->ORGANIZER)) ?
-							str_replace('mailto:', '', strtolower((string)$oVEvent->ORGANIZER)) : null;
-
-					if (isset($sOrganizer))
-					{
-						if ($sOrganizer === $sUserUUID)
-						{
-							$oDateTimeNow = new DateTimeImmutable("now");
-							$oDateTimeEvent = $oVEvent->DTSTART->getDateTime();
-							$oDateTimeRepeat = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oDateTimeNow, $oVEvent);
-							$bRrule = isset($oVEvent->RRULE);
-							$bEventFore = $oDateTimeEvent ? $oDateTimeEvent > $oDateTimeNow : false;
-							$bNextRepeatFore = $oDateTimeRepeat ? $oDateTimeRepeat > $oDateTimeNow : false;
-
-							if (isset($oVEvent->ATTENDEE) && ($bRrule ? $bNextRepeatFore : $bEventFore))
-							{
-								foreach($oVEvent->ATTENDEE as $oAttendee)
-								{
-									$sEmail = str_replace('mailto:', '', strtolower((string)$oAttendee));
-
-									$oVCal->METHOD = 'CANCEL';
-									$sSubject = (string)$oVEvent->SUMMARY . ': Canceled';
-
-									\Aurora\Modules\Calendar\Classes\Helper::sendAppointmentMessage($sUserUUID, $sEmail, $sSubject, $oVCal->serialize(), 'REQUEST');
-									unset($oVCal->METHOD);
-								}
-							}
-						}
-					}
-				}
-				$oResult = $this->oStorage->deleteEvent($sUserUUID, $sCalendarId, $sEventId);
+				$aArgs = [
+					'sUserPublicId' => $oUser->PublicId
+				];
+				$this->GetModule()->broadcastEvent(
+					'DeleteEvent',
+					$aArgs,
+					$oVCal
+				);
+				$oResult = $this->oStorage->deleteEvent($oUser->PublicId, $sCalendarId, $sEventId);
 				if ($oResult)
 				{
 					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module
@@ -1737,72 +1499,70 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
-		{
-			$oResult = false;
-			$this->setLastException($oException);
-		}
+
 		return $oResult;
 	}
 
 	/**
 	 * Deletes event.
 	 *
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId Calendar ID
 	 * @param string $sEventUrl Event URL
 	 *
 	 * @return bool
 	 */
-	public function deleteEventByUrl($sUserUUID, $sCalendarId, $sEventUrl)
+	public function deleteEventByUrl($sUserPublicId, $sCalendarId, $sEventUrl)
 	{
-		return $this->oStorage->deleteEventByUrl($sUserUUID, $sCalendarId, $sEventUrl);
+		return $this->oStorage->deleteEventByUrl($sUserPublicId, $sCalendarId, $sEventUrl);
 	}
 
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sData
 	 * @param string $mFromEmail
 	 * @param bool $bUpdateAttendeeStatus
 	 *
 	 * @return array|bool
 	 */
-	public function processICS($sUserUUID, $sData, $mFromEmail, $bUpdateAttendeeStatus = false)
+	public function processICS($sUserPublicId, $sData, $mFromEmail, $bUpdateAttendeeStatus = false)
 	{
 		$mResult = false;
-		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		$aAccountEmails = array($oUser->PublicId);
-		//TODO get list user emails
+		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+		$aAccountEmails = array($oAuthenticatedUser->PublicId);
 
-//		$aAccountEmails = array();
-//		$aUserAccounts = $this->ApiUsersManager->getUserAccounts($sUserUUID->IdUser);
-//		foreach ($aUserAccounts as $aUserAccount) {
-//			if (isset($aUserAccount) && isset($aUserAccount[1])) {
-//				$aAccountEmails[] = $aUserAccount[1];
-//			}
-//		}
-//
-//		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
-//		if (is_array($aFetchers) && 0 < count($aFetchers)) {
-//			foreach ($aFetchers as /* @var $oFetcher \Aurora\Modules\Mail\Classes\Fetcher */ $oFetcher) {
-//				if ($oFetcher) {
-//					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
-//				}
-//			}
-//		}
-//
-//		$aIdentities = $this->ApiUsersManager->getUserIdentities($sUserUUID->IdUser);
-//		if (is_array($aIdentities) && 0 < count($aIdentities)) {
-//			foreach ($aIdentities as /* @var $oIdentity \Aurora\Modules\Mail\Classes\Identity */ $oIdentity) {
-//				if ($oIdentity) {
-//					$aAccountEmails[] = $oIdentity->Email;
-//				}
-//			}
-//		}
-
-		try
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
+			//TODO get list user emails
+
+	//		$aAccountEmails = array();
+	//		$aUserAccounts = $this->oApiUsersManager->getUserAccounts($oUser->IdUser);
+	//		foreach ($aUserAccounts as $aUserAccount) {
+	//			if (isset($aUserAccount) && isset($aUserAccount[1])) {
+	//				$aAccountEmails[] = $aUserAccount[1];
+	//			}
+	//		}
+	//
+	//		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
+	//		if (is_array($aFetchers) && 0 < count($aFetchers)) {
+	//			foreach ($aFetchers as /* @var $oFetcher \Aurora\Modules\Mail\Classes\Fetcher */ $oFetcher) {
+	//				if ($oFetcher) {
+	//					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
+	//				}
+	//			}
+	//		}
+	//
+	//		$aIdentities = $this->oApiUsersManager->getUserIdentities($oUser->IdUser);
+	//		if (is_array($aIdentities) && 0 < count($aIdentities)) {
+	//			foreach ($aIdentities as /* @var $oIdentity \Aurora\Modules\Mail\Classes\Identity */ $oIdentity) {
+	//				if ($oIdentity) {
+	//					$aAccountEmails[] = $oIdentity->Email;
+	//				}
+	//			}
+	//		}
+
 			$oVCal = \Sabre\VObject\Reader::read($sData);
 			if ($oVCal)
 			{
@@ -1826,13 +1586,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 					$sEventId = (string)$oVEventResult->UID;
 
-					$aCalendars = $this->oStorage->GetCalendarNames($sUserUUID);
-					$aCalendarIds = $this->oStorage->findEventInCalendars($sUserUUID, $sEventId, $aCalendars);
+					$aCalendars = $this->oStorage->GetCalendarNames($sUserPublicId);
+					$aCalendarIds = $this->oStorage->findEventInCalendars($sUserPublicId, $sEventId, $aCalendars);
 
 					if (is_array($aCalendarIds) && isset($aCalendarIds[0]))
 					{
 						$sCalendarId = $aCalendarIds[0];
-						$aDataServer = $this->oStorage->getEvent($sUserUUID, $sCalendarId, $sEventId);
+						$aDataServer = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
 						if ($aDataServer !== false)
 						{
 							$oVCalServer = $aDataServer['vcal'];
@@ -1866,33 +1626,23 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 											$oVCalResult = $oVCalServer;
 											$oVEventResult = $oVEventServer;
 
-											if (isset($oVEvent->ATTENDEE) && $sequenceServer >= $sequence)
-											{
-												$oAttendee = $oVEvent->ATTENDEE[0];
-												$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
-												if (isset($oVEventResult->ATTENDEE))
-												{
-													foreach ($oVEventResult->ATTENDEE as $oAttendeeResult)
-													{
-														$sEmailResult = str_replace('mailto:', '', strtolower((string)$oAttendeeResult));
-														if ($sEmailResult === $sAttendee)
-														{
-															if (isset($oAttendee['PARTSTAT']))
-															{
-																$oAttendeeResult['PARTSTAT'] = $oAttendee['PARTSTAT']->getValue();
-															}
-															break;
-														}
-													}
-												}
-											}
-											if ($bUpdateAttendeeStatus)
-											{
-												unset($oVCalResult->METHOD);
-												$oVEventResult->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
-												$mResult = $this->oStorage->updateEventRaw($sUserUUID, $sCalendarId, $sEventId, $oVCalResult->serialize());
-												$oVCalResult->METHOD = $sMethod;
-											}
+											$aArgs = [
+												'oVCalResult'			=> $oVCalResult,
+												'oVEventResult'			=> $oVEventResult,
+												'sUserPublicId'			=> $oUser->PublicId,
+												'sCalendarId'			=> $sCalendarId,
+												'sEventId'				=> $sEventId,
+												'sMethod'				=> $sMethod,
+												'bUpdateAttendeeStatus'	=> $bUpdateAttendeeStatus,
+												'sequence'				=> $sequence,
+												'sequenceServer'		=> $sequenceServer,
+												'oVEvent'				=> $oVEvent
+											];
+											$this->GetModule()->broadcastEvent(
+												'processICS::UpdateEvent',
+												$aArgs,
+												$mResult
+											);
 										}
 									}
 								}
@@ -1901,12 +1651,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 						if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus)
 						{
-							if ($this->deleteEvent($sUserUUID, $sCalendarId, $sEventId))
-							{
-								$mResult = true;
-							}
+							$aArgs = [
+								'sUserPublicId'			=> $oUser->PublicId,
+								'sCalendarId'			=> $sCalendarId,
+								'sEventId'				=> $sEventId
+							];
+							$this->GetModule()->broadcastEvent(
+								'processICS::Cancel',
+								$aArgs,
+								$mResult
+							);
 						}
-
 					}
 
 					if (!$bUpdateAttendeeStatus)
@@ -1925,26 +1680,22 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						);
 
 						$aAccountEmails = ($sMethod === 'REPLY') ? array($mFromEmail) : $aAccountEmails;
-						if (isset($oVEventResult->ATTENDEE) && isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence)
+						if (isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence)
 						{
-							foreach($oVEventResult->ATTENDEE as $oAttendee)
-							{
-								$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
-								if (in_array($sAttendee, $aAccountEmails) && isset($oAttendee['PARTSTAT']))
-								{
-									$mResult['Attendee'] = $sAttendee;
-									$mResult['Action'] = $sMethod . '-' . $oAttendee['PARTSTAT']->getValue();
-								}
-							}
+							$aArgs = [
+								'oVEventResult'		=> $oVEventResult,
+								'sMethod'			=> $sMethod,
+								'aAccountEmails'	=> $aAccountEmails
+							];
+							$this->GetModule()->broadcastEvent(
+								'processICS::AddAttendeesToResult',
+								$aArgs,
+								$mResult
+							);
 						}
 					}
 				}
 			}
-		}
-		catch (Exception $oException)
-		{
-			$mResult = false;
-			$this->setLastException($oException);
 		}
 
 		return $mResult;
@@ -1966,7 +1717,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			if ($oAccount) 
 			{
-				$aUserAccounts = $this->ApiUsersManager->getUserAccounts($oAccount->IdUser);
+				$aUserAccounts = $this->oApiUsersManager->getUserAccounts($oAccount->IdUser);
 				foreach ($aUserAccounts as $iAccountId => $aUserAccount) 
 				{
 					if (isset($aUserAccount) && isset($aUserAccount[1]) && strtolower($aUserAccount[1]) === strtolower($sEmail)) 
@@ -1977,7 +1728,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 				if (0 < $iResultAccountId) 
 				{
-					$oResult = $this->ApiUsersManager->getAccountById($iResultAccountId);
+					$oResult = $this->oApiUsersManager->getAccountById($iResultAccountId);
 				}
 			}
 		}
@@ -1990,22 +1741,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	}
 	
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return bool
 	 */
-	public function clearAllCalendars($sUserUUID)
+	public function clearAllCalendars($sUserPublicId)
 	{
 		$bResult = false;
-		try
+
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
-			$bResult = $this->oStorage->clearAllCalendars($sUserUUID);
+			$bResult = $this->oStorage->clearAllCalendars($sUserPublicId);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
+
 		return $bResult;
 	}
 }

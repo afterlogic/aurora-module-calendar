@@ -232,11 +232,11 @@ class Helper
 	}
 
 	/**
-	 * @param int $iUserId
+	 * @param string $sUserPublicId
 	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
 	 * @param \Sabre\VObject\Component\VEvent $oVEvent
 	 */
-	public static function populateVCalendar($iUserId, $oEvent, &$oVEvent)
+	public static function populateVCalendar($sUserPublicId, $oEvent, &$oVEvent)
 	{
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
@@ -308,7 +308,7 @@ class Helper
 			$sRRULE = '';
 			if (isset($oVEvent->RRULE) && null === $oEvent->RRule)
 			{
-				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($iUserId, $oVCal, (string)$oVEvent->UID);
+				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($sUserPublicId, $oVCal, (string)$oVEvent->UID);
 				if ($oRRule && $oRRule instanceof \Aurora\Modules\Calendar\Classes\RRule)
 				{
 					$sRRULE = (string) $oRRule;
@@ -334,115 +334,6 @@ class Helper
 					'DESCRIPTION' => 'Alarm',
 					'ACTION' => 'DISPLAY'
 				));
-			}
-		}
-
-		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ 1<>1) // TODO
-		{
-			$aAttendees = array();
-			$aAttendeeEmails = array();
-			$aObjAttendees = array();
-			if (isset($oVEvent->ATTENDEE))
-			{
-				$aAttendeeEmails = array();
-				foreach ($oEvent->Attendees as $aItem)
-				{
-					$sStatus = '';
-					switch ($aItem['status'])
-					{
-						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Accepted:
-							$sStatus = 'ACCEPTED';
-							break;
-						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Declined:
-							$sStatus = 'DECLINED';
-							break;
-						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Tentative:
-							$sStatus = 'TENTATIVE';
-							break;
-						case \Aurora\Modules\Calendar\Enums\AttendeeStatus::Unknown:
-							$sStatus = 'NEEDS-ACTION';
-							break;
-					}
-
-					$aAttendeeEmails[strtolower($aItem['email'])] = $sStatus;
-				}
-
-				$aObjAttendees = $oVEvent->ATTENDEE;
-				unset($oVEvent->ATTENDEE);
-				foreach($aObjAttendees as $oAttendee)
-				{
-					$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
-					$oPartstat = $oAttendee->offsetGet('PARTSTAT');
-					if (in_array($sAttendee, array_keys($aAttendeeEmails)))
-					{
-						if (isset($oPartstat) && (string)$oPartstat === $aAttendeeEmails[$sAttendee])
-						{
-							$oVEvent->add($oAttendee);
-							$aAttendees[] = $sAttendee;
-						}
-					}
-					else
-					{
-						if (!isset($oPartstat) || (isset($oPartstat) && (string)$oPartstat != 'DECLINED'))
-						{
-							$oVCal->METHOD = 'CANCEL';
-							$sSubject = (string)$oVEvent->SUMMARY . ': Canceled';
-//							self::sendAppointmentMessage($oAccount, $sAttendee, $sSubject, $oVCal->serialize(), (string)$oVCal->METHOD);
-							//TODO Notify the user
-							unset($oVCal->METHOD);
-						}
-					}
-				}
-			}
-
-			if (count($oEvent->Attendees) > 0)
-			{
-				if (!isset($oVEvent->ORGANIZER))
-				{
-					$oVEvent->ORGANIZER = 'mailto:' . $oUser->PublicId;
-				}
-				foreach($oEvent->Attendees as $oAttendee)
-				{
-					if (!in_array($oAttendee['email'], $aAttendees))
-					{
-						$oVEvent->add(
-							'ATTENDEE',
-							'mailto:' . $oAttendee['email'],
-							array(
-								'CN' => !empty($oAttendee['name']) ? $oAttendee['name'] : $oAttendee['email'],
-								'RSVP' => 'TRUE'
-							)
-						);
-					}
-				}
-			}
-			else
-			{
-				unset($oVEvent->ORGANIZER);
-			}
-
-			if (isset($oVEvent->ATTENDEE))
-			{
-				foreach($oVEvent->ATTENDEE as $oAttendee)
-				{
-					$sAttendee = str_replace('mailto:', '', strtolower((string)$oAttendee));
-
-					if (($sAttendee !==  $oUser->PublicId) &&
-						(!isset($oAttendee['PARTSTAT']) || (isset($oAttendee['PARTSTAT']) && (string)$oAttendee['PARTSTAT'] !== 'DECLINED')))
-					{
-						$sStartDateFormat = $oVEvent->DTSTART->hasTime() ? 'D, F d, o, H:i' : 'D, F d, o';
-						$sStartDate = self::getStrDate($oVEvent->DTSTART, $oUser->DefaultTimeZone, $sStartDateFormat);
-
-						$oCalendar = \Aurora\System\Api::GetModule('Calendar')->GetCalendar($iUserId, $oEvent->IdCalendar);
-						
-						$sHtml = self::createHtmlFromEvent($oEvent, $oUser->PublicId, $sAttendee, $oCalendar->DisplayName, $sStartDate);
-
-						$oVCal->METHOD = 'REQUEST';
-//						self::sendAppointmentMessage($oAccount, $sAttendee, (string)$oVEvent->SUMMARY, $oVCal->serialize(), (string)$oVCal->METHOD, $sHtml);
-						//TODO Notify the user
-						unset($oVCal->METHOD);
-					}
-				}
 			}
 		}
 	}
@@ -480,100 +371,6 @@ class Helper
 	}
 
 	/**
-	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
-	 * @param string $sTo
-	 * @param string $sSubject
-	 * @param string $sBody
-	 * @param string $sMethod
-	 * @param string $sHtmlBody Default value is empty string.
-	 *
-	 * @throws \Aurora\System\Exceptions\ApiException
-	 *
-	 * @return \MailSo\Mime\Message
-	 */
-	public static function sendAppointmentMessage($oAccount, $sTo, $sSubject, $sBody, $sMethod, $sHtmlBody='')
-	{
-		$oMessage = self::buildAppointmentMessage($oAccount, $sTo, $sSubject, $sBody, $sMethod, $sHtmlBody);
-
-		if ($oMessage)
-		{
-			try
-			{
-				\Aurora\System\Api::Log('IcsAppointmentActionSendOriginalMailMessage');
-				return \Aurora\System\Api::ExecuteMethod('Mail::SendMessageObject', array(
-					'Account' => $oAccount,
-					'Message' => $oMessage
-				));
-			}
-			catch (\Aurora\System\Exceptions\ManagerException $oException)
-			{
-				$iCode = \Core\Notifications::CanNotSendMessage;
-				switch ($oException->getCode())
-				{
-					case Errs::Mail_InvalidRecipients:
-						$iCode = \Core\Notifications::InvalidRecipients;
-						break;
-				}
-
-				throw new \Aurora\System\Exceptions\ApiException($iCode, $oException);
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
-	 * @param string $sTo
-	 * @param string $sSubject
-	 * @param string $sBody
-	 * @param string $sMethod Default value is **null**.
-	 * @param string $sHtmlBody Default value is empty string.
-	 *
-	 * @return \MailSo\Mime\Message
-	 */
-	public static function buildAppointmentMessage($oAccount, $sTo, $sSubject, $sBody, $sMethod = null, $sHtmlBody = '')
-	{
-		$oMessage = null;
-		if ($oAccount && !empty($sTo) && !empty($sBody))
-		{
-			$oMessage = \MailSo\Mime\Message::NewInstance();
-			$oMessage->RegenerateMessageId();
-			$oMessage->DoesNotCreateEmptyTextPart();
-
-			$oMailModule = \Aurora\System\Api::GetModule('Mail'); 
-			$sXMailer = $oMailModule ? $oMailModule->getConfig('XMailerValue', '') : '';
-			if (0 < strlen($sXMailer))
-			{
-				$oMessage->SetXMailer($sXMailer);
-			}
-
-			$oMessage
-				->SetFrom(\MailSo\Mime\Email::NewInstance($oAccount->Email))
-				->SetSubject($sSubject)
-			;
-
-			$oMessage->AddHtml($sHtmlBody);
-
-			$oToEmails = \MailSo\Mime\EmailCollection::NewInstance($sTo);
-			if ($oToEmails && $oToEmails->Count())
-			{
-				$oMessage->SetTo($oToEmails);
-			}
-
-			if ($sMethod)
-			{
-				$oMessage->SetCustomHeader('Method', $sMethod);
-			}
-
-			$oMessage->AddAlternative('text/calendar', \MailSo\Base\ResourceRegistry::CreateMemoryResourceFromString($sBody),
-					\MailSo\Base\Enumerations\Encoding::_8_BIT, null === $sMethod ? array() : array('method' => $sMethod));
-		}
-
-		return $oMessage;
-	}
-
-	/**
 	 * @param \DateTime $dt
 	 * @param string $sTimeZone
 	 * @param string $format
@@ -593,58 +390,6 @@ class Helper
 			$result = $oDateTime->format($format);
 		}
 		return $result;
-	}
-
-	/**
-	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
-	 * @param string $sAccountEmail
-	 * @param string $sAttendee
-	 * @param string $sCalendarName
-	 * @param string $sStartDate
-	 *
-	 * @return string
-	 */
-	public static function createHtmlFromEvent($oEvent, $sAccountEmail, $sAttendee, $sCalendarName, $sStartDate)
-	{
-		$sHtml = '';
-		$aValues = array(
-			'attendee' => $sAttendee,
-			'organizer' => $sAccountEmail,
-			'calendarId' => $oEvent->IdCalendar,
-			'eventId' => $oEvent->Id
-		);
-		
-		$aValues['action'] = 'ACCEPTED';
-		$sEncodedValueAccept = \Aurora\System\Api::EncodeKeyValues($aValues);
-		$aValues['action'] = 'TENTATIVE';
-		$sEncodedValueTentative = \Aurora\System\Api::EncodeKeyValues($aValues);
-		$aValues['action'] = 'DECLINED';
-		$sEncodedValueDecline = \Aurora\System\Api::EncodeKeyValues($aValues);
-
-		$sHref = rtrim(\MailSo\Base\Http::SingletonInstance()->GetFullUrl(), '\\/ ').'/?invite=';
-		$oCalendarModule = \Aurora\System\Api::GetModule('Calendar');
-		if ($oCalendarModule instanceof \Aurora\System\Module\AbstractModule)
-		{
-			$sHtml = file_get_contents($oCalendarModule->GetPath().'/templates/CalendarEventInvite.html');
-			$sHtml = strtr($sHtml, array(
-				'{{INVITE/LOCATION}}'	=> \Aurora\System\Api::I18N('INVITE/LOCATION'),
-				'{{INVITE/WHEN}}'		=> \Aurora\System\Api::I18N('INVITE/WHEN'),
-				'{{INVITE/DESCRIPTION}}'=> \Aurora\System\Api::I18N('INVITE/DESCRIPTION'),
-				'{{INVITE/INFORMATION}}'=> \Aurora\System\Api::I18N('INVITE/INFORMATION', array('Email' => $sAttendee)),
-				'{{INVITE/ACCEPT}}'		=> \Aurora\System\Api::I18N('INVITE/ACCEPT'),
-				'{{INVITE/TENTATIVE}}'	=> \Aurora\System\Api::I18N('INVITE/TENTATIVE'),
-				'{{INVITE/DECLINE}}'	=> \Aurora\System\Api::I18N('INVITE/DECLINE'),
-				'{{Calendar}}'			=> $sCalendarName.' '.$sAccountEmail,
-				'{{Location}}'			=> $oEvent->Location,
-				'{{Start}}'				=> $sStartDate,
-				'{{Description}}'		=> $oEvent->Description,
-				'{{HrefAccept}}'		=> $sHref.$sEncodedValueAccept,
-				'{{HrefTentative}}'		=> $sHref.$sEncodedValueTentative,
-				'{{HrefDecline}}'		=> $sHref.$sEncodedValueDecline
-			));
-		}
-		
-		return $sHtml;
 	}
 
 	/**

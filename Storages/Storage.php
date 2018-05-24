@@ -15,9 +15,9 @@ namespace Aurora\Modules\Calendar\Storages;
 class Storage extends \Aurora\System\Managers\AbstractStorage
 {
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 */
-	public function init($sUserUUID)
+	public function init($sUserPublicId)
 	{
 	}
 
@@ -28,18 +28,18 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	{
 	}
 
-	public function getCalendarAccess($sUserUUID, $sCalendarId)
+	public function getCalendarAccess($sUserPublicId, $sCalendarId)
 	{
 		return \Aurora\Modules\Calendar\Enums\Permission::Write;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 *
 	 * @return null
 	 */
-	public function getCalendar($sUserUUID, $sCalendarId)
+	public function getCalendar($sUserPublicId, $sCalendarId)
 	{
 		return null;
 	}
@@ -76,38 +76,38 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return array
 	 */
-	public function GetCalendarsSharedToAll($sUserUUID)
+	public function GetCalendarsSharedToAll($sUserPublicId)
 	{
 		return array();
 	}
 
 	/**
 	}
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return array
 	 */
-	public function getCalendars($sUserUUID)
+	public function getCalendars($sUserPublicId)
 	{
 		return array();
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
      * @return array
 	 */
-	public function GetCalendarNames($sUserUUID)
+	public function GetCalendarNames($sUserPublicId)
 	{
 		return array();
 	}	
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sName
 	 * @param string $sDescription
 	 * @param int $iOrder
@@ -115,13 +115,13 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return false
 	 */
-	public function createCalendar($sUserUUID, $sName, $sDescription, $iOrder, $sColor)
+	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor)
 	{
 		return false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sName
 	 * @param string $sDescription
@@ -130,20 +130,20 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return false
 	 */
-	public function updateCalendar($sUserUUID, $sCalendarId, $sName, $sDescription, $iOrder,
+	public function updateCalendar($sUserPublicId, $sCalendarId, $sName, $sDescription, $iOrder,
 			$sColor)
 	{
 		return false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sColor
 	 *
 	 * @return false
 	 */
-	public function updateCalendarColor($sUserUUID, $sCalendarId, $sColor)
+	public function updateCalendarColor($sUserPublicId, $sCalendarId, $sColor)
 	{
 		return false;
 	}
@@ -158,31 +158,31 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 *
 	 * @return false
 	 */
-	public function deleteCalendar($sUserUUID, $sCalendarId)
+	public function deleteCalendar($sUserPublicId, $sCalendarId)
 	{
 		return false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sUserId
 	 * @param int $iPerms
 	 *
 	 * @return false
 	 */
-	public function updateCalendarShare($sUserUUID, $sCalendarId, $sUserId, $iPerms = \Aurora\Modules\Calendar\Enums\Permission::RemovePermission)
+	public function updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId, $iPerms = \Aurora\Modules\Calendar\Enums\Permission::RemovePermission)
 	{
 		return false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param bool $bIsPublic
 	 *
@@ -194,25 +194,25 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $oCalendar
 	 *
 	 * @return array
 	 */
-	public function getCalendarUsers($sUserUUID, $oCalendar)
+	public function getCalendarUsers($sUserPublicId, $oCalendar)
 	{
 		return array();
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $dStart
 	 * @param string $dFinish
 	 *
 	 * @return array
 	 */
-	public function getEvents($sUserUUID, $sCalendarId, $dStart, $dFinish)
+	public function getEvents($sUserPublicId, $sCalendarId, $dStart, $dFinish)
 	{
 		return array();
 	}
@@ -236,18 +236,18 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return array
 	 */
-	public function getEvent($sUserUUID, $sCalendarId, $sEventId)
+	public function getEvent($sUserPublicId, $sCalendarId, $sEventId)
 	{
 		return array();
 	}
 	
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 *
 	 * @return array
 	 */
-	public function getTasks($sUserUUID, $sCalendarId, $bCompeted, $sSearch)
+	public function getTasks($sUserPublicId, $sCalendarId, $bCompeted, $sSearch)
 	{
 		return array();
 	}
@@ -255,45 +255,45 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 
 	/**
 	}
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param \Sabre\VObject\Component\VCalendar $vCal
 	 *
 	 * @return null
 	 */
-	public function createEvent($sUserUUID, $sCalendarId, $sEventId, $vCal)
+	public function createEvent($sUserPublicId, $sCalendarId, $sEventId, $vCal)
 	{
 		return null;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param string $sData
 	 *
 	 * @return true
 	 */
-	public function updateEventRaw($sUserUUID, $sCalendarId, $sEventId, $sData)
+	public function updateEventRaw($sUserPublicId, $sCalendarId, $sEventId, $sData)
 	{
 		return true;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 * @param array $aArgs
 	 *
 	 * @return false
 	 */
-	public function updateEvent($sUserUUID, $sCalendarId, $sEventId, $aArgs)
+	public function updateEvent($sUserPublicId, $sCalendarId, $sEventId, $aArgs)
 	{
 		return false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sNewCalendarId
 	 * @param string $sEventId
@@ -301,19 +301,19 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return false
 	 */
-	public function moveEvent($sUserUUID, $sCalendarId, $sNewCalendarId, $sEventId, $sData)
+	public function moveEvent($sUserPublicId, $sCalendarId, $sNewCalendarId, $sEventId, $sData)
 	{
 		return false;
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
 	 * @param string $sEventId
 	 *
 	 * @return false
 	 */
-	public function deleteEvent($sUserUUID, $sCalendarId, $sEventId)
+	public function deleteEvent($sUserPublicId, $sCalendarId, $sEventId)
 	{
 		return false;
 	}
@@ -344,11 +344,11 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	}
 
 	/**
-	 * @param string $sUserUUID
+	 * @param string $sUserPublicId
 	 *
 	 * @return bool
 	 */
-	public function clearAllCalendars($sUserUUID)
+	public function clearAllCalendars($sUserPublicId)
 	{
 		return true;
 	}

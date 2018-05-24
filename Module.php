@@ -23,7 +23,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->oApiFileCache = new \Aurora\System\Managers\Filecache();
 
 		$this->AddEntries(array(
-				'invite' => 'EntryInvite',
 				'calendar-pub' => 'EntryCalendarPub',
 				'calendar-download' => 'EntryCalendarDownload'
 			)
@@ -142,7 +141,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oCalendar = $this->oApiCalendarManager->getCalendar($UserId, $CalendarId);
 		if ($oCalendar) 
 		{
-			$oCalendar = $this->oApiCalendarManager->populateCalendarShares($UserId, $oCalendar);
+//			$oCalendar = $this->oApiCalendarManager->populateCalendarShares($UserId, $oCalendar);
 		}
 		return $oCalendar;
 	}	
@@ -470,10 +469,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				$oEvent->RRule = $oRRule;
 			}
 		}
-		$oEvent->Attendees = @json_decode($attendees, true);
+		$oEvent->Attendees = null;
 		$oEvent->Type = $type;
 		$oEvent->Status = $status && $type === 'VTODO';
-		
+		$aArgs = ['attendees' => $attendees];
+		$this->broadcastEvent(
+			'UpdateEventAttendees',
+			$aArgs,
+			$oEvent
+		);
 
 		$mResult = $this->oApiCalendarManager->createEvent($sUserPublicId, $oEvent);
 		
@@ -615,8 +619,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				$oEvent->RRule = $oRRule;
 			}
 		}
-		$oEvent->Attendees = @json_decode($attendees, true);
+		$oEvent->Attendees = null;
 		$oEvent->Type = $type;
+		$aArgs = ['attendees' => $attendees];
+		$this->broadcastEvent(
+			'UpdateEventAttendees',
+			$aArgs,
+			$oEvent
+		);
 		if (!empty($status))
 		{
 			$oEvent->Status = $status && $type === 'VTODO';
@@ -656,19 +666,21 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
-		
-		if ($allEvents === 1)
+		if ($sUserPublicId)
 		{
-			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
-			$oEvent->IdCalendar = $calendarId;
-			$oEvent->Id = $uid;
-			$mResult = $this->oApiCalendarManager->updateExclusion($sUserPublicId, $oEvent, $recurrenceId, true);
+			if ($allEvents === 1)
+			{
+				$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+				$oEvent->IdCalendar = $calendarId;
+				$oEvent->Id = $uid;
+				$mResult = $this->oApiCalendarManager->updateExclusion($sUserPublicId, $oEvent, $recurrenceId, true);
+			}
+			else
+			{
+				$mResult = $this->oApiCalendarManager->deleteEvent($sUserPublicId, $calendarId, $uid);
+			}
 		}
-		else
-		{
-			$mResult = $this->oApiCalendarManager->deleteEvent($sUserPublicId, $calendarId, $uid);
-		}
-		
+
 		return $mResult;
 	}	
 	
@@ -705,175 +717,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 		return $mResult;
 	}	
-	
-	/**
-	 * 
-	 * @param int $UserId
-	 * @param string $CalendarId
-	 * @param string $EventId
-	 * @param string $File
-	 * @param string $AppointmentAction
-	 * @param string $Attendee
-	 * @return array|boolean
-	 * @throws \Aurora\System\Exceptions\ApiException
-	 */
-	public function SetAppointmentAction($UserId, $CalendarId, $EventId, $File, $AppointmentAction, $Attendee)
-	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$mResult = false;
-
-		if (empty($AppointmentAction) || empty($CalendarId))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
-		}
-
-		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ false) // TODO
-		{
-			$sData = '';
-			if (!empty($EventId))
-			{
-				$aEventData =  $this->oApiCalendarManager->getEvent($sUserPublicId, $CalendarId, $EventId);
-				if (isset($aEventData) && isset($aEventData['vcal']) && $aEventData['vcal'] instanceof \Sabre\VObject\Component\VCalendar)
-				{
-					$oVCal = $aEventData['vcal'];
-					$oVCal->METHOD = 'REQUEST';
-					$sData = $oVCal->serialize();
-				}
-			}
-			else if (!empty($File))
-			{
-				$sData = $this->oApiFileCache->get($sUserPublicId, $File, '', $this->GetName());
-			}
-			if (!empty($sData))
-			{
-				$mProcessResult = $this->oApiCalendarManager->appointmentAction($sUserPublicId, $Attendee, $AppointmentAction, $CalendarId, $sData);
-				if ($mProcessResult)
-				{
-					$mResult = array(
-						'Uid' => $mProcessResult
-					);
-				}
-			}
-		}
-
-		return $mResult;
-	}	
-	
-	public function EntryInvite()
-	{
-		$sResult = '';
-		$aInviteValues = \Aurora\System\Api::DecodeKeyValues($this->oHttp->GetQuery('invite'));
-
-//		$oApiUsersManager = \Aurora\System\Api::GetSystemManager('users');
-		if (isset($aInviteValues['organizer']))
-		{
-			$oAccountOrganizer = $oApiUsersManager->getAccountByEmail($aInviteValues['organizer']);
-			if (isset($oAccountOrganizer, $aInviteValues['attendee'], $aInviteValues['calendarId'], $aInviteValues['eventId'], $aInviteValues['action']))
-			{
-				$oCalendar = $this->oApiCalendarManager->getCalendar($oAccountOrganizer, $aInviteValues['calendarId']);
-				if ($oCalendar)
-				{
-					$oEvent = $this->oApiCalendarManager->getEvent($oAccountOrganizer, $aInviteValues['calendarId'], $aInviteValues['eventId']);
-					if ($oEvent && is_array($oEvent) && 0 < count ($oEvent) && isset($oEvent[0]))
-					{
-						if (is_string($sResult))
-						{
-							$sResult = file_get_contents($this->GetPath().'/templates/CalendarEventInviteExternal.html');
-
-							$dt = new \DateTime();
-							$dt->setTimestamp($oEvent[0]['startTS']);
-							if (!$oEvent[0]['allDay'])
-							{
-								$sDefaultTimeZone = new \DateTimeZone($oAccountOrganizer->getDefaultStrTimeZone());
-								$dt->setTimezone($sDefaultTimeZone);
-							}
-
-							$sAction = $aInviteValues['action'];
-							$sActionColor = 'green';
-							$sActionText = '';
-							switch (strtoupper($sAction))
-							{
-								case 'ACCEPTED':
-									$sActionColor = 'green';
-									$sActionText = 'Accepted';
-									break;
-								case 'DECLINED':
-									$sActionColor = 'red';
-									$sActionText = 'Declined';
-									break;
-								case 'TENTATIVE':
-									$sActionColor = '#A0A0A0';
-									$sActionText = 'Tentative';
-									break;
-							}
-
-							$sDateFormat = 'm/d/Y';
-							$sTimeFormat = 'h:i A';
-							switch ($oAccountOrganizer->User->DateFormat)
-							{
-								case \Aurora\System\Enums\DateFormat::DDMMYYYY:
-									$sDateFormat = 'd/m/Y';
-									break;
-								case \Aurora\System\Enums\DateFormat::DD_MONTH_YYYY:
-									$sDateFormat = 'd/m/Y';
-									break;
-								default:
-									$sDateFormat = 'm/d/Y';
-									break;
-							}
-							switch ($oAccountOrganizer->User->TimeFormat)
-							{
-								case \Aurora\System\Enums\TimeFormat::F24:
-									$sTimeFormat = 'H:i';
-									break;
-								case \Aurora\System\Enums\DateFormat::DD_MONTH_YYYY:
-									\Aurora\System\Enums\TimeFormat::F12;
-									$sTimeFormat = 'h:i A';
-									break;
-								default:
-									$sTimeFormat = 'h:i A';
-									break;
-							}
-							$sDateTime = $dt->format($sDateFormat.' '.$sTimeFormat);
-
-							$mResult = array(
-								'{{COLOR}}' => $oCalendar->Color,
-								'{{EVENT_NAME}}' => $oEvent[0]['subject'],
-								'{{EVENT_BEGIN}}' => ucfirst(\Aurora\System\Api::ClientI18N('REMINDERS/EVENT_BEGIN', $oAccountOrganizer)),
-								'{{EVENT_DATE}}' => $sDateTime,
-								'{{CALENDAR}}' => ucfirst(\Aurora\System\Api::ClientI18N('REMINDERS/CALENDAR', $oAccountOrganizer)),
-								'{{CALENDAR_NAME}}' => $oCalendar->DisplayName,
-								'{{EVENT_DESCRIPTION}}' => $oEvent[0]['description'],
-								'{{EVENT_ACTION}}' => $sActionText,
-								'{{ACTION_COLOR}}' => $sActionColor,
-							);
-
-							$sResult = strtr($sResult, $mResult);
-						}
-						else
-						{
-							\Aurora\System\Api::Log('Empty template.', \Aurora\System\Enums\LogLevel::Error);
-						}
-					}
-					else
-					{
-						\Aurora\System\Api::Log('Event not found.', \Aurora\System\Enums\LogLevel::Error);
-					}
-				}
-				else
-				{
-					\Aurora\System\Api::Log('Calendar not found.', \Aurora\System\Enums\LogLevel::Error);
-				}
-				$sAttendee = $aInviteValues['attendee'];
-				if (!empty($sAttendee))
-				{
-					$this->oApiCalendarManager->updateAppointment($oAccountOrganizer, $aInviteValues['calendarId'], $aInviteValues['eventId'], $sAttendee, $aInviteValues['action']);
-				}
-			}
-		}
-		return $sResult;
-	}
 	
 	public function EntryCalendarPub()
 	{
@@ -926,38 +769,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		return $sResult;	
 	}
-	
-	/**
-	 * 
-	 * @param int $UserId
-	 * @param string $File
-	 * @param string $FromEmail
-	 * @return boolean
-	 * @throws \Aurora\System\Exceptions\ApiException
-	 */
-	public function UpdateAttendeeStatus($UserId, $File, $FromEmail)
-	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$mResult = false;
 
-		if (empty($File) || empty($FromEmail))
-		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
-		}
-		
-		if (/*$this->oApiCapabilityManager->isCalendarAppointmentsSupported($UserId)*/ false) // TODO
-		{
-			$sData = $this->oApiFileCache->get($sUserPublicId, $File, '', $this->GetName());
-			if (!empty($sData))
-			{
-				$mResult = $this->oApiCalendarManager->processICS($UserId, $sData, $FromEmail, true);
-			}
-		}
-
-		return $mResult;		
-	}	
-	
 	/**
 	 * 
 	 * @param int $UserId
@@ -968,10 +780,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public function ProcessICS($UserId, $Data, $FromEmail)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+
 		return $this->oApiCalendarManager->processICS($UserId, $Data, $FromEmail);
 	}
-	
+
 	/**
 	 * 
 	 * @param int $UserId
@@ -1093,15 +905,17 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							$oIcs->Uid = $mResult['UID'];
 							$oIcs->Sequence = $mResult['Sequence'];
 							$oIcs->File = $sTemptFile;
-							$oIcs->Attendee = isset($mResult['Attendee']) ? $mResult['Attendee'] : null;
-							
-							// TODO
-							$oIcs->Type = (/*$oApiCapa->isCalendarAppointmentsSupported($oUser->EntityId)*/ false) ? $mResult['Action'] : 'SAVE';
-							
+							$oIcs->Type = 'SAVE';
+							$oIcs->Attendee = null;
 							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
 							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
 							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
 							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
+							$this->broadcastEvent(
+								'CreateIcs',
+								$mResult,
+								$oIcs
+							);
 
 							$oMessage->addExtend('ICAL', $oIcs);
 						}

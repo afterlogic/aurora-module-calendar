@@ -25,13 +25,13 @@ class Parser
 	 *
 	 * @return array
 	 */
-	public static function parseEvent($sUUID, $oCalendar, $oExpandedVCal, $oVCal = null)
+	public static function parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal = null)
 	{
 		$aResult = array();
 		$aRules = array();
 		$aExcludedRecurrences = array();
 
-		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 
         $sComponent = 'VEVENT';
 		if (isset($oExpandedVCal->{$sComponent}))
@@ -49,7 +49,7 @@ class Parser
         
         if (isset($oVCal))
 		{
-			$aRules = self::getRRules($sUUID, $oVCal, $sComponent);
+			$aRules = self::getRRules($sUserPublicId, $oVCal, $sComponent);
 			$aExcludedRecurrences = self::getExcludedRecurrences($oVCal);
 		}
         
@@ -220,12 +220,12 @@ class Parser
 	}
 
 	/**
-	 * @param string $sUUID
+	 * @param string $sUserPublicId
 	 * @param \Sabre\VObject\Component $oVComponentBase
 	 *
 	 * @return RRule|null
 	 */
-	public static function parseRRule($sUUID, $oVComponentBase)
+	public static function parseRRule($sUserPublicId, $oVComponentBase)
 	{
 		$oResult = null;
 
@@ -239,7 +239,7 @@ class Parser
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Monthly,
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
-		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUUID);
+		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 		if (isset($oVComponentBase->RRULE, $oUser)  && $oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
 			$oResult = new RRule($oUser);
