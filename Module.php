@@ -953,16 +953,18 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public function onAfterDeleteUser($aArgs, &$mResult)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
-
-		
-		$aUserCalendars = isset($aArgs["User"]) ? $this->Decorator()->GetCalendars($aArgs["User"]->PublicId) : [];
-		if (isset($aUserCalendars["Calendars"]))
+		$sUserPublicId = isset($aArgs["User"]) ? $aArgs["User"]->PublicId : null;
+		if ($sUserPublicId)
 		{
-			foreach ($aUserCalendars["Calendars"] as $oCalendar)
+			$aUserCalendars = $this->oApiCalendarManager->getCalendars($sUserPublicId);
+			if ($aUserCalendars)
 			{
-				if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
+				foreach ($aUserCalendars as $oCalendar)
 				{
-					$this->Decorator()->DeleteCalendar($aArgs["User"]->PublicId, $oCalendar->Id);
+					if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
+					{
+						$this->Decorator()->DeleteCalendar($aArgs["User"]->PublicId, $oCalendar->Id);
+					}
 				}
 			}
 		}
