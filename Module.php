@@ -57,7 +57,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		
 		$aSettings = array(
 			'AddDescriptionToTitle' => $this->getConfig('AddDescriptionToTitle', false),
-			'AllowAppointments' => $this->getConfig('AllowAppointments', true),
 			'AllowTasks' => $this->getConfig('AllowTasks', true),
 			'AllowShare' => $this->getConfig('AllowShare', true),
 			'DefaultTab' => $this->getConfig('DefaultTab', 3),

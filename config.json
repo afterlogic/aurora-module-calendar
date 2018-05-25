@@ -11,10 +11,6 @@
 		false,
 		"bool"
 	],
-    "AllowAppointments": [
-		true,
-		"bool"
-	],
     "AllowShare": [
 		true,
 		"bool"
