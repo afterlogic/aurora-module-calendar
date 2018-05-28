@@ -369,8 +369,25 @@ class Sabredav extends Storage
 						$aCalendars[$oCalendar->Id] = $oCalendar;
 					}
 				}
+				if (empty($aCalendars))
+				{
+					//create default calendar
+					$sCalendarId = $this->createCalendar($sUserPublicId,
+						$this->oManager->GetModule()->i18n('CALENDAR_DEFAULT_NAME'),
+						"",
+						0,
+						\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_COLOR
+					);
+					if ($sCalendarId)
+					{
+						$oCalendar = $this->getCalendar($sUserPublicId, $sCalendarId);
+						if ($oCalendar)
+						{
+							$aCalendars[$oCalendar->Id] = $oCalendar;
+						}
+					}
+				}
 
-				
 				$this->CalendarsCache[$sUserPublicId] = $aCalendars;
 			}
 		}
