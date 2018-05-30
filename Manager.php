@@ -1633,7 +1633,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 												'sCalendarId'			=> $sCalendarId,
 												'sEventId'				=> $sEventId,
 												'sMethod'				=> $sMethod,
-												'bUpdateAttendeeStatus'	=> $bUpdateAttendeeStatus,
 												'sequence'				=> $sequence,
 												'sequenceServer'		=> $sequenceServer,
 												'oVEvent'				=> $oVEvent
