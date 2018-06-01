@@ -302,13 +302,13 @@ class Sabredav extends Storage
 	/**
 	 * @return array|null
 	 */
-	public function getTenantUser()
+	public function getTenantUser($oUser = null)
 	{
 		if (!isset($this->TenantUser)) 
 		{
 			$sPrincipal = 'default_' . \Afterlogic\DAV\Constants::DAV_TENANT_PRINCIPAL;
 			
-			$oUser = \Aurora\System\Api::getAuthenticatedUser();
+			$oUser = $oUser ? $oUser : \Aurora\System\Api::getAuthenticatedUser();
 			if ($oUser)
 			{
 				$sPrincipal = $oUser->IdTenant . '_' . \Afterlogic\DAV\Constants::DAV_TENANT_PRINCIPAL;
@@ -718,9 +718,9 @@ class Sabredav extends Storage
 	 * 
 	 * @return bool
 	 */
-	public function publicCalendar($sCalendarId, $bIsPublic = false)
+	public function publicCalendar($sCalendarId, $bIsPublic = false, $oUser = null)
 	{
-		return $this->getBackend()->setPublishStatus($sCalendarId, $bIsPublic);
+		return $this->getBackend()->setPublishStatus($sCalendarId, $bIsPublic, $oUser);
 	}
 
 	/**

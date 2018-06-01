@@ -306,19 +306,28 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$aShares = json_decode($Shares, true) ;
-		
+		$oUser = null;
+		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+		if ($oAuthenticatedUser->EntityId !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+		{
+			$oUser = \Aurora\System\Api::getUserById($UserId);
+		}
+		else
+		{
+			$oUser = $oAuthenticatedUser;
+		}
 		// Share calendar to all users
 		if ($ShareToAll)
 		{
 			$aShares[] = array(
-				'email' => $this->oApiCalendarManager->getTenantUser(),
+				'email' => $this->oApiCalendarManager->getTenantUser($oUser),
 				'access' => $ShareToAllAccess
 			);
 		}
 		else
 		{
 			$aShares[] = array(
-				'email' => $this->oApiCalendarManager->getTenantUser(),
+				'email' => $this->oApiCalendarManager->getTenantUser($oUser),
 				'access' => \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
 			);
 		}
@@ -341,10 +350,16 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param boolean $IsPublic
 	 * @return array|boolean
 	 */
-	public function UpdateCalendarPublic($Id, $IsPublic)
+	public function UpdateCalendarPublic($sUserPublicId, $IsPublic, $UserId = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		return $this->oApiCalendarManager->publicCalendar($Id, $IsPublic);
+		$oUser = null;
+		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+		if ($oAuthenticatedUser->PublicId !== $sUserPublicId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+		{
+			$oUser = \Aurora\System\Api::getUserById($UserId);
+		}
+		return $this->oApiCalendarManager->publicCalendar($sUserPublicId, $IsPublic, $oUser);
 	}		
 
 	/**

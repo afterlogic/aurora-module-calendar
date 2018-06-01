@@ -198,12 +198,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return string|bool
 	 */
-	public function getTenantUser()
+	public function getTenantUser($oUser = null)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->getTenantUser();
+			$mResult = $this->oStorage->getTenantUser($oUser);
 		}
 		catch (Exception $oException)
 		{
@@ -455,12 +455,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic = false)
+	public function publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic = false, $oUser = null)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic);
+			$oResult = $this->oStorage->publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic, $oUser);
 		}
 		catch (Exception $oException)
 		{
