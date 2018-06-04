@@ -58,7 +58,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aSettings = array(
 			'AddDescriptionToTitle' => $this->getConfig('AddDescriptionToTitle', false),
 			'AllowTasks' => $this->getConfig('AllowTasks', true),
-			'AllowShare' => $this->getConfig('AllowShare', true),
 			'DefaultTab' => $this->getConfig('DefaultTab', 3),
 			'HighlightWorkingDays' => $this->getConfig('HighlightWorkingDays', true),
 			'HighlightWorkingHours' => $this->getConfig('HighlightWorkingHours', true),
