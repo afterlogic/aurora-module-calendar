@@ -345,21 +345,21 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	
 	/**
 	 * 
-	 * @param int $UserId
-	 * @param string $Id
+	 * @param string $Id User publicId
 	 * @param boolean $IsPublic
+	 * @param int $UserId
 	 * @return array|boolean
 	 */
-	public function UpdateCalendarPublic($sUserPublicId, $IsPublic, $UserId = null)
+	public function UpdateCalendarPublic($Id, $IsPublic, $UserId = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oUser = null;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		if ($oAuthenticatedUser->PublicId !== $sUserPublicId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+		if ($oAuthenticatedUser->PublicId !== $Id && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
 		{
 			$oUser = \Aurora\System\Api::getUserById($UserId);
 		}
-		return $this->oApiCalendarManager->publicCalendar($sUserPublicId, $IsPublic, $oUser);
+		return $this->oApiCalendarManager->publicCalendar($Id, $IsPublic, $oUser);
 	}		
 
 	/**
