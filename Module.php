@@ -332,14 +332,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			);
 		}
 
-		// Public calendar
-		if ($IsPublic)
-		{
-			$aShares[] = array(
-				'email' => $this->oApiCalendarManager->getPublicUser(),
-				'access' => \Aurora\Modules\Calendar\Enums\Permission::Read
-			);
-		}
 		return $this->oApiCalendarManager->updateCalendarShares($sUserPublicId, $Id, $aShares);
 	}		
 	
