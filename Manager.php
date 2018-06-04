@@ -430,18 +430,30 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function updateCalendarShares($sUserPublicId, $sCalendarId, $aShares)
 	{
-		$oResult = null;
+		$oResult = false;
 		if ($this->isCalendarSharingSupported($sUserPublicId))
 		{
-			try
+			$aProcessedEmails = [];
+			$oUser = $this->oApiUsersManager->getUserByPublicId($sUserPublicId);
+			foreach ($aShares as $aShare)
 			{
-				$oResult = $this->oStorage->updateCalendarShares($sUserPublicId, $sCalendarId, $aShares);
+				if (in_array($aShare['email'], $aProcessedEmails))
+				{//duplicated shares
+					return $oResult;
+				}
+				$aProcessedEmails[] = $aShare['email'];
+				if ($aShare['email'] !== $this->getTenantUser($oUser) &&
+					$aShare['email'] !== $this->getPublicUser())
+				{
+					$oSharedUser = $this->oApiUsersManager->getUserByPublicId($aShare['email']);
+					if (!$oSharedUser instanceof \Aurora\Modules\Core\Classes\User)
+					{
+						return $oResult;
+					}
+					unset($oSharedUser);
+				}
 			}
-			catch (Exception $oException)
-			{
-				$oResult = false;
-				$this->setLastException($oException);
-			}
+			$oResult = $this->oStorage->updateCalendarShares($sUserPublicId, $sCalendarId, $aShares);
 		}
 		return $oResult;
 	}
