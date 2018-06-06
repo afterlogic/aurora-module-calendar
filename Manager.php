@@ -1677,7 +1677,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 					if (!$bUpdateAttendeeStatus)
 					{
-						$sTimeFormat = (isset($oVEventResult->DTSTART) && !$oVEventResult->DTSTART->hasTime()) ? 'D, M d' : 'D, M d, Y, H:i';
+						$sWhen = '';
+						if (isset($oVEventResult->DTSTART))
+						{
+							if (!$oVEventResult->DTSTART->hasTime())
+							{
+								$oDateTime = \Aurora\Modules\Calendar\Classes\Helper::getDateTime($oVEventResult->DTSTART, $oUser->DefaultTimeZone);
+								$sWhen = $oDateTime->format('D, M d, Y');
+							}
+							else
+							{
+								$sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'D, M d, Y, H:i');
+							}
+						}
 						$mResult = array(
 							'Calendars' => $aCalendars,
 							'CalendarId' => $sCalendarId,
@@ -1686,7 +1698,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							'Action' => $sMethod,
 							'Location' => isset($oVEventResult->LOCATION) ? (string)$oVEventResult->LOCATION : '',
 							'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
-							'When' => \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, $sTimeFormat),
+							'When' => $sWhen,
 							'Sequence' => isset($sequence) ? $sequence : 1
 						);
 
