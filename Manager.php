@@ -1660,7 +1660,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							}
 						}
 
-						if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus)
+						if ($sMethod === 'CANCEL')
 						{
 							$aArgs = [
 								'sUserPublicId'			=> $oUser->PublicId,
