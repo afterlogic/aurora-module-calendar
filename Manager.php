@@ -1542,20 +1542,21 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	{
 		$mResult = false;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		$aAccountEmails = array($oAuthenticatedUser->PublicId);
+		$aAccountEmails = [$oAuthenticatedUser->PublicId];
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 		{
-			//TODO get list user emails
+			$aUserAccounts = \Aurora\System\Api::GetModuleDecorator('Mail')->GetAccounts($oUser->EntityId);
+			foreach ($aUserAccounts as $oMailAccount)
+			{
+				if ($oMailAccount instanceof \Aurora\Modules\Mail\Classes\Account)
+				{
+					$aAccountEmails[] = $oMailAccount->Email;
+				}
+			}
 
-	//		$aAccountEmails = array();
-	//		$aUserAccounts = $this->oApiUsersManager->getUserAccounts($oUser->IdUser);
-	//		foreach ($aUserAccounts as $aUserAccount) {
-	//			if (isset($aUserAccount) && isset($aUserAccount[1])) {
-	//				$aAccountEmails[] = $aUserAccount[1];
-	//			}
-	//		}
+			//TODO get fetchers list
 	//
 	//		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
 	//		if (is_array($aFetchers) && 0 < count($aFetchers)) {
@@ -1565,15 +1566,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	//				}
 	//			}
 	//		}
-	//
-	//		$aIdentities = $this->oApiUsersManager->getUserIdentities($oUser->IdUser);
-	//		if (is_array($aIdentities) && 0 < count($aIdentities)) {
-	//			foreach ($aIdentities as /* @var $oIdentity \Aurora\Modules\Mail\Classes\Identity */ $oIdentity) {
-	//				if ($oIdentity) {
-	//					$aAccountEmails[] = $oIdentity->Email;
-	//				}
-	//			}
-	//		}
+
+//			$aIdentities = \Aurora\System\Api::GetModuleDecorator('Mail')->GetIdentities($oUser->EntityId);
+//			if (is_array($aIdentities) && 0 < count($aIdentities))
+//			{
+//				foreach ($aIdentities as $oIdentity)
+//				{
+//					if ($oIdentity instanceof \Aurora\Modules\Mail\Classes\Identity)
+//					{
+//						$aAccountEmails[] = $oIdentity->Email;
+//					}
+//				}
+//			}
+//			$aAccountEmails = array_unique($aAccountEmails);
 
 			$oVCal = \Sabre\VObject\Reader::read($sData);
 			if ($oVCal)
@@ -1583,7 +1588,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$oMethod = isset($oVCal->METHOD) ? $oVCal->METHOD : null;
 				$sMethod = isset($oMethod) ? (string) $oMethod : 'SAVE';
 
-				if (!in_array($sMethod, array('REQUEST', 'REPLY', 'CANCEL', 'PUBLISH', 'SAVE')))
+				if (!in_array($sMethod, ['REQUEST', 'REPLY', 'CANCEL', 'PUBLISH', 'SAVE']))
 				{
 					return false;
 				}
@@ -1690,7 +1695,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 								$sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'D, M d, Y, H:i');
 							}
 						}
-						$mResult = array(
+						$mResult = [
 							'Calendars' => $aCalendars,
 							'CalendarId' => $sCalendarId,
 							'UID' => $sEventId,
@@ -1700,9 +1705,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
 							'When' => $sWhen,
 							'Sequence' => isset($sequence) ? $sequence : 1
-						);
+						];
 
-						$aAccountEmails = ($sMethod === 'REPLY') ? array($mFromEmail) : $aAccountEmails;
+						$aAccountEmails = ($sMethod === 'REPLY') ? [$mFromEmail] : $aAccountEmails;
 						if (isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence)
 						{
 							$aArgs = [
