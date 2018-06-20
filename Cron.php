@@ -100,7 +100,7 @@ class Reminder
 		{
 			if (!isset($this->aCalendars[$sUri]))
 			{
-				$this->aCalendars[$sUri] = $this->oApiCalendarManager->getCalendar($oUser->EntityId, $sUri);
+				$this->aCalendars[$sUri] = $this->oApiCalendarManager->getCalendar($oUser->PublicId, $sUri);
 			}
 
 			if (isset($this->aCalendars[$sUri]))
