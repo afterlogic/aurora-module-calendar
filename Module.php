@@ -450,7 +450,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @return array|boolean
 	 */
 	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS, 
-			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true)
+			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true, $owner = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -477,7 +477,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Attendees = null;
 		$oEvent->Type = $type;
 		$oEvent->Status = $status && $type === 'VTODO';
-		$aArgs = ['attendees' => $attendees];
+		$aArgs = [
+			'attendees'		=> $attendees,
+			'owner'		=> $owner,
+			'UserPublicId'	=> $sUserPublicId
+		];
 		$this->broadcastEvent(
 			'UpdateEventAttendees',
 			$aArgs,
@@ -597,7 +601,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function UpdateEvent($UserId, $newCalendarId, $calendarId, $uid, $subject, $description, 
 			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
-			$selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true)
+			$selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true, $owner = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -626,7 +630,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		$oEvent->Attendees = null;
 		$oEvent->Type = $type;
-		$aArgs = ['attendees' => $attendees];
+		$aArgs = [
+			'attendees'		=> $attendees,
+			'owner'		=> $owner,
+			'UserPublicId'	=> $sUserPublicId
+		];
 		$this->broadcastEvent(
 			'UpdateEventAttendees',
 			$aArgs,
