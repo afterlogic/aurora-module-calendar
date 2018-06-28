@@ -1626,7 +1626,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 									isset($oVEventServer->{'LAST-MODIFIED'}))
 								{
 									$lastModified = $oVEvent->{'LAST-MODIFIED'}->getDateTime();
-									$lastModifiedServer = $oVEventServer->{'LAST-MODIFIED'}->getDateTime();
+									$lastModifiedServer = '';
+									//Checking if current user's appointment was parsed earlier
+									foreach ($oVEventServer->ATTENDEE as $oAttendee)
+									{
+										if ($mFromEmail === str_replace('mailto:', '', strtolower((string) $oAttendee->getValue())))
+										{
+											if (isset($oAttendee['RESPONDED-AT']))
+											{
+												$lastModifiedServer = new \DateTime($oAttendee['RESPONDED-AT'], new \DateTimeZone('UTC'));
+											}
+											break;
+										}
+									}
 
 									$sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
 									$sequenceServer = isset($oVEventServer->{'SEQUENCE'}) && $oVEventServer->{'SEQUENCE'}->getValue() ? $oVEventServer->{'SEQUENCE'}->getValue() : 0; // accepted sequence value
@@ -1642,30 +1654,33 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 										{
 											$oVCalResult = $oVCalServer;
 											$oVEventResult = $oVEventServer;
-
-											$aArgs = [
-												'oVCalResult'			=> $oVCalResult,
-												'oVEventResult'			=> $oVEventResult,
-												'sUserPublicId'			=> $oUser->PublicId,
-												'sCalendarId'			=> $sCalendarId,
-												'sEventId'				=> $sEventId,
-												'sMethod'				=> $sMethod,
-												'sequence'				=> $sequence,
-												'sequenceServer'		=> $sequenceServer,
-												'oVEvent'				=> $oVEvent
-											];
-											$this->GetModule()->broadcastEvent(
-												'processICS::UpdateEvent',
-												$aArgs,
-												$mResult
-											);
+											if ($bUpdateAttendeeStatus)
+											{
+												$aArgs = [
+													'oVCalResult'			=> $oVCalResult,
+													'oVEventResult'			=> $oVEventResult,
+													'sUserPublicId'			=> $oUser->PublicId,
+													'sCalendarId'			=> $sCalendarId,
+													'sEventId'				=> $sEventId,
+													'sMethod'				=> $sMethod,
+													'sequence'				=> $sequence,
+													'sequenceServer'		=> $sequenceServer,
+													'oVEvent'				=> $oVEvent,
+													'mFromEmail'			=> $mFromEmail
+												];
+												$this->GetModule()->broadcastEvent(
+													'processICS::UpdateEvent',
+													$aArgs,
+													$mResult
+												);
+											}
 										}
 									}
 								}
 							}
 						}
 
-						if ($sMethod === 'CANCEL')
+						if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus)
 						{
 							$aArgs = [
 								'sUserPublicId'			=> $oUser->PublicId,

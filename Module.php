@@ -910,8 +910,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					}
 					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
 					{
-						$sTemptFile = md5($mResult['Body']).'.ics';
-						if ($this->oApiFileCache->put($sUserPublicId, $sTemptFile, $mResult['Body'], '', $this->GetName()))
+						$sTemptFile = md5($sFromEmail . $sData).'.ics';
+						if ($this->oApiFileCache->put($sUserPublicId, $sTemptFile, $sData, '', $this->GetName()))
 						{
 							$oIcs = \Aurora\Modules\Mail\Classes\Ics::createInstance();
 
