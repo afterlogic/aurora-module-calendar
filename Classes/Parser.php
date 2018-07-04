@@ -86,27 +86,20 @@ class Parser
 						$aEvent['excluded'] = true;
 					}
 
-					$bIsAppointment = false;
-					$aEvent['attendees'] = array();
-					if (isset($oVComponent->ATTENDEE))
-					{
-						$aEvent['attendees'] = self::parseAttendees($oVComponent);
-
-						if (isset($oVComponent->ORGANIZER))
-						{
-							$sOwnerEmail = str_replace('mailto:', '', strtolower((string)$oVComponent->ORGANIZER));
-						}
-						$bIsAppointment = ($oUser instanceof \Aurora\Modules\Core\Classes\User && $sOwnerEmail !== $oUser->PublicId);
-					}
-					
+					$aArgs = [
+						'oVComponent'	=> $oVComponent,
+						'sOwnerEmail'	=> $sOwnerEmail,
+						'oUser'		=> $oUser
+					];
+					\Aurora\System\Api::GetModule('Calendar')->broadcastEvent(
+						'parseEvent',
+						$aArgs,
+						$aEvent
+					);
 					$oOwner = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sOwnerEmail);
 					$sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Classes\User) ? $oOwner->Name : '';
 					$bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
 					$sCurrentTimeZone = ($bAllDay) ? 'UTC' : $sTimeZone;
-					
-					$aEvent['appointment'] = $bIsAppointment;
-					$aEvent['appointmentAccess'] = 0;
-					
 					$aEvent['alarms'] = self::parseAlarms($oVComponent);
 
 					if (!isset($oVComponent->DTEND))
