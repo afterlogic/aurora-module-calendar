@@ -24,11 +24,11 @@ class RRule
 	public $End;
 	public $WeekNum;
 	public $ByDays;
-	protected $User;
+	protected $DefaultTimeZone;
 
-	public function __construct($oUser)
+	public function __construct($DefaultTimeZone)
 	{
-		$this->User = $oUser;
+		$this->DefaultTimeZone = $DefaultTimeZone;
 		$this->StartBase  = null;
 		$this->EndBase    = null;
 		$this->Period	  = null;
@@ -140,6 +140,6 @@ class RRule
 
 	public function GetTimeZone()
 	{
-		return $this->User->DefaultTimeZone;
+		return $this->DefaultTimeZone;
 	}
 }

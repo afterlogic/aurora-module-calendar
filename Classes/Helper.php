@@ -308,7 +308,12 @@ class Helper
 			$sRRULE = '';
 			if (isset($oVEvent->RRULE) && null === $oEvent->RRule)
 			{
-				$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($sUserPublicId, $oVCal, (string)$oVEvent->UID);
+				$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+				$oRRule = false;
+				if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+				{
+					$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($oUser->DefaultTimeZone, $oVCal, (string)$oVEvent->UID);
+				}
 				if ($oRRule && $oRRule instanceof \Aurora\Modules\Calendar\Classes\RRule)
 				{
 					$sRRULE = (string) $oRRule;

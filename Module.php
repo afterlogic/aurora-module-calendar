@@ -390,13 +390,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param boolean $Expand
 	 * @return array|boolean
 	 */
-	public function GetEvents($UserId, $CalendarIds, $Start, $End, $IsPublic, $Expand = true)
+	public function GetEvents($UserId, $CalendarIds, $Start, $End, $IsPublic, $Expand = true, $DefaultTimeZone = null)
 	{
 		$mResult = false;
 		if ($IsPublic)
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-			$mResult = $this->oApiCalendarManager->getPublicEvents($CalendarIds, $Start, $End, $Expand);
+			$mResult = $this->oApiCalendarManager->getPublicEvents($CalendarIds, $Start, $End, $Expand, $DefaultTimeZone);
 		}
 		else
 		{
@@ -469,7 +469,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($aRRule)
 			{
 				$oUser = \Aurora\System\Api::getAuthenticatedUser();
-				$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
+				$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser->DefaultTimeZone);
 				$oRRule->Populate($aRRule);
 				$oEvent->RRule = $oRRule;
 			}
@@ -623,7 +623,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($aRRule)
 			{
 				$oUser = \Aurora\System\Api::getAuthenticatedUser();
-				$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser);
+				$oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser->DefaultTimeZone);
 				$oRRule->Populate($aRRule);
 				$oEvent->RRule = $oRRule;
 			}

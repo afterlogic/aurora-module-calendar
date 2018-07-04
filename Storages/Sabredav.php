@@ -955,7 +955,7 @@ class Sabredav extends Storage
 	 * 
 	 * @return array
 	 */
-	public function getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart = null, $dEnd = null, $bExpand = true)
+	public function getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart = null, $dEnd = null, $bExpand = true, $sDefaultTimeZone = null)
 	{
 		if ($bExpand && $dStart !== null && $dEnd !== null)
 		{
@@ -990,7 +990,7 @@ class Sabredav extends Storage
 			$oExpandedVCal = clone $oVCal;
 		}
 		
-		return \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal);
+		return \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal, $sDefaultTimeZone);
 	}
 	
 	/**
@@ -1284,7 +1284,7 @@ class Sabredav extends Storage
 		return $mResult;
 	}
 	
-	public function getPublicItemsByUrls($oCalDAVCalendar, $aUrls, $dStart = null, $dEnd = null, $bExpand = false)
+	public function getPublicItemsByUrls($oCalDAVCalendar, $aUrls, $dStart = null, $dEnd = null, $bExpand = false, $sDefaultTimeZone = null)
 	{
 		$mResult = array();
 		$oCalendar = $this->parseCalendar($oCalDAVCalendar);
@@ -1303,7 +1303,9 @@ class Sabredav extends Storage
 				$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner] = $oCalDAVCalendarObject;		
 			}
 			$oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
-			$aEvents = $this->getEventsFromVCalendar($oCalendar->Owner, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+			$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
+			$sUserPublicId = $iUserId ? \Aurora\System\Api::getUserPublicIdById($iUserId) : '';
+			$aEvents = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand, $sDefaultTimeZone);
 			foreach (array_keys($aEvents) as $key) 
 			{
 				$aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
@@ -1322,7 +1324,7 @@ class Sabredav extends Storage
 	 * 
 	 * @return array|bool
 	 */
-	public function getPublicEvents($sCalendarId, $dStart, $dEnd, $bExpand = true)
+	public function getPublicEvents($sCalendarId, $dStart, $dEnd, $bExpand = true, $sDefaultTimeZone = null)
 	{
 		$mResult = false;
 		$oCalDAVCalendar = $this->getPublicCalendar($sCalendarId);
@@ -1330,7 +1332,7 @@ class Sabredav extends Storage
 		if ($oCalDAVCalendar) 
 		{
 			$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
-			$mResult = $this->getPublicItemsByUrls($oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
+			$mResult = $this->getPublicItemsByUrls($oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand, $sDefaultTimeZone);
 		}
 
 		return $mResult;

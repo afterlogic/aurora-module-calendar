@@ -25,15 +25,27 @@ class Parser
 	 *
 	 * @return array
 	 */
-	public static function parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal = null)
+	public static function parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal = null, $sDefaultTimeZone = null)
 	{
 		$aResult = array();
 		$aRules = array();
 		$aExcludedRecurrences = array();
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		{
+			$sTimeZone = $oUser->DefaultTimeZone;
+		}
+		else if ($sDefaultTimeZone)
+		{
+			$sTimeZone = $sDefaultTimeZone;
+		}
+		else
+		{
+			$sTimeZone = 'UTC';
+		}
 
-        $sComponent = 'VEVENT';
+		$sComponent = 'VEVENT';
 		if (isset($oExpandedVCal->{$sComponent}))
 		{
 			$sType = $sComponent;
@@ -47,9 +59,9 @@ class Parser
 			}
 		}
         
-        if (isset($oVCal))
+		if (isset($oVCal))
 		{
-			$aRules = self::getRRules($sUserPublicId, $oVCal, $sComponent);
+			$aRules = self::getRRules($sTimeZone, $oVCal, $sComponent);
 			$aExcludedRecurrences = self::getExcludedRecurrences($oVCal);
 		}
         
@@ -90,10 +102,7 @@ class Parser
 					$oOwner = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sOwnerEmail);
 					$sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Classes\User) ? $oOwner->Name : '';
 					$bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
-					if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
-					{
-						$sTimeZone = ($bAllDay) ? 'UTC' : $oUser->DefaultTimeZone;
-					}
+					$sCurrentTimeZone = ($bAllDay) ? 'UTC' : $sTimeZone;
 					
 					$aEvent['appointment'] = $bIsAppointment;
 					$aEvent['appointmentAccess'] = 0;
@@ -124,9 +133,9 @@ class Parser
 					$aDescription = $oVComponent->DESCRIPTION ? \Sabre\VObject\Parser\MimeDir::unescapeValue((string)$oVComponent->DESCRIPTION) : array('');
 					$aEvent['description'] = $aDescription[0];
 					$aEvent['location'] = $oVComponent->LOCATION ? (string)$oVComponent->LOCATION : '';
-					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTSTART, $sTimeZone);
-					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTSTART, $sTimeZone);
-					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTEND, $sTimeZone);
+					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTSTART, $sCurrentTimeZone);
+					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTSTART, $sCurrentTimeZone);
+					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTEND, $sCurrentTimeZone);
 					$aEvent['allDay'] = $bAllDay;
 					$aEvent['owner'] = $sOwnerEmail;
 					$aEvent['ownerName'] = $sOwnerName;
@@ -220,12 +229,12 @@ class Parser
 	}
 
 	/**
-	 * @param string $sUserPublicId
+	 * @param string $DefaultTimeZone
 	 * @param \Sabre\VObject\Component $oVComponentBase
 	 *
 	 * @return RRule|null
 	 */
-	public static function parseRRule($sUserPublicId, $oVComponentBase)
+	public static function parseRRule($DefaultTimeZone, $oVComponentBase)
 	{
 		$oResult = null;
 
@@ -239,10 +248,10 @@ class Parser
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Monthly,
 			\Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
 		);
-		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-		if (isset($oVComponentBase->RRULE, $oUser)  && $oUser instanceof \Aurora\Modules\Core\Classes\User)
+
+		if (isset($oVComponentBase->RRULE, $DefaultTimeZone))
 		{
-			$oResult = new RRule($oUser);
+			$oResult = new RRule($DefaultTimeZone);
 			$aRules = $oVComponentBase->RRULE->getParts();
 			if (isset($aRules['FREQ']))
 			{
@@ -302,8 +311,8 @@ class Parser
 				}
 			}
 			
-			$oResult->StartBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponentBase->DTSTART, $oUser->DefaultTimeZone);
-			$oResult->EndBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponentBase->DTEND, $oUser->DefaultTimeZone);
+			$oResult->StartBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponentBase->DTSTART, $DefaultTimeZone);
+			$oResult->EndBase = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponentBase->DTEND, $DefaultTimeZone);
 		}
 
 		return $oResult;
@@ -316,7 +325,7 @@ class Parser
 	 *
 	 * @return array
 	 */
-	public static function getRRules($sUUID, $oVCal, $sComponent = 'VEVENT')
+	public static function getRRules($DefaultTimeZone, $oVCal, $sComponent = 'VEVENT')
 	{
 		$aResult = array();
 		
@@ -324,7 +333,7 @@ class Parser
 		{
 			if (isset($oVComponentBase->RRULE))
 			{
-				$oRRule = self::parseRRule($sUUID, $oVComponentBase);
+				$oRRule = self::parseRRule($DefaultTimeZone, $oVComponentBase);
 				if ($oRRule)
 				{
 					$aResult[(string)$oVComponentBase->UID] = $oRRule;

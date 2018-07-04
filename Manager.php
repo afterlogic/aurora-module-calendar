@@ -651,29 +651,23 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return array|bool
 	 */
-	public function getPublicEvents($mCalendarId, $dStart = null, $dFinish = null)
+	public function getPublicEvents($mCalendarId, $dStart = null, $dFinish = null, $bExpand = true, $sDefaultTimeZone = null)
 	{
 		$aResult = array();
-		try
-		{
-			$dStart = ($dStart != null) ? date('Ymd\T000000\Z', $dStart  - 86400) : null;
-			$dFinish = ($dFinish != null) ? date('Ymd\T235959\Z', $dFinish) : null;
-			$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
 
-			foreach ($mCalendarId as $sCalendarId) 
+		$dStart = ($dStart != null) ? date('Ymd\T000000\Z', $dStart  - 86400) : null;
+		$dFinish = ($dFinish != null) ? date('Ymd\T235959\Z', $dFinish) : null;
+		$mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
+
+		foreach ($mCalendarId as $sCalendarId)
+		{
+			$aEvents = $this->oStorage->getPublicEvents($sCalendarId, $dStart, $dFinish, $bExpand, $sDefaultTimeZone);
+			if ($aEvents && is_array($aEvents))
 			{
-				$aEvents = $this->oStorage->getPublicEvents($sCalendarId, $dStart, $dFinish);
-				if ($aEvents && is_array($aEvents)) 
-				{
-					$aResult = array_merge($aResult, $aEvents);
-				}
+				$aResult = array_merge($aResult, $aEvents);
 			}
 		}
-		catch (Exception $oException)
-		{
-			$aResult = false;
-			$this->setLastException($oException);
-		}
+
 		return $aResult;
 	}	
 	
