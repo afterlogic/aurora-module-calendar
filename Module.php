@@ -169,28 +169,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($oUser)
 			{
 				$mCalendars = $this->oApiCalendarManager->getCalendars($oUser->PublicId);
-				if (is_array($mCalendars))
-				{
-					foreach ($mCalendars as $CalendarKey => $oCalendar)
-					{
-						foreach ($oCalendar->Shares as $ShareKey => $aShare)
-						{
-							if ($aShare['email'] === $this->oApiCalendarManager->getTenantUser())
-							{
-								if (!$oCalendar->SharedToAll)
-								{
-									$mCalendars[$CalendarKey]->Shared = true;
-									$mCalendars[$CalendarKey]->SharedToAll = true;
-								}
-								else if ($oUser->PublicId === $oCalendar->Owner) 
-								{
-									unset($mCalendars[$CalendarKey]);
-								}
-								unset($oCalendar->Shares[$ShareKey]);
-							}
-						}
-					}
-				}
 			}
 			
 		}

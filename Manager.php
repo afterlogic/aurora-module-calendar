@@ -1467,7 +1467,29 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 		return $oResult;
 	}
-	
+
+	public function getSharedCalendars($sUserPublicId)
+	{
+		$oResult = array();
+
+		$aCalendars = $this->oStorage->getSharedCalendars($sUserPublicId);
+
+		$bDefault = false;
+		foreach ($aCalendars as &$oCalendar)
+		{
+			$oCalendar->IsPublic = $this->oStorage->getPublishStatus($oCalendar->Id);
+			if (!$bDefault && $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
+			{
+				$oCalendar->IsDefault = $bDefault = true;
+			}
+
+			$oResult[] = $oCalendar;
+
+		}
+
+		return $oResult;
+	}
+
 	/**
 	 * Deletes event.
 	 *

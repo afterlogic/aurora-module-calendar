@@ -32,6 +32,11 @@ class Sabredav extends Storage
 	/*
 	 * @var array
 	 */
+	protected $SharedCalendarsCache;
+
+	/*
+	 * @var array
+	 */
 	protected $CalDAVCalendarsCache;
 
 	/*
@@ -367,7 +372,7 @@ class Sabredav extends Storage
 				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) 
 				{
 					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-					if ($oCalendar) 
+					if ($oCalendar && !($oCalendar->Shared || $oCalendar->SharedToAll))
 					{
 						$aCalendars[$oCalendar->Id] = $oCalendar;
 					}
@@ -396,7 +401,37 @@ class Sabredav extends Storage
 		}
  		return $aCalendars;
 	}
-	
+
+	public function getSharedCalendars($sUserPublicId)
+	{
+		$aCalendars = array();
+		if (!empty($sUserPublicId))
+		{
+			$this->init($sUserPublicId);
+
+			if (count($this->SharedCalendarsCache) > 0 && isset($this->SharedCalendarsCache[$sUserPublicId]))
+			{
+				$aCalendars = $this->SharedCalendarsCache[$sUserPublicId];
+			}
+			else
+			{
+				$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+
+				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar)
+				{
+					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+					if ($oCalendar && ($oCalendar->Shared || $oCalendar->SharedToAll))
+					{
+						$aCalendars[$oCalendar->Id] = $oCalendar;
+					}
+				}
+
+				$this->SharedCalendarsCache[$sUserPublicId] = $aCalendars;
+			}
+		}
+ 		return $aCalendars;
+	}
+
 	/**
 	 * @param string $sUserPublicId
 	 * 
