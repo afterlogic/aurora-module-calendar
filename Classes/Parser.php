@@ -279,9 +279,10 @@ class Parser
 				$oResult->End = \Aurora\Modules\Calendar\Enums\RepeatEnd::Infinity;
 			}
 
-			if (isset($aRules['BYDAY']) && is_array($aRules['BYDAY']))
+			if (isset($aRules['BYDAY']))
 			{
-				foreach ($aRules['BYDAY'] as $sDay)
+				$aByDay = explode(',',  $aRules['BYDAY']);
+				foreach ($aByDay as $sDay)
 				{
 					if (strlen($sDay) > 2)
 					{
