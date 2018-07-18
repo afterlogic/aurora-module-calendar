@@ -281,7 +281,15 @@ class Parser
 
 			if (isset($aRules['BYDAY']))
 			{
-				$aByDay = explode(',',  $aRules['BYDAY']);
+				if (!is_array($aRules['BYDAY']))
+				{
+					$aByDay[] = $aRules['BYDAY'];
+				}
+				else
+				{
+					$aByDay = $aRules['BYDAY'];
+				}
+					
 				foreach ($aByDay as $sDay)
 				{
 					if (strlen($sDay) > 2)
