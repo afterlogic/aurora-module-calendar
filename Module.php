@@ -542,8 +542,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->Status = $Status ? 'COMPLETED' : '';
 			if ($WithDate)
 			{
-				$oEvent->Start = \time();
-				$oEvent->End = \time();
+				$aEvent = $this->GetBaseEvent($UserId, $CalendarId, $TaskId);
+				if ($aEvent)
+				{
+					$oEvent->Start = $aEvent['startTS'];
+					$oEvent->End = $aEvent['endTS'];
+				}
 			}
 
 			if ($this->oApiCalendarManager->updateEvent($sUserPublicId, $oEvent))

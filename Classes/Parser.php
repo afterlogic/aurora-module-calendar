@@ -129,6 +129,7 @@ class Parser
 					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTSTART, $sCurrentTimeZone);
 					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTSTART, $sCurrentTimeZone);
 					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTEND, $sCurrentTimeZone);
+					$aEvent['endTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTEND, $sCurrentTimeZone);
 					$aEvent['allDay'] = $bAllDay;
 					$aEvent['owner'] = $sOwnerEmail;
 					$aEvent['ownerName'] = $sOwnerName;
