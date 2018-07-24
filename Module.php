@@ -928,8 +928,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		$oDavModule = \Aurora\Modules\Dav\Module::Decorator();
 		$iUserId = \Aurora\System\Api::getAuthenticatedUserId();
-		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($iUserId);
-		$aCalendars = $this->Decorator()->GetCalendars($sUserPublicId);
+		$aCalendars = $this->Decorator()->GetCalendars($iUserId);
+		
 		if (isset($aCalendars['Calendars']) && is_array($aCalendars['Calendars']) && 0 < count($aCalendars['Calendars']))
 		{
 			foreach($aCalendars['Calendars'] as $oCalendar)
