@@ -32,7 +32,7 @@ class Sabredav extends Storage
 	/*
 	 * @var array
 	 */
-	protected $SharedCalendarsCache;
+	protected $SharedCalendarsCache = [];
 
 	/*
 	 * @var array
