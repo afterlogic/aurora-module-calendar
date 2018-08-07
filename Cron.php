@@ -79,7 +79,7 @@ class Reminder
 
 		$mResult =& $this->aUsers[$sLogin];
 
-		if (30 < count($this->aUsers[$sLogin]))
+		if (is_array($this->aUsers[$sLogin]) && 30 < count($this->aUsers[$sLogin]))
 		{
 			$this->aUsers = array_slice($this->aUsers, -30);
 		}
