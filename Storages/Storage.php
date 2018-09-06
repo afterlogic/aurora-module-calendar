@@ -154,7 +154,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 */
 	public function updateCalendarVisible($sCalendarId, $iVisible)
 	{
-		@setcookie($sCalendarId, $iVisible, time() + 86400);
+		@\setcookie($sCalendarId, $iVisible, \strtotime('+1 day'), \Aurora\System\Api::getCookiePath());
 	}
 
 	/**

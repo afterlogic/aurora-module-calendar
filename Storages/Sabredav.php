@@ -555,7 +555,7 @@ class Sabredav extends Storage
 	 */
 	public function updateCalendarVisible($sCalendarId, $iVisible)
 	{
-		@setcookie($sCalendarId, $iVisible, time() + 86400);
+		@\setcookie($sCalendarId, $iVisible, \strtotime('+1 day'), \Aurora\System\Api::getCookiePath());
 	}
 
 	/**
