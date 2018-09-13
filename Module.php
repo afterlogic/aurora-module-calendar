@@ -225,7 +225,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
 		
-		$mCalendarId = $this->oApiCalendarManager->createCalendar($sUserPublicId, $Name, $Description, 0, $Color);
+		$mCalendarId = $this->oApiCalendarManager->createCalendar($sUserPublicId, $Name, $Description, 1, $Color);
 		if ($mCalendarId)
 		{
 			$oCalendar = $this->oApiCalendarManager->getCalendar($sUserPublicId, $mCalendarId);
