@@ -256,6 +256,12 @@ class Helper
 				unset($oVEvent->COMPLETED);
 			}
 		}
+		else if ($oEvent->Type === 'VEVENT')
+		{
+			unset($oVEvent->STATUS);
+			unset($oVEvent->COMPLETED);
+			unset($oVEvent->{'PERCENT-COMPLETE'});
+		}
 		
 		$oVCal =& $oVEvent->parent;
 
