@@ -108,6 +108,7 @@ class Parser
 						{
 							$oVComponent->DTSTART = $oVComponent->CREATED->getDateTime();
 						}
+						
 						if (isset($oVComponent->DTSTART))
 						{
 							$dtStart = $oVComponent->DTSTART->getDateTime();
