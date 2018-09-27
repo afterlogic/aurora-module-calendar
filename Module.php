@@ -938,7 +938,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				{
 					$mResult['Dav']['Calendars'][] = array(
 						'Name' => $oCalendar->DisplayName,
-						'Url' => $oDavModule->GetServerUrl().$oCalendar->Url
+						'Url' => rtrim($oDavModule->GetServerUrl().$oCalendar->Url, "/")."/"
 					);
 				}
 			}
