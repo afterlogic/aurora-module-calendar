@@ -96,6 +96,7 @@ class Parser
 						$aArgs,
 						$aEvent
 					);
+					$sOwnerEmail = $aArgs['sOwnerEmail'];
 					$oOwner = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sOwnerEmail);
 					$sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Classes\User) ? $oOwner->Name : '';
 					$bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
