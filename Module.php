@@ -895,7 +895,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 						$sTemptFile = md5($sFromEmail . $sData).'.ics';
 						if ($this->oApiFileCache->put($sUserPublicId, $sTemptFile, $sData, '', $this->GetName()))
 						{
-							$oIcs = \Aurora\Modules\Mail\Classes\Ics::createInstance();
+							$oIcs = \Aurora\Modules\Calendar\Classes\Ics::createInstance();
 
 							$oIcs->Uid = $mResult['UID'];
 							$oIcs->Sequence = $mResult['Sequence'];
