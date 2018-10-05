@@ -282,10 +282,21 @@ class Helper
 			$oDTEnd = self::prepareDateTime($oEvent->End, $oUser->DefaultTimeZone);
 			if (isset($oDTEnd))
 			{
-				$oVEvent->DTEND = $oDTEnd;
-				if ($oEvent->AllDay)
+				if ($oEvent->Type === 'VTODO')
 				{
-					$oVEvent->DTEND->offsetSet('VALUE', 'DATE');
+					$oVEvent->DUE = $oDTEnd;
+					if ($oEvent->AllDay)
+					{
+						$oVEvent->DUE->offsetSet('VALUE', 'DATE');
+					}
+				}
+				else
+				{
+					$oVEvent->DTEND = $oDTEnd;
+					if ($oEvent->AllDay)
+					{
+						$oVEvent->DTEND->offsetSet('VALUE', 'DATE');
+					}
 				}
 			}
 		}

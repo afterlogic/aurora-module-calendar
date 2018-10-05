@@ -103,7 +103,16 @@ class Parser
 					$sCurrentTimeZone = ($bAllDay) ? 'UTC' : $sTimeZone;
 					$aEvent['alarms'] = self::parseAlarms($oVComponent);
 
-					if (!isset($oVComponent->DTEND))
+					$oDTEND = null;
+					if ($sComponent === 'VTODO' && isset($oVComponent->DUE))
+					{
+						$oDTEND = $oVComponent->DUE;
+					}
+					else if (isset($oVComponent->DTEND))
+					{
+						$oDTEND = $oVComponent->DTEND;
+					}
+					if (!isset($oDTEND))
 					{
 						if (!isset($oVComponent->DTSTART) && isset($oVComponent->CREATED))
 						{
@@ -116,7 +125,7 @@ class Parser
 							if ($dtStart)
 							{
 								$dtStart = $dtStart->add(new \DateInterval('PT1H'));
-								$oVComponent->DTEND = $dtStart;
+								$oDTEND = $dtStart;
 							}
 						}
 					}
@@ -130,8 +139,8 @@ class Parser
 					$aEvent['location'] = $oVComponent->LOCATION ? (string)$oVComponent->LOCATION : '';
 					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTSTART, $sCurrentTimeZone);
 					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTSTART, $sCurrentTimeZone);
-					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTEND, $sCurrentTimeZone);
-					$aEvent['endTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTEND, $sCurrentTimeZone);
+					$aEvent['end'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oDTEND, $sCurrentTimeZone);
+					$aEvent['endTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oDTEND, $sCurrentTimeZone);
 					$aEvent['allDay'] = $bAllDay;
 					$aEvent['owner'] = $sOwnerEmail;
 					$aEvent['ownerName'] = $sOwnerName;
@@ -148,7 +157,7 @@ class Parser
 						$bStatus = strtolower($sStatus) === 'completed' ? true : false; 
 					}
 					$aEvent['status'] = $bStatus;
-					$aEvent['withDate'] = isset($oVComponent->DTSTART) && isset($oVComponent->DTEND);
+					$aEvent['withDate'] = isset($oVComponent->DTSTART) && isset($oDTEND);
 				}
 				
 				$aResult[] = $aEvent;
