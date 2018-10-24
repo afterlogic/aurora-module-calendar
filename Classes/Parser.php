@@ -104,19 +104,26 @@ class Parser
 					$aEvent['alarms'] = self::parseAlarms($oVComponent);
 
 					$oDTEND = null;
-					if ($sComponent === 'VTODO' && isset($oVComponent->DUE))
+					if ($sComponent === 'VTODO')
 					{
-						$oDTEND = $oVComponent->DUE;
+						if (isset($oVComponent->DUE))
+						{
+							$oDTEND = $oVComponent->DUE;
+						}
 					}
 					else if (isset($oVComponent->DTEND))
 					{
 						$oDTEND = $oVComponent->DTEND;
+					}
+					
+					if (isset($oDTEND))
+					{
 						if (!isset($oVComponent->DTSTART) && isset($oVComponent->CREATED))
 						{
 							$oVComponent->DTSTART = $oVComponent->CREATED->getDateTime();
 						}
 					}
-					if (!isset($oDTEND))
+					else
 					{
 						if (isset($oVComponent->DTSTART))
 						{
