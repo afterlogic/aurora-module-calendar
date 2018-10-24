@@ -111,21 +111,20 @@ class Parser
 					else if (isset($oVComponent->DTEND))
 					{
 						$oDTEND = $oVComponent->DTEND;
-					}
-					if (!isset($oDTEND))
-					{
 						if (!isset($oVComponent->DTSTART) && isset($oVComponent->CREATED))
 						{
 							$oVComponent->DTSTART = $oVComponent->CREATED->getDateTime();
 						}
-						
+					}
+					if (!isset($oDTEND))
+					{
 						if (isset($oVComponent->DTSTART))
 						{
 							$dtStart = $oVComponent->DTSTART->getDateTime();
 							if ($dtStart)
 							{
-								$dtStart = $dtStart->add(new \DateInterval('PT1H'));
-								$oDTEND = $dtStart;
+								$oVComponent->DTEND = $dtStart->add(new \DateInterval('PT1H'));
+								$oDTEND = $oVComponent->DTEND;
 							}
 						}
 					}
