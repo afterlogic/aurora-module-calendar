@@ -1637,6 +1637,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							if (count($aVEventsServer) > 0)
 							{
 								$oVEventServer = $aVEventsServer[0];
+								if (!isset($oVEvent->{'LAST-MODIFIED'}) && isset($oVEvent->{'DTSTAMP'}))
+								{
+									$oVEvent->add('LAST-MODIFIED', $oVEvent->{'DTSTAMP'}->getDateTime());
+								}
 
 								if (isset($oVEvent->{'LAST-MODIFIED'}) && 
 									isset($oVEventServer->{'LAST-MODIFIED'}))
