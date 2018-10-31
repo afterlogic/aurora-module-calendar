@@ -1068,7 +1068,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 
-					$oResult = $this->oStorage->updateEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $oVCalResult);
+					$oResult = $this->oStorage->updateEvent($sUserPublicId, $oEvent->IdCalendar, $aData['url'], $oVCalResult);
 					if ($oResult) 
 					{
 						$this->updateEventGroups($sUserPublicId, $oEvent);
@@ -1518,7 +1518,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					$aArgs,
 					$oVCal
 				);
-				$oResult = $this->oStorage->deleteEvent($oUser->PublicId, $sCalendarId, $sEventId);
+				$oResult = $this->oStorage->deleteEvent($oUser->PublicId, $sCalendarId, $aData['url']);
 				if ($oResult)
 				{
 					// TODO realise 'removeEventFromAllGroups' method in 'Contacts' module

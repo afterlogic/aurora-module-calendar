@@ -966,7 +966,7 @@ class Sabredav extends Storage
 									{
 										if ((string)$oUid === $sEventId) 
 										{
-											$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
+											$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$oChild->getName()][$this->UserPublicId] = $oChild;
 											return $oChild;
 										}
 									}
