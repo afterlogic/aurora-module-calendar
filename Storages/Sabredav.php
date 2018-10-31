@@ -997,26 +997,34 @@ class Sabredav extends Storage
 			$bIsTodo = false;
 			if (isset($oVCal->VTODO))
 			{
-				$sRawEventData = $oVCal->serialize();
-				$sRawEventData = str_replace('VTODO', 'VEVENT', $sRawEventData);
-				$oVCal = \Sabre\VObject\Reader::read($sRawEventData);
+				$oVCal = \Sabre\VObject\Reader::read(
+					str_replace('VTODO', 'VEVENT', $oVCal->serialize())
+				);
 				$bIsTodo = true;
 			}
 			
-			$oExpandedVCal = $oVCal->expand(
-				\Sabre\VObject\DateTimeParser::parse($dStart), 
-				\Sabre\VObject\DateTimeParser::parse($dEnd)
-			);
+			$oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
+			if (isset($oBaseVEvent) && isset($oBaseVEvent[0]->DTSTART))
+			{
+				$oExpandedVCal = $oVCal->expand(
+					\Sabre\VObject\DateTimeParser::parse($dStart), 
+					\Sabre\VObject\DateTimeParser::parse($dEnd)
+				);
+			}
+			else
+			{
+				return [];
+			}
 			
 			if ($bIsTodo)
 			{
-				$sRawEventData = $oVCal->serialize();
-				$sRawEventData = str_replace('VEVENT', 'VTODO', $sRawEventData);
-				$oVCal = \Sabre\VObject\Reader::read($sRawEventData);
+				$oVCal = \Sabre\VObject\Reader::read(
+					str_replace('VEVENT', 'VTODO', $oVCal->serialize())
+				);
 
-				$sExpandedRawEventData = $oExpandedVCal->serialize();
-				$sExpandedRawEventData = str_replace('VEVENT', 'VTODO', $sExpandedRawEventData);
-				$oExpandedVCal = \Sabre\VObject\Reader::read($sExpandedRawEventData);
+				$oExpandedVCal = \Sabre\VObject\Reader::read(
+					str_replace('VEVENT', 'VTODO', $oExpandedVCal->serialize())
+				);
 				$bIsTodo = false;
 			}
 		}
