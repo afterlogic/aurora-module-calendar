@@ -118,9 +118,9 @@ class Parser
 					
 					if (isset($oDTEND))
 					{
-						if (!isset($oVComponent->DTSTART) && isset($oVComponent->CREATED))
+						if (!isset($oVComponent->DTSTART))
 						{
-							$oVComponent->DTSTART = $oVComponent->CREATED->getDateTime();
+							$oVComponent->DTSTART = $oDTEND->getDateTime();
 						}
 					}
 					else
