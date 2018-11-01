@@ -905,6 +905,10 @@ class Sabredav extends Storage
 			while($oVCalendar = $splitter->getNext()) 
 			{
 				$oVEvents = $oVCalendar->getBaseComponents('VEVENT');
+				if (!isset($oVEvents) || 0 === count($oVEvents)) 
+				{
+					$oVEvents = $oVCalendar->getBaseComponents('VTODO');
+				}
 				if (isset($oVEvents) && 0 < count($oVEvents)) 
 				{
 					$sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
