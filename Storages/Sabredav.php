@@ -179,27 +179,36 @@ class Sabredav extends Storage
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		$oCalendar = new \Aurora\Modules\Calendar\Classes\Calendar($oCalDAVCalendar->getName());
 		$oCalendar->Shares = [];
+		$aTenantPrincipal = $this->getPrincipalInfo($this->getTenantUser());
+		
 		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar)
 		{
 			if ($oCalDAVCalendar->getShareAccess() !== \Sabre\DAV\Sharing\Plugin::ACCESS_NOTSHARED)
 			{
 				foreach ($oCalDAVCalendar->getInvites() as $oSharee)
 				{
-					if ($oSharee instanceof \Sabre\DAV\Xml\Element\Sharee)
+					if ($oSharee->principal !== $aTenantPrincipal['uri'])
 					{
-						if ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER)
+						if ($oSharee instanceof \Sabre\DAV\Xml\Element\Sharee)
 						{
-							$oCalendar->Owner = basename($oSharee->href);
+							if ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER)
+							{
+								$oCalendar->Owner = basename($oSharee->href);
+							}
+							elseif ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE || $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READ)
+							{
+								$oCalendar->Shares[] = [
+									'name' => basename($oSharee->href),
+									'email' => basename($oSharee->href),
+									'access' => $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ? 
+										\Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read
+								];
+							}
 						}
-						elseif ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE || $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READ)
-						{
-							$oCalendar->Shares[] = [
-								'name' => basename($oSharee->href),
-								'email' => basename($oSharee->href),
-								'access' => $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ? 
-									\Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read
-							];
-						}
+					}
+					else
+					{
+						$oCalendar->SharedToAll = true;
 					}
 				}
 				$oCalendar->Shared = $oCalDAVCalendar->getShareAccess() !== \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER;
@@ -247,8 +256,6 @@ class Sabredav extends Storage
 		$oCalendar->RealUrl = 'calendars/'.$oCalDAVCalendar->getName();
 		$oCalendar->SyncToken = $oCalDAVCalendar->getSyncToken();
 
-		$aTenantPrincipal = $this->getPrincipalInfo($this->getTenantUser());
-		
 		$sPrincipalUri = '';
 		$aProperties = $oCalDAVCalendar->getProperties(['principaluri']);
 		if (isset($aProperties['principaluri']))
