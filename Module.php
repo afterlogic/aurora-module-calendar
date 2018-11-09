@@ -285,6 +285,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aShares = json_decode($Shares, true) ;
 		$oUser = null;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+		//only owner can update calendar share
+		$oCalendar = $this->oApiCalendarManager->getCalendar($oAuthenticatedUser->PublicId, $Id);
+		if (!$oCalendar || $oCalendar->Owner !== $sUserPublicId)
+		{
+			return false;
+		}
 		if ($oAuthenticatedUser->EntityId !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
 		{
 			$oUser = \Aurora\System\Api::getUserById($UserId);
