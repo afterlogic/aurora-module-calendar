@@ -209,6 +209,8 @@ class Sabredav extends Storage
 					else
 					{
 						$oCalendar->SharedToAll = true;
+						$oCalendar->SharedToAllAccess = $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ?
+							\Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read;
 					}
 				}
 				$oCalendar->Shared = $oCalDAVCalendar->getShareAccess() !== \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER;
@@ -262,9 +264,6 @@ class Sabredav extends Storage
 		{
 			$sPrincipalUri = $aProperties['principaluri'];
 		}
-		
-		$oCalendar->SharedToAllAccess = $oCalDAVCalendar->getShareAccess() === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ? 
-				\Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read;
 		
 		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
 		
