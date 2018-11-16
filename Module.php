@@ -285,9 +285,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aShares = json_decode($Shares, true) ;
 		$oUser = null;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		//only owner can update calendar share
 		$oCalendar = $this->oApiCalendarManager->getCalendar($oAuthenticatedUser->PublicId, $Id);
-		if (!$oCalendar || $oCalendar->Owner !== $sUserPublicId)
+		if (!$oCalendar)
+		{
+			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
+		}
+		//Calendar can be shared by owner or user with write access except SharedWithAll calendars
+		if ($oCalendar->Owner !== $sUserPublicId
+			&& $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Write)
 		{
 			return false;
 		}
