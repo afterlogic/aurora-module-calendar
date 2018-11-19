@@ -28,16 +28,17 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			)
 		);
 
-		$this->extendObject(
-			'Aurora\Modules\Core\Classes\User', 
-			array(
+		\Aurora\Modules\Core\Classes\User::extend(
+			self::GetName(),
+			[
 				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
 				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
 				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', 9)),
 				'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', 18)),
 				'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', 0)),
 				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
-			)
+			]
+
 		);
 
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
@@ -70,29 +71,29 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if ($oUser && $oUser->Role === \Aurora\System\Enums\UserRole::NormalUser)
 		{
-			if (isset($oUser->{$this->GetName().'::HighlightWorkingDays'}))
+			if (isset($oUser->{self::GetName().'::HighlightWorkingDays'}))
 			{
-				$aSettings['HighlightWorkingDays'] = $oUser->{$this->GetName().'::HighlightWorkingDays'};
+				$aSettings['HighlightWorkingDays'] = $oUser->{self::GetName().'::HighlightWorkingDays'};
 			}
-			if (isset($oUser->{$this->GetName().'::HighlightWorkingHours'}))
+			if (isset($oUser->{self::GetName().'::HighlightWorkingHours'}))
 			{
-				$aSettings['HighlightWorkingHours'] = $oUser->{$this->GetName().'::HighlightWorkingHours'};
+				$aSettings['HighlightWorkingHours'] = $oUser->{self::GetName().'::HighlightWorkingHours'};
 			}
-			if (isset($oUser->{$this->GetName().'::WorkdayStarts'}))
+			if (isset($oUser->{self::GetName().'::WorkdayStarts'}))
 			{
-				$aSettings['WorkdayStarts'] = $oUser->{$this->GetName().'::WorkdayStarts'};
+				$aSettings['WorkdayStarts'] = $oUser->{self::GetName().'::WorkdayStarts'};
 			}
-			if (isset($oUser->{$this->GetName().'::WorkdayEnds'}))
+			if (isset($oUser->{self::GetName().'::WorkdayEnds'}))
 			{
-				$aSettings['WorkdayEnds'] = $oUser->{$this->GetName().'::WorkdayEnds'};
+				$aSettings['WorkdayEnds'] = $oUser->{self::GetName().'::WorkdayEnds'};
 			}
-			if (isset($oUser->{$this->GetName().'::WeekStartsOn'}))
+			if (isset($oUser->{self::GetName().'::WeekStartsOn'}))
 			{
-				$aSettings['WeekStartsOn'] = $oUser->{$this->GetName().'::WeekStartsOn'};
+				$aSettings['WeekStartsOn'] = $oUser->{self::GetName().'::WeekStartsOn'};
 			}
-			if (isset($oUser->{$this->GetName().'::DefaultTab'}))
+			if (isset($oUser->{self::GetName().'::DefaultTab'}))
 			{
-				$aSettings['DefaultTab'] = $oUser->{$this->GetName().'::DefaultTab'};
+				$aSettings['DefaultTab'] = $oUser->{self::GetName().'::DefaultTab'};
 			}
 		}
 		
@@ -109,12 +110,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($oUser->Role === \Aurora\System\Enums\UserRole::NormalUser)
 			{
 				$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-				$oUser->{$this->GetName().'::HighlightWorkingDays'} = $HighlightWorkingDays;
-				$oUser->{$this->GetName().'::HighlightWorkingHours'} = $HighlightWorkingHours;
-				$oUser->{$this->GetName().'::WorkdayStarts'} = $WorkdayStarts;
-				$oUser->{$this->GetName().'::WorkdayEnds'} = $WorkdayEnds;
-				$oUser->{$this->GetName().'::WeekStartsOn'} = $WeekStartsOn;
-				$oUser->{$this->GetName().'::DefaultTab'} = $DefaultTab;
+				$oUser->{self::GetName().'::HighlightWorkingDays'} = $HighlightWorkingDays;
+				$oUser->{self::GetName().'::HighlightWorkingHours'} = $HighlightWorkingHours;
+				$oUser->{self::GetName().'::WorkdayStarts'} = $WorkdayStarts;
+				$oUser->{self::GetName().'::WorkdayEnds'} = $WorkdayEnds;
+				$oUser->{self::GetName().'::WeekStartsOn'} = $WeekStartsOn;
+				$oUser->{self::GetName().'::DefaultTab'} = $DefaultTab;
 				return $oCoreDecorator->UpdateUserObject($oUser);
 			}
 			if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
@@ -709,7 +710,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 
-		$sData = $this->oApiFileCache->get($sUserPublicId, $File, '', $this->GetName());
+		$sData = $this->oApiFileCache->get($sUserPublicId, $File, '', self::GetName());
 		if (!empty($sData))
 		{
 			$mCreateEventResult = $this->oApiCalendarManager->createEventFromRaw($sUserPublicId, $CalendarId, null, $sData);
@@ -818,12 +819,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($bIsIcsExtension)
 			{
 				$sSavedName = 'import-post-' . md5($UploadData['name'] . $UploadData['tmp_name']);
-				if ($this->oApiFileCache->moveUploadedFile($sUserPublicId, $sSavedName, $UploadData['tmp_name'], '', $this->GetName()))
+				if ($this->oApiFileCache->moveUploadedFile($sUserPublicId, $sSavedName, $UploadData['tmp_name'], '', self::GetName()))
 				{
 					$iImportedCount = $this->oApiCalendarManager->importToCalendarFromIcs(
 							$sUserPublicId,
 							$sCalendarId, 
-							$this->oApiFileCache->generateFullFilePath($sUserPublicId, $sSavedName, '', $this->GetName())
+							$this->oApiFileCache->generateFullFilePath($sUserPublicId, $sSavedName, '', self::GetName())
 					);
 
 					if (false !== $iImportedCount && -1 !== $iImportedCount)
@@ -835,7 +836,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 						$sError = 'unknown';
 					}
 
-					$this->oApiFileCache->clear($sUserPublicId, $sSavedName, '', $this->GetName());
+					$this->oApiFileCache->clear($sUserPublicId, $sSavedName, '', self::GetName());
 				}
 				else
 				{
@@ -904,7 +905,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body']))
 					{
 						$sTemptFile = md5($sFromEmail . $sData).'.ics';
-						if ($this->oApiFileCache->put($sUserPublicId, $sTemptFile, $sData, '', $this->GetName()))
+						if ($this->oApiFileCache->put($sUserPublicId, $sTemptFile, $sData, '', self::GetName()))
 						{
 							$oIcs = \Aurora\Modules\Calendar\Classes\Ics::createInstance();
 
