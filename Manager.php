@@ -15,18 +15,12 @@ namespace Aurora\Modules\Calendar;
  */
 class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
-	/*
-	 * @type $oApiUsersManager
-	 */
-	protected $oApiUsersManager;
-
 	/**
 	 * @param \Aurora\System\Module\AbstractModule $oModule
 	 */
 	public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
 	{
 		parent::__construct($oModule, new Storages\Sabredav($this));
-		$this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->oApiUsersManager;
 	}
 	
 	protected function isCalendarSharingSupported($sUserUUID)
@@ -434,7 +428,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		if ($this->isCalendarSharingSupported($sUserPublicId))
 		{
 			$aProcessedEmails = [];
-			$oUser = $this->oApiUsersManager->getUserByPublicId($sUserPublicId);
+			$oUser = \Aurora\System\Api::GetModule('Core')->getUsersManager()->getUserByPublicId($sUserPublicId);
 			foreach ($aShares as $aShare)
 			{
 				if (in_array($aShare['email'], $aProcessedEmails))
@@ -445,7 +439,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				if ($aShare['email'] !== $this->getTenantUser($oUser) &&
 					$aShare['email'] !== $this->getPublicUser())
 				{
-					$oSharedUser = $this->oApiUsersManager->getUserByPublicId($aShare['email']);
+					$oSharedUser = \Aurora\System\Api::GetModule('Core')->getUsersManager()->getUserByPublicId($aShare['email']);
 					if (!$oSharedUser instanceof \Aurora\Modules\Core\Classes\User)
 					{
 						return $oResult;
@@ -1780,7 +1774,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			if ($oAccount) 
 			{
-				$aUserAccounts = $this->oApiUsersManager->getUserAccounts($oAccount->IdUser);
+				$aUserAccounts = \Aurora\System\Api::GetModule('Core')->getUsersManager()->getUserAccounts($oAccount->IdUser);
 				foreach ($aUserAccounts as $iAccountId => $aUserAccount) 
 				{
 					if (isset($aUserAccount) && isset($aUserAccount[1]) && strtolower($aUserAccount[1]) === strtolower($sEmail)) 
@@ -1791,7 +1785,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 				if (0 < $iResultAccountId) 
 				{
-					$oResult = $this->oApiUsersManager->getAccountById($iResultAccountId);
+					$oResult = \Aurora\System\Api::GetModule('Core')->getUsersManager()->getAccountById($iResultAccountId);
 				}
 			}
 		}
