@@ -97,7 +97,7 @@ class RRule
 			if (null !== $this->Until)
 			{
 				$oDTUntil = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($this->Until, $this->GetTimeZone());
-				$sUntil = $oDTUntil->format('Ymd');
+				$sUntil = $oDTUntil->format('Ymd\T235959\Z');
 			}
 
 			$iInterval = (null !== $this->Interval) ? (int)$this->Interval : 0;
