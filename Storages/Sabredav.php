@@ -564,6 +564,11 @@ class Sabredav extends Storage
 		@\setcookie($sCalendarId, $iVisible, \strtotime('+1 day'), \Aurora\System\Api::getCookiePath());
 	}
 
+	public function deletePrincipalCalendars($sUserPublicId)
+	{
+		return $this->getBackend()->deletePrincipalCalendars('principals/' . $sUserPublicId);
+	}
+
 	/**
 	 * @param string $sUserPublicId
 	 * @param string $sCalendarId

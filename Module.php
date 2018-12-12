@@ -61,7 +61,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
-		$this->subscribeEvent('Core::AfterDeleteUser', array($this, 'onAfterDeleteUser'));
+		$this->subscribeEvent('Core::DeleteUser::before', array($this, 'onBeforeDeleteUser'));
 	}
 	
 	/**
@@ -974,23 +974,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}	
 	}
 
-	public function onAfterDeleteUser($aArgs, &$mResult)
+	public function onBeforeDeleteUser($aArgs, &$mResult)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
-		$sUserPublicId = isset($aArgs["User"]) ? $aArgs["User"]->PublicId : null;
+		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($aArgs["UserId"]);
+		$sUserPublicId = isset($oUser) ? $oUser->PublicId : null;
 		if ($sUserPublicId)
 		{
-			$aUserCalendars = $this->getManager()->getCalendars($sUserPublicId);
-			if ($aUserCalendars)
-			{
-				foreach ($aUserCalendars as $oCalendar)
-				{
-					if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
-					{
-						$this->Decorator()->DeleteCalendar($aArgs["User"]->PublicId, $oCalendar->Id);
-					}
-				}
-			}
+			$this->getManager()->deletePrincipalCalendars($sUserPublicId);
 		}
 	}
 }

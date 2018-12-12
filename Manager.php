@@ -337,6 +337,22 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		return $oResult;
 	}
 
+	public function deletePrincipalCalendars($sUserPublicId)
+	{
+		$oResult = null;
+		try
+		{
+			$oResult = $this->oStorage->deletePrincipalCalendars($sUserPublicId);
+		}
+		catch (Exception $oException)
+		{
+			$oResult = false;
+			$this->setLastException($oException);
+		}
+		return $oResult;
+
+	}
+
 	/**
 	 * Deletes calendar.
 	 *
