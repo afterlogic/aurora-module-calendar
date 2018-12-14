@@ -484,6 +484,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Attendees = null;
 		$oEvent->Type = $type;
 		$oEvent->Status = $status && $type === 'VTODO';
+		if ($type === 'VTODO')
+		{
+			$attendees = json_encode([]);
+		}
 		$aArgs = [
 			'attendees'		=> $attendees,
 			'owner'		=> $owner,
@@ -641,6 +645,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		$oEvent->Attendees = null;
 		$oEvent->Type = $type;
+		if ($type === 'VTODO')
+		{
+			$attendees = json_encode([]);
+		}
 		$aArgs = [
 			'attendees'		=> $attendees,
 			'owner'		=> $owner,
