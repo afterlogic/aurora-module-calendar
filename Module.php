@@ -303,7 +303,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aShares = json_decode($Shares, true) ;
 		$oUser = null;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		$oCalendar = $this->getManager()->getCalendar($oAuthenticatedUser->PublicId, $Id);
+		if ($oAuthenticatedUser->EntityId !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+		{
+			$oUser = \Aurora\System\Api::getUserById($UserId);
+		}
+		else
+		{
+			$oUser = $oAuthenticatedUser;
+		}
+		$oCalendar = $this->getManager()->getCalendar($oUser->PublicId, $Id);
 		if (!$oCalendar)
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
@@ -313,14 +321,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			&& $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Write)
 		{
 			return false;
-		}
-		if ($oAuthenticatedUser->EntityId !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
-		{
-			$oUser = \Aurora\System\Api::getUserById($UserId);
-		}
-		else
-		{
-			$oUser = $oAuthenticatedUser;
 		}
 		// Share calendar to all users
 		if ($ShareToAll)
