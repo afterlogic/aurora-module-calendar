@@ -40,10 +40,10 @@ class Reminder
 		$oMailModule =  \Aurora\System\Api::GetModule('Mail');
 		$this->oCalendarModule = \Aurora\System\Api::GetModule('Calendar');
 
-		$this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->oApiUsersManager ;
-		$this->oApiCalendarManager = $this->oCalendarModule->oApiCalendarManager;
-		$this->oApiMailManager = $oMailModule->oApiMailManager;
-		$this->oApiAccountsManager = $oMailModule->oApiAccountsManager;
+		$this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->getUsersManager() ;
+		$this->oApiCalendarManager = $this->oCalendarModule->getManager();
+		$this->oApiMailManager = $oMailModule->getMailManager();
+		$this->oApiAccountsManager = $oMailModule->getAccountsManager();
 	}
 	
 	public static function NewInstance()
