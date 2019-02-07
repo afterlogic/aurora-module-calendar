@@ -689,7 +689,7 @@ class Sabredav extends Storage
 			foreach ($aShares as $aShare)
 			{
 				$oShareObject = new \Sabre\DAV\Xml\Element\Sharee();
-				$oShareObject->href = \Afterlogic\Dav\Constants::PRINCIPALS_PREFIX . '/' . $aShare['email'];
+				$oShareObject->href = \Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $aShare['email'];
 				$oShareObject->principal = $oShareObject->href;
 
 				switch ($aShare['access'])
