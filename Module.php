@@ -137,7 +137,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			}
 			if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
 			{
-				return true;
+				$this->setConfig('HighlightWorkingDays', $HighlightWorkingDays);
+				$this->setConfig('HighlightWorkingHours', $HighlightWorkingHours);
+				$this->setConfig('WorkdayStarts', $WorkdayStarts);
+				$this->setConfig('WorkdayEnds', $WorkdayEnds);
+				$this->setConfig('WeekStartsOn', $WeekStartsOn);
+				$this->setConfig('DefaultTab', $DefaultTab);
+				return $this->saveModuleConfig();
 			}
 		}
 		
