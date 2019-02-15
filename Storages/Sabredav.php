@@ -105,7 +105,7 @@ class Sabredav extends Storage
 		$aPrincipal = array();
 
 		$aPrincipalProperties = \Afterlogic\DAV\Backend::Principal()->getPrincipalByPath(
-			\Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $sUserPublicId
+			\Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . $sUserPublicId
 		);
 		if (isset($aPrincipalProperties['uri'])) 
 		{
@@ -114,7 +114,7 @@ class Sabredav extends Storage
 		} 
 		else 
 		{
-			$aPrincipal['uri'] = \Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $sUserPublicId;
+			$aPrincipal['uri'] = \Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . $sUserPublicId;
 			$aPrincipal['id'] = -1;
 		}
 		return $aPrincipal;
@@ -689,7 +689,7 @@ class Sabredav extends Storage
 			foreach ($aShares as $aShare)
 			{
 				$oShareObject = new \Sabre\DAV\Xml\Element\Sharee();
-				$oShareObject->href = \Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . '/' . $aShare['email'];
+				$oShareObject->href = \Afterlogic\DAV\Constants::PRINCIPALS_PREFIX . $aShare['email'];
 				$oShareObject->principal = $oShareObject->href;
 
 				switch ($aShare['access'])
