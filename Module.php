@@ -760,7 +760,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		$sResult = '';
 		
-		$oApiIntegrator = \Aurora\Modules\Core\Managers\Integrator::getInstance();
+		$oApiIntegrator = \Aurora\System\Managers\Integrator::getInstance();
 		
 		if ($oApiIntegrator)
 		{
