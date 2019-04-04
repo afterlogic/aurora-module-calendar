@@ -249,12 +249,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false
 	 */
-	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor)
+	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor, $sUUID = null)
 	{
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor);
+			$oResult = $this->oStorage->createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor, $sUUID);
 		}
 		catch (Exception $oException)
 		{
@@ -703,11 +703,41 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			foreach ($mCalendarId as $sCalendarId) 
 			{
 				$aTasks = $this->oStorage->getTasks($sUserPublicId, $sCalendarId, $bCompeted, $sSearch, $dStart, $dFinish, $bExpand);
+
 				if ($aTasks && is_array($aTasks)) 
 				{
 					$aResult = array_merge($aResult, $aTasks);
 				}
 			}
+
+			// usort($aResult, function ($left, $right) {
+			// 	if (isset($left['startTS'], $right['startTS'])) 
+			// 	{
+			// 		if ($left['startTS'] == $right['startTS'] ) 
+			// 		{
+			// 			return 0;
+			// 		}
+			// 		return ($left['startTS'] > $right['startTS']) ? 1 : -1;
+			// 	}
+			// 	else
+			// 	{
+			// 		if (!isset($left['startTS']) && !isset($right['startTS']))
+			// 		{
+			// 			return 0;
+			// 		}
+			// 		else
+			// 		{
+			// 			if (!isset($left['startTS']))
+			// 			{
+			// 				return 1;
+			// 			}
+			// 			if (!isset($right['startTS']))
+			// 			{
+			// 				return -1;
+			// 			}
+			// 		}
+			// 	}
+			// });
 		}
 		catch (Exception $oException)
 		{
@@ -1443,7 +1473,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function getDefaultCalendar($sUserPublicId)
 	{
 		$aCalendars = $this->getCalendars($sUserPublicId);
-		return (is_array($aCalendars) && isset($aCalendars[0])) ? $aCalendars[0] : false;
+		return (is_array($aCalendars) && isset($aCalendars[\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID])) ? $aCalendars[\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID] : false;
 	}
 
 	/**
@@ -1453,51 +1483,32 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function getCalendars($sUserPublicId)
 	{
-		$oResult = array();
+		$aCalendars = [];
 		try
 		{
 			$aCalendars = $this->oStorage->getCalendars($sUserPublicId);
-
-			$bDefault = false;
-			foreach ($aCalendars as $oCalendar) 
-			{
-				$oCalendar->IsPublic = $this->oStorage->getPublishStatus($oCalendar->Id);
-				if (!$bDefault && $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) 
-				{
-					$oCalendar->IsDefault = $bDefault = true;
-				}
-				$oResult[] = $oCalendar;
-			}
 		}
 		catch (Exception $oException)
 		{
-			$oResult = false;
-//			$this->setLastException($oException);
+			$aCalendars = false;
 		}
 
-		return $oResult;
+		return $aCalendars;
 	}
 
 	public function getSharedCalendars($sUserPublicId)
 	{
-		$oResult = array();
-
-		$aCalendars = $this->oStorage->getSharedCalendars($sUserPublicId);
-
-		$bDefault = false;
-		foreach ($aCalendars as &$oCalendar)
+		$aCalendars = [];
+		try
 		{
-			$oCalendar->IsPublic = $this->oStorage->getPublishStatus($oCalendar->Id);
-			if (!$bDefault && $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
-			{
-				$oCalendar->IsDefault = $bDefault = true;
-			}
-
-			$oResult[] = $oCalendar;
-
+			$aCalendars = $this->oStorage->getSharedCalendars($sUserPublicId);
+		}
+		catch (Exception $oException)
+		{
+			$aCalendars = false;
 		}
 
-		return $oResult;
+		return $aCalendars;
 	}
 
 	/**

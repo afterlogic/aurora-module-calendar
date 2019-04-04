@@ -115,7 +115,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 *
 	 * @return false
 	 */
-	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor)
+	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor, $sUUID = null)
 	{
 		return false;
 	}

@@ -243,13 +243,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param string $Color
 	 * @return array|boolean
 	 */
-	public function CreateCalendar($UserId, $Name, $Description, $Color)
+	public function CreateCalendar($UserId, $Name, $Description, $Color, $UUID = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
 		
-		$mCalendarId = $this->getManager()->createCalendar($sUserPublicId, $Name, $Description, 1, $Color);
+		$mCalendarId = $this->getManager()->createCalendar($sUserPublicId, $Name, $Description, 1, $Color, $UUID);
 		if ($mCalendarId)
 		{
 			$oCalendar = $this->getManager()->getCalendar($sUserPublicId, $mCalendarId);

@@ -153,7 +153,7 @@ class Sabredav extends Storage
 		} 
 		else 
 		{
-			$oCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+			$oCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 			if (isset($oCalendars) && $oCalendars->childExists($sCalendarId)) 
 			{
 				$oCalendar = $oCalendars->getChild($sCalendarId);
@@ -266,6 +266,8 @@ class Sabredav extends Storage
 		}
 		
 		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
+		$oCalendar->IsDefault = ($oCalendar->Id === \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID && !$oCalendar->Shared);
+		$oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
 		
 		return $oCalendar;
 	}
@@ -373,34 +375,41 @@ class Sabredav extends Storage
 			} 
 			else 
 			{
-				$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+				$oCalendarHome = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 				
-				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) 
+//				$bHasDefault = false;
+				foreach ($oCalendarHome->getChildren() as $oCalDAVCalendar) 
 				{
 					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 					if ($oCalendar && !($oCalendar->Shared || $oCalendar->SharedToAll))
 					{
+						// if ($oCalendar->IsDefault)
+						// {
+						// 	$bHasDefault = true;
+						// }
 						$aCalendars[$oCalendar->Id] = $oCalendar;
 					}
 				}
-				if (empty($aCalendars))
-				{
-					//create default calendar
-					$sCalendarId = $this->createCalendar($sUserPublicId,
-						$this->oManager->GetModule()->i18n('CALENDAR_DEFAULT_NAME'),
-						"",
-						0,
-						\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_COLOR
-					);
-					if ($sCalendarId)
-					{
-						$oCalendar = $this->getCalendar($sUserPublicId, $sCalendarId);
-						if ($oCalendar)
-						{
-							$aCalendars[$oCalendar->Id] = $oCalendar;
-						}
-					}
-				}
+
+				// if (!$bHasDefault)
+				// {
+				// 	//create default calendar
+				// 	$sCalendarId = $this->createCalendar($sUserPublicId,
+				// 		$this->oManager->GetModule()->i18n('CALENDAR_DEFAULT_NAME'),
+				// 		"",
+				// 		0,
+				// 		\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_COLOR,
+				// 		\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID
+				// 	);
+				// 	if ($sCalendarId)
+				// 	{
+				// 		$oCalendar = $this->getCalendar($sUserPublicId, $sCalendarId);
+				// 		if ($oCalendar)
+				// 		{
+				// 			$aCalendars[$oCalendar->Id] = $oCalendar;
+				// 		}
+				// 	}
+				// }
 
 				$this->CalendarsCache[$sUserPublicId] = $aCalendars;
 			}
@@ -421,7 +430,7 @@ class Sabredav extends Storage
 			}
 			else
 			{
-				$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+				$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 
 				foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar)
 				{
@@ -470,13 +479,21 @@ class Sabredav extends Storage
 	 * 
 	 * @return string
 	 */
-	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor)
+	public function createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor, $sUUID = null)
 	{
 		$this->init($sUserPublicId);
 
-		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 
-		$sSystemName = \Sabre\DAV\UUIDUtil::getUUID();
+		if ($sUUID === null)
+		{
+			$sSystemName = \Sabre\DAV\UUIDUtil::getUUID();
+		}
+		else
+		{
+			$sSystemName = $sUUID;
+		}
+
 		$oUserCalendars->createExtendedCollection($sSystemName, 
 			new \Sabre\DAV\MkCol(
 				[
@@ -509,7 +526,7 @@ class Sabredav extends Storage
 	{
 		$this->init($sUserPublicId);
 		
-		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 		if ($oUserCalendars->childExists($sCalendarId)) 
 		{
 			$oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
@@ -579,7 +596,7 @@ class Sabredav extends Storage
 	{
 		$this->init($sUserPublicId);
 
-		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 		if ($oUserCalendars->childExists($sCalendarId)) 
 		{
 			$oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
@@ -606,7 +623,7 @@ class Sabredav extends Storage
 
 		if (is_array($this->Principal) && count($this->Principal)) 
 		{
-			$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarRoot($this->getBackend(), $this->Principal);
+			$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 			foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) 
 			{
 				if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar) 
