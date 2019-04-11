@@ -1173,44 +1173,15 @@ class Sabredav extends Storage
 		return $mResult;
 	}
 
-	public function getTasksUrls($oCalendar, $bShowCompleted = true, $sSearch = '')
+	public function getFilterForTasks($aSubFilter)
 	{
-		$aFilter = [];
-		if (!$bShowCompleted)
-		{
-			$aFilter[] = [
-				'name'           => 'STATUS',
-				'is-not-defined' => false,
-				'time-range'     => false,
-				'param-filters' => [],
-				'text-match'     => [
-					'negate-condition' => true,
-					'collation'        => 'i;ascii-casemap',
-					'value'            => 'COMPLETED',
-				],
-			];
-		}
-		if (!empty($sSearch))
-		{
-			$aFilter[] = [
-				'name' => 'SUMMARY',
-				'is-not-defined' => false,
-				'param-filters' => array(),
-				'time-range' => null,			
-				'text-match' => array(
-					'negate-condition' => false,
-					'collation' => 'i;ascii-casemap',
-					'value' => $sSearch,
-				),
-			];
-		}
-		return $oCalendar->calendarQuery(array(
+		return [
 			'name' => 'VCALENDAR',
 			'comp-filters' => [
 				[
 					'name' => 'VTODO',
 					'comp-filters' => [],
-					'prop-filters' => $aFilter,
+					'prop-filters' => $aSubFilter,
 					'is-not-defined' => false,
 					'time-range' => null,
 				],
@@ -1218,7 +1189,73 @@ class Sabredav extends Storage
 			'prop-filters' => [],
 			'is-not-defined' => false,
 			'time-range' => null,
-		));
+		];
+	}
+
+	public function getSerchFilterForTasks($sSearch)
+	{
+		return [
+			'name' => 'SUMMARY',
+			'is-not-defined' => false,
+			'param-filters' => array(),
+			'time-range' => null,			
+			'text-match' => array(
+				'negate-condition' => false,
+				'collation' => 'i;ascii-casemap',
+				'value' => $sSearch,
+			),
+		];
+	}
+
+	public function getNotCompletedFilterForTasks()
+	{
+		return  [
+			'name'           => 'STATUS',
+			'is-not-defined' => false,
+			'time-range'     => null,
+			'param-filters' => [],
+			'text-match'     => [
+				'negate-condition' => true,
+				'collation'        => 'i;ascii-casemap',
+				'value'            => 'COMPLETED',
+			],
+		];
+	}
+
+	public function getTasksUrls(\Sabre\CalDAV\Calendar $oCalendar, $bShowCompleted = true, $sSearch = '')
+	{
+		$aFilter = [];
+		if (!$bShowCompleted)
+		{
+			$aFilter[] = $this->getNotCompletedFilterForTasks();
+		}
+		if (!empty($sSearch))
+		{
+			$aFilter[] = $this->getSerchFilterForTasks($sSearch);
+		}
+
+		$aFilter = $this->getFilterForTasks($aFilter);
+		$aResult = $oCalendar->calendarQuery($aFilter);
+
+		if (!$bShowCompleted)
+		{
+			$aFilter = [[
+				'name'           => 'STATUS',
+				'is-not-defined' => true,
+			]];
+			if (!empty($sSearch))
+			{
+				$aFilter[] = $this->getSerchFilterForTasks($sSearch);
+			}
+			$aFilter = $this->getFilterForTasks($aFilter);
+
+			$aResult = array_merge(
+				$aResult,
+				$oCalendar->calendarQuery($aFilter)
+			);
+		}
+
+		return $aResult;
 	}
 	
 	/**

@@ -579,6 +579,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->Name = $Subject;
 			$oEvent->Type = 'VTODO';
 			$oEvent->Status = $Status ? 'COMPLETED' : '';
+			
 			if ($WithDate)
 			{
 				$aEvent = $this->GetBaseEvent($UserId, $CalendarId, $TaskId);
