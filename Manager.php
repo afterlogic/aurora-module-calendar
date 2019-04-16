@@ -1,13 +1,13 @@
 <?php
 /**
- * This code is licensed under AfterLogic Software License.
+ * This code is licensed under Afterlogic Software License.
  * For full statements of the license see LICENSE file.
  */
 
 namespace Aurora\Modules\Calendar;
 
 /**
- * @license https://afterlogic.com/products/common-licensing AfterLogic Software License
+ * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2019, Afterlogic Corp.
  *
  * @package Calendar
