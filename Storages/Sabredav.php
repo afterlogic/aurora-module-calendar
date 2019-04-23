@@ -377,40 +377,14 @@ class Sabredav extends Storage
 			{
 				$oCalendarHome = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
 				
-//				$bHasDefault = false;
 				foreach ($oCalendarHome->getChildren() as $oCalDAVCalendar) 
 				{
 					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 					if ($oCalendar && !($oCalendar->Shared || $oCalendar->SharedToAll))
 					{
-						// if ($oCalendar->IsDefault)
-						// {
-						// 	$bHasDefault = true;
-						// }
 						$aCalendars[$oCalendar->Id] = $oCalendar;
 					}
 				}
-
-				// if (!$bHasDefault)
-				// {
-				// 	//create default calendar
-				// 	$sCalendarId = $this->createCalendar($sUserPublicId,
-				// 		$this->oManager->GetModule()->i18n('CALENDAR_DEFAULT_NAME'),
-				// 		"",
-				// 		0,
-				// 		\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_COLOR,
-				// 		\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID
-				// 	);
-				// 	if ($sCalendarId)
-				// 	{
-				// 		$oCalendar = $this->getCalendar($sUserPublicId, $sCalendarId);
-				// 		if ($oCalendar)
-				// 		{
-				// 			$aCalendars[$oCalendar->Id] = $oCalendar;
-				// 		}
-				// 	}
-				// }
-
 				$this->CalendarsCache[$sUserPublicId] = $aCalendars;
 			}
 		}
