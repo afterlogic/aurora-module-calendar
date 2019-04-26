@@ -1,8 +1,7 @@
 <?php
 /**
- * This code is licensed under AGPLv3 license or Afterlogic Software License
- * if commercial version of the product was purchased.
- * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
+ * This code is licensed under Afterlogic Software License.
+ * For full statements of the license see LICENSE file.
  */
 
 namespace Aurora\Modules\Calendar\Classes;
@@ -10,7 +9,6 @@ namespace Aurora\Modules\Calendar\Classes;
 /**
  * Ics class is used for work with attachment that contains calendar event or calendar appointment.
  * 
- * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2019, Afterlogic Corp.
  * 
