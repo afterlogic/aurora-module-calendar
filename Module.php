@@ -215,7 +215,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
-		$RawKey = \Aurora\System\Application::GetPathItemByIndex(1, '');
+		$RawKey = \Aurora\System\Router::getItemByIndex(1, '');
 		$aValues = \Aurora\System\Api::DecodeKeyValues($RawKey);
 		
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById(\Aurora\System\Api::getAuthenticatedUserId());
