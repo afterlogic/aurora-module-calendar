@@ -86,7 +86,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		);
 		
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		if ($oUser && $oUser->Role === \Aurora\System\Enums\UserRole::NormalUser)
+		if ($oUser && $oUser->isNormalOrTenant())
 		{
 			if (isset($oUser->{self::GetName().'::HighlightWorkingDays'}))
 			{
@@ -124,7 +124,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if ($oUser)
 		{
-			if ($oUser->Role === \Aurora\System\Enums\UserRole::NormalUser)
+			if ($oUser->isNormalOrTenant())
 			{
 				$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
 				$oUser->{self::GetName().'::HighlightWorkingDays'} = $HighlightWorkingDays;
