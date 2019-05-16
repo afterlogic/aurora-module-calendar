@@ -991,8 +991,20 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 	public function onBeforeDeleteUser($aArgs, &$mResult)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
-		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUser($aArgs["UserId"]);
+		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+		
+		$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
+		$oUser = $oCoreDecorator ? $oCoreDecorator->GetUser($aArgs['UserId']) : null;
+		
+		if ($oUser instanceof \Aurora\Modules\Core\Classes\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+		{
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+		}
+		else
+		{
+			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
+		}
+		
 		$sUserPublicId = isset($oUser) ? $oUser->PublicId : null;
 		if ($sUserPublicId)
 		{
