@@ -238,7 +238,7 @@ class Reminder
 
 		try
 		{
-			$oAccount = $this->oApiAccountsManager->getAccountByEmail($oUser->PublicId);
+			$oAccount = $this->oApiAccountsManager->getAccountUsedToAuthorize($oUser->PublicId);
 			if (!$oAccount instanceof \Aurora\Modules\Mail\Classes\Account)
 			{
 				return false;
