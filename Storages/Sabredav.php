@@ -266,7 +266,7 @@ class Sabredav extends Storage
 		}
 		
 		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
-		$oCalendar->IsDefault = ($oCalendar->Id === \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID && !$oCalendar->Shared);
+		$oCalendar->IsDefault = ($oCalDAVCalendar->isDefault() && !$oCalendar->Shared);
 		$oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
 		
 		return $oCalendar;
