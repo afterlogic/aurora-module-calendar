@@ -1005,7 +1005,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
 		}
 		
-		$sUserPublicId = isset($oUser) ? $oUser->PublicId : null;
+		$sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Classes\User ? $oUser->PublicId : null;
 		if ($sUserPublicId)
 		{
 			$this->getManager()->deletePrincipalCalendars($sUserPublicId);
