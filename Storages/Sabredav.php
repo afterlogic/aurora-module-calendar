@@ -266,7 +266,7 @@ class Sabredav extends Storage
 		}
 		
 		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
-		$oCalendar->IsDefault = ($oCalDAVCalendar->isDefault() && !$oCalendar->Shared);
+		$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) && $oCalDAVCalendar->isDefault());
 		$oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
 		
 		return $oCalendar;
