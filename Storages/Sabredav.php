@@ -912,7 +912,7 @@ class Sabredav extends Storage
 				{
 					$oVEvents = $oVCalendar->getBaseComponents('VTODO');
 				}
-				if (isset($oVEvents) && 0 < count($oVEvents)) 
+				if (isset($oVEvents) && 0 < count($oVEvents) && isset($oVEvents[0]))
 				{
 					$sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
 					
@@ -930,6 +930,10 @@ class Sabredav extends Storage
 		return $mResult;
 	}
 	
+	public function getCalendarHome()
+	{
+		return new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+	}
 
 	/**
 	 * @param \Sabre\CalDAV\Calendar $oCalDAVCalendar
@@ -960,24 +964,18 @@ class Sabredav extends Storage
 				} 
 				else 
 				{
-					foreach ($oCalDAVCalendar->getChildren() as $oChild) 
+					$oCalendarHome = $this->getCalendarHome();
+					$sChildUri = $oCalendarHome->getCalendarObjectByUID($sEventId);
+					if (!empty($sChildUri))
 					{
-						if ($oChild instanceof \Sabre\CalDAV\CalendarObject) 
+						list($sCalendarName, $sEventFileName) = \Sabre\Uri\split($sChildUri);
+						if ($oCalDAVCalendar->getName() === $sCalendarName)
 						{
-							$oVCal = \Sabre\VObject\Reader::read($oChild->get());
-							if ($oVCal && $oVCal->VEVENT) 
+							$oChild = $oCalDAVCalendar->getChild($sEventFileName);
+							if ($oChild instanceof \Sabre\CalDAV\CalendarObject) 
 							{
-								foreach ($oVCal->VEVENT as $oVEvent) 
-								{
-									foreach($oVEvent->select('UID') as $oUid) 
-									{
-										if ((string)$oUid === $sEventId) 
-										{
-											$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$oChild->getName()][$this->UserPublicId] = $oChild;
-											return $oChild;
-										}
-									}
-								}
+								$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
+								return $oChild;
 							}
 						}
 					}
