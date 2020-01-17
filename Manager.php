@@ -1270,7 +1270,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 									$iRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVEvent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone);
 									if ((int)$iRecurrenceId == (int) $sRecurrenceId) 
 									{
-										continue 2;
+										continue;
 									}
 								}
 								$oVCal->add($oVEvent);
@@ -1359,7 +1359,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						$iServerRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->{'RECURRENCE-ID'}, $oUser->DefaultTimeZone, 'Ymd');
 						if ($iRecurrenceId == $iServerRecurrenceId) 
 						{
-							continue 2;
+							continue;
 						}
 					}
 					$oVCal->add($oVComponent);

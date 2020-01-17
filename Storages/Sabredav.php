@@ -858,7 +858,7 @@ class Sabredav extends Storage
 						case 'VTIMEZONE' :
 							if (in_array((string)$oNodeChild->TZID, $aCollectedTimezones))
 							{
-								continue 2;
+								continue;
 							}
 
 							$aTimezones[] = $oNodeChild;

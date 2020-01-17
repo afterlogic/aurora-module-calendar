@@ -376,7 +376,7 @@ class Parser
 		{
             if (!$oComponent instanceof \Sabre\VObject\Component)
 			{
-                continue 2;
+                continue;
 			}
 
             if (isset($oComponent->{'RECURRENCE-ID'}))
