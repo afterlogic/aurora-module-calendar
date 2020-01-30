@@ -269,7 +269,7 @@ class Helper
 
 		if (!empty($oEvent->Start) && !empty($oEvent->End))
 		{
-			$oUser = \Aurora\System\Api::getAuthenticatedUser();
+			$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
 			$oDTStart = self::prepareDateTime($oEvent->Start, $oUser->DefaultTimeZone);
 			if (isset($oDTStart))
 			{
@@ -376,7 +376,7 @@ class Helper
 		}
 		else
 		{
-			$oDateTime = \Sabre\VObject\DateTimeParser::parse($mDateTime, new DateTimeZone($sTimeZone));
+			$oDateTime = \Sabre\VObject\DateTimeParser::parse($mDateTime, new \DateTimeZone($sTimeZone));
 		}
 
 		return $oDateTime;
