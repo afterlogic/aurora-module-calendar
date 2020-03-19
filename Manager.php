@@ -60,7 +60,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->getTenantAccount($oAccount);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -95,7 +95,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			}
 			
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oCalendar = false;
 			$this->setLastException($oException);
@@ -118,7 +118,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oCalendar = $this->oStorage->getCalendar($sUserPublicId, $sCalendarId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oCalendar = false;
 			$this->setLastException($oException);
@@ -138,7 +138,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->getPublicCalendarHash($sCalendarId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -161,7 +161,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$mResult = $this->oStorage->getCalendarUsers($sUserPublicId, $oCalendar);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -180,7 +180,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->getPublicUser();
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -199,7 +199,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$mResult = $this->oStorage->getTenantUser($oUser);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -218,7 +218,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->getPublicAccount();
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -256,7 +256,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->createCalendar($sUserPublicId, $sName, $sDescription, $iOrder, $sColor, $sUUID);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -283,7 +283,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->updateCalendar($sUserPublicId, $sCalendarId, $sName, $sDescription, $iOrder, $sColor);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -305,7 +305,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$this->oStorage->updateCalendarVisible($sCalendarId, $iVisible);
 			$oResult = true;
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -329,7 +329,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->updateCalendarColor($sUserPublicId, $sCalendarId, $sColor);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -344,7 +344,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->deletePrincipalCalendars($sUserPublicId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -368,7 +368,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->deleteCalendar($sUserPublicId, $sCalendarId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -393,7 +393,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			{
 				$oResult = $this->oStorage->unsubscribeCalendar($sUserPublicId, $sCalendarId);
 			}
-			catch (Exception $oException)
+			catch (\Exception $oException)
 			{
 				$oResult = false;
 				$this->setLastException($oException);
@@ -484,7 +484,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic, $oUser);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -508,7 +508,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->getPublishStatus($sCalendarId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -532,7 +532,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -562,7 +562,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			{
 				$oResult = $this->oStorage->updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId, $iPermission);
 			}
-			catch (Exception $oException)
+			catch (\Exception $oException)
 			{
 				$oResult = false;
 				$this->setLastException($oException);
@@ -586,7 +586,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$mResult = $this->oStorage->exportCalendarToIcs($sUserPublicId, $sCalendarId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -610,7 +610,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$mResult = $this->oStorage->importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -646,7 +646,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$aResult = false;
 			$this->setLastException($oException);
@@ -739,7 +739,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			// 	}
 			// });
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$aResult = false;
 			$this->setLastException($oException);
@@ -774,7 +774,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$aResult = false;
 			$this->setLastException($oException);
@@ -809,7 +809,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -857,7 +857,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -886,7 +886,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$dEnd = ($dEnd != null) ? date('Ymd\T235959\Z', $dEnd) : null;
 			$mResult = $this->oStorage->getExpandedEvent($sUserPublicId, $sCalendarId, $sEventId, $dStart, $dEnd);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$mResult = false;
 			$this->setLastException($oException);
@@ -944,7 +944,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -998,7 +998,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$this->updateEventGroups($sUserPublicId, $oEvent);
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1117,7 +1117,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1162,7 +1162,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			}
 			return false;
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1313,7 +1313,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			}
 			return false;
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1368,7 +1368,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			}
 			return false;
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1390,7 +1390,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->getReminders($start, $end);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1410,7 +1410,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->deleteReminder($sEventId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1431,7 +1431,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->deleteReminderByCalendar($sCalendarUri);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1455,7 +1455,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$oResult = $this->oStorage->updateReminder($sEmail, $sCalendarUri, $sEventId, $sData);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
@@ -1488,9 +1488,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$aCalendars = $this->oStorage->getCalendars($sUserPublicId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$aCalendars = false;
+			$this->setLastException($oException);
 		}
 
 		return $aCalendars;
@@ -1503,9 +1504,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		{
 			$aCalendars = $this->oStorage->getSharedCalendars($sUserPublicId);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$aCalendars = false;
+			$this->setLastException($oException);
 		}
 
 		return $aCalendars;
@@ -1816,7 +1818,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				}
 			}
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			$oResult = false;
 			$this->setLastException($oException);
