@@ -509,6 +509,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		
 		if ($mResult)
 		{
+			$aArgs = ['Event' => $oEvent];
+			$this->broadcastEvent(
+				'CreateEvent', 
+				$aArgs
+			);
 			$mResult = $this->getManager()->getExpandedEvent($sUserPublicId, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
 		}
 		
@@ -686,8 +691,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		if ($mResult)
 		{
-				$mResult = $this->getManager()->getExpandedEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
+			$mResult = $this->getManager()->getExpandedEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $selectStart, $selectEnd);
+			$aArgs = ['Event' => $oEvent];
+			$this->broadcastEvent(
+				'CreateEvent', 
+				$aArgs
+			);
+			$mResult = $this->getManager()->getExpandedEvent($sUserPublicId, $oEvent->IdCalendar, $mResult, $selectStart, $selectEnd);
 		}
+
 		return $mResult;
 	}	
 	

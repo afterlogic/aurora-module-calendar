@@ -992,11 +992,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$oVCal->$sComponentName
 			);
 			$oResult = $this->oStorage->createEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
-
-			if ($oResult) 
-			{
-				$this->updateEventGroups($sUserPublicId, $oEvent);
-			}
 		}
 		catch (\Exception $oException)
 		{
@@ -1004,40 +999,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$this->setLastException($oException);
 		}
 		return $oResult;
-	}
-
-	/**
-	 * @param string $sUserPublicId
-	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
-	 */
-	public function updateEventGroups($sUserPublicId, $oEvent)
-	{
-		$aGroups = \Aurora\Modules\Calendar\Classes\Helper::findGroupsHashTagsFromString($oEvent->Name);
-		$aGroupsDescription = \Aurora\Modules\Calendar\Classes\Helper::findGroupsHashTagsFromString($oEvent->Description);
-		$aGroups = array_merge($aGroups, $aGroupsDescription);
-		$aGroupsLocation = \Aurora\Modules\Calendar\Classes\Helper::findGroupsHashTagsFromString($oEvent->Location);
-		$aGroups = array_merge($aGroups, $aGroupsLocation);
-		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-
-		$oContactsModule = \Aurora\System\Api::GetModule('Contacts');
-		if ($oContactsModule && $oUser instanceof \Aurora\Modules\Core\Classes\User)
-		{
-			foreach ($aGroups as $sGroup) 
-			{
-				$sGroupName = ltrim($sGroup, '#');
-				$oGroup = $oContactsModule->CallMethod('getGroupByName', array($sGroupName, $oUser->IdUser));
-				if (!$oGroup) 
-				{
-					$oGroup = new \Aurora\Modules\Contacts\Classes\Group();
-					$oGroup->IdUser = $oUser->IdUser;
-					$oGroup->Name = $sGroupName;
-					$oContactsModule->CallMethod('createGroup', array($oGroup));
-				}
-
-				$oContactsModule->CallMethod('removeEventFromGroup', array($oGroup->IdGroup, $oEvent->IdCalendar, $oEvent->Id));
-				$oContactsModule->CallMethod('addEventToGroup', array($oGroup->IdGroup, $oEvent->IdCalendar, $oEvent->Id));
-			}
-		}
 	}
 
 	/**
@@ -1109,11 +1070,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					}
 
 					$oResult = $this->oStorage->updateEvent($sUserPublicId, $oEvent->IdCalendar, $aData['url'], $oVCalResult);
-					if ($oResult) 
-					{
-						$this->updateEventGroups($sUserPublicId, $oEvent);
-					}
-
 				}
 			}
 		}
