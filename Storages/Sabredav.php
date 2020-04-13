@@ -146,7 +146,7 @@ class Sabredav extends Storage
 	protected function getCalDAVCalendar($sPath)
 	{
 		$oCalendar = false;
-		list(, $sCalendarId) = \Sabre\HTTP\URLUtil::splitPath($sPath);
+		list(, $sCalendarId) = \Sabre\Uri\split($sPath);
 		if (count($this->CalDAVCalendarsCache) > 0 && isset($this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId]))
 		{
 			$oCalendar = $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId];
