@@ -104,7 +104,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	public function GetCalendarNames($sUserPublicId)
 	{
 		return array();
-	}	
+	}
 
 	/**
 	 * @param string $sUserPublicId
@@ -154,7 +154,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	 */
 	public function updateCalendarVisible($sCalendarId, $iVisible)
 	{
-		@\setcookie($sCalendarId, $iVisible, \strtotime('+1 day'), \Aurora\System\Api::getCookiePath(), 
+		@\setcookie($sCalendarId, $iVisible, \strtotime('+1 day'), \Aurora\System\Api::getCookiePath(),
 				null, \Aurora\System\Api::getCookieSecure());
 	}
 
@@ -241,7 +241,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	{
 		return array();
 	}
-	
+
 	/**
 	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
@@ -252,7 +252,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 	{
 		return array();
 	}
-	
+
 
 	/**
 	}

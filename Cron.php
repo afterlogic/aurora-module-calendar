@@ -45,12 +45,12 @@ class Reminder
 		$this->oApiMailManager = $oMailModule->getMailManager();
 		$this->oApiAccountsManager = $oMailModule->getAccountsManager();
 	}
-	
+
 	public static function NewInstance()
 	{
 		return new self();
 	}
-	
+
 	/**
 	 * @param string $sKey
 	 * @param Aurora\Modules\Core\Classes\User $oUser = null
@@ -253,20 +253,20 @@ class Reminder
 
 		return false;
 	}
-	
+
 	private function getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay = false)
 	{
 		$sSubject = '';
-		
+
 		if ($bAllDay)
 		{
 			$oEventStart = new \DateTime("@$iEventStartTS", new \DateTimeZone('UTC'));
 			$oEventStart->setTimezone(new \DateTimeZone($oUser->DefaultTimeZone ? : 'UTC'));
 			$iEventStartTS = $oEventStart->getTimestamp() - $oEventStart->getOffset();
 		}
-		
+
 		$iMinutes = round(($iEventStartTS - $iNowTS) / 60);
-		
+
 		if ($iMinutes > 0 && $iMinutes < 60)
 		{
 			$sSubject = $this->i18n('SUBJECT_MINUTES_PLURAL', $oUser, array(
@@ -305,11 +305,11 @@ class Reminder
 				'EVENT_NAME' => $sEventName,
 				'DATE' => $sDate
 			));
-		}		
-		
+		}
+
 		return $sSubject;
 	}
-	
+
 	private function getDateTimeFormat($oUser)
 	{
 		$sDateFormat = 'm/d/Y';
@@ -340,7 +340,7 @@ class Reminder
 		{
 			$sTimeFormat = 'H:i';
 		}
-		
+
 		return $sDateFormat.' '.$sTimeFormat;
 	}
 
@@ -496,7 +496,7 @@ class Reminder
 										}
 
 										$sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay);
-										
+
 										$aUsers = array(
 											$oUser->IdUser => $oUser
 										);
