@@ -445,6 +445,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		return $mResult;
 	}
 
+	private function _checkUserCalendar($sUserPublicId, $sCalendarId)
+	{
+		$oCalendar = $this->getManager()->getCalendar($sUserPublicId, $sCalendarId);
+		if (!$oCalendar)
+		{
+			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter, null, $this->i18n('ERROR_NO_CALENDAR'));
+		}
+	}
+	
 	/**
 	 *
 	 * @param int $UserId
@@ -467,6 +476,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+		
+		$this->_checkUserCalendar($sUserPublicId, $newCalendarId);
+		
 		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 		$oEvent->IdCalendar = $newCalendarId;
 		$oEvent->Name = $subject;
@@ -532,6 +544,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+		
+		$this->_checkUserCalendar($sUserPublicId, $CalendarId);
 
 		return $this->getManager()->createEventFromRaw($sUserPublicId, $CalendarId, $EventId, $Data);
 	}
@@ -550,6 +564,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+			
+			$this->_checkUserCalendar($sUserPublicId, $CalendarId);
+			
 			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Name = $Subject;
@@ -578,6 +595,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+			
+			$this->_checkUserCalendar($sUserPublicId, $CalendarId);
+			
 			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Id = $TaskId;
@@ -633,6 +653,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
+		
+		$this->_checkUserCalendar($sUserPublicId, $calendarId);
+		if ($calendarId !== $newCalendarId)
+		{
+			$this->_checkUserCalendar($sUserPublicId, $newCalendarId);
+		}
 
 		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 		$oEvent->IdCalendar = $calendarId;
@@ -675,7 +701,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			$oEvent->Status = $status && $type === 'VTODO';
 		}
-
+		
 		if ($allEvents === 1)
 		{
 			$mResult = $this->getManager()->updateExclusion($sUserPublicId, $oEvent, $recurrenceId);
@@ -715,6 +741,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+		
+		$this->_checkUserCalendar($sUserPublicId, $calendarId);
+		
 		$mResult = false;
 		if ($sUserPublicId)
 		{
@@ -748,6 +777,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
 
+		$this->_checkUserCalendar($sUserPublicId, $CalendarId);
+		
 		if (empty($CalendarId) || empty($File))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
