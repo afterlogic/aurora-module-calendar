@@ -8,7 +8,7 @@ namespace Aurora\Modules\Calendar;
 
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
- * @copyright Copyright (c) 2019, Afterlogic Corp.
+ * @copyright Copyright (c) 2020, Afterlogic Corp.
  *
  * @package Modules
  */
@@ -39,6 +39,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 	public function init()
 	{
+		$this->aErrors = [
+			Enums\ErrorCodes::CannotFindCalendar => $this->i18N('ERROR_NO_CALENDAR'),
+		];
+		
 		$this->AddEntries(array(
 				'calendar-pub' => 'EntryCalendarPub',
 				'calendar-download' => 'EntryCalendarDownload'
@@ -450,7 +454,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oCalendar = $this->getManager()->getCalendar($sUserPublicId, $sCalendarId);
 		if (!$oCalendar)
 		{
-			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter, null, $this->i18n('ERROR_NO_CALENDAR'));
+			throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
 		}
 	}
 	
