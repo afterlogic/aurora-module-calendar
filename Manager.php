@@ -926,7 +926,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 						$aEvents[$sUid]->add($oVEvent);
 					}
-					foreach ($oVCal->VTODO as $oVTodo)
+					$aVTodo = !empty($oVCal->VTODO) ? $oVCal->VTODO : [];
+					foreach ($aVTodo as $oVTodo)
 					{
 						$sUid = (string)$oVTodo->UID;
 						if (!isset($aEvents[$sUid]))
@@ -1627,7 +1628,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 									$lastModified = $oVEvent->{'LAST-MODIFIED'}->getDateTime();
 									$lastModifiedServer = '';
 									//Checking if current user's appointment was parsed earlier
-									foreach ($oVEventServer->ATTENDEE as $oAttendee)
+									$aEventServerAttendees = !empty($oVEventServer->ATTENDEE) ? $oVEventServer->ATTENDEE : [];
+									foreach ($aEventServerAttendees as $oAttendee)
 									{
 										if ($mFromEmail === str_replace('mailto:', '', strtolower((string) $oAttendee->getValue())))
 										{
