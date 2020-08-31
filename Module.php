@@ -201,7 +201,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 		}
 
-		if ($mCalendars)
+		// When $mCalendars is an empty array with condition "if ($mCalendars)" $mResult will be false
+		if (is_array($mCalendars))
 		{
 			$mResult = array(
 				'Calendars' => $mCalendars
