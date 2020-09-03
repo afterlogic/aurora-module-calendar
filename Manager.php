@@ -904,7 +904,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function createEventFromRaw($sUserPublicId, $sCalendarId, $sEventId, $sData)
 	{
-		$oResult = null;
+		$mResult = false;
 		$aEvents = array();
 		try
 		{
@@ -913,7 +913,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			{
 				if (!empty($sEventId))
 				{
-					$oResult = $this->oStorage->createEvent($sUserPublicId, $sCalendarId, $sEventId, $oVCal);
+					$mResult = $this->oStorage->createEvent($sUserPublicId, $sCalendarId, $sEventId, $oVCal);
 				}
 				else
 				{
@@ -936,21 +936,28 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 						$aEvents[$sUid]->add($oVTodo);
 					}
-
+					
+					$aCreatedUids = [];
 					foreach ($aEvents as $sUid => $oVCalNew)
 					{
-						$this->oStorage->createEvent($sUserPublicId, $sCalendarId, $sUid, $oVCalNew);
+						$sCreatedUid = $this->oStorage->createEvent($sUserPublicId, $sCalendarId, $sUid, $oVCalNew);
+						if ($sCreatedUid)
+						{
+							$aCreatedUids[] = $sCreatedUid;
+						}
 					}
-					$oResult = true;
+					if (!empty($aCreatedUids))
+					{
+						$mResult = $aCreatedUids;
+					}
 				}
 			}
 		}
 		catch (\Exception $oException)
 		{
-			$oResult = false;
 			$this->setLastException($oException);
 		}
-		return $oResult;
+		return $mResult;
 	}
 
 	/**

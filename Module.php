@@ -792,13 +792,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$sData = $this->getFilecacheManager()->get($sUserPublicId, $File, '', self::GetName());
 		if (!empty($sData))
 		{
-			$mCreateEventResult = $this->getManager()->createEventFromRaw($sUserPublicId, $CalendarId, null, $sData);
-			if ($mCreateEventResult)
-			{
-				$mResult = array(
-					'Uid' => (string) $mCreateEventResult
-				);
-			}
+			$mResult = $this->getManager()->createEventFromRaw($sUserPublicId, $CalendarId, null, $sData);
 		}
 
 		return $mResult;
