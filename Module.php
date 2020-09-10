@@ -806,7 +806,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 		if ($oApiIntegrator)
 		{
-			@\header('Content-Type: text/html; charset=utf-8', true);
+			\Aurora\System\Managers\Response::HtmlOutputHeaders();
 
 			if (!strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'firefox'))
 			{
