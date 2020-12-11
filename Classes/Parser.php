@@ -227,9 +227,23 @@ class Parser
 					}
 				}
 
+				if (isset($oAttendee['EMAIL']))
+				{
+					$sEmail = (string)$oAttendee['EMAIL'];
+				}
+				else
+				{
+					$sEmail = str_replace('mailto:', '', strtolower($oAttendee->getValue()));
+					$iPos = strpos($sEmail, 'principals/');
+					if ($iPos !== false)
+					{
+						$sEmail = \trim(substr($sEmail, $iPos + 11), '/');
+					}
+				}
+
 				$aResult[] = array(
 					'access' => 0,
-					'email' => isset($oAttendee['EMAIL']) ? (string)$oAttendee['EMAIL'] : str_replace('mailto:', '', strtolower($oAttendee->getValue())),
+					'email' => $sEmail,
 					'name' => isset($oAttendee['CN']) ? (string)$oAttendee['CN'] : '',
 					'status' => $iStatus
 				);
