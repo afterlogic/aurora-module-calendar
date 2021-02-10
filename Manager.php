@@ -1726,6 +1726,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							'Action' => $sMethod,
 							'Location' => isset($oVEventResult->LOCATION) ? (string)$oVEventResult->LOCATION : '',
 							'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
+							'Summary' => isset($oVEventResult->SUMMARY) ? (string)$oVEventResult->SUMMARY : '',
 							'When' => $sWhen,
 							'Sequence' => isset($sequence) ? $sequence : 1
 						];
