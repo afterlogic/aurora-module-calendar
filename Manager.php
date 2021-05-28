@@ -936,7 +936,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 						$aEvents[$sUid]->add($oVTodo);
 					}
-					
+
 					$aCreatedUids = [];
 					foreach ($aEvents as $sUid => $oVCalNew)
 					{
@@ -1599,6 +1599,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 				$aVEvents = $oVCal->getBaseComponents('VEVENT');
 				$oVEvent = (isset($aVEvents) && count($aVEvents) > 0) ? $aVEvents[0] : null;
 
+				if(!isset($oVEvent))
+				{
+					$oVEvent = $oVCal->VEVENT[0];
+				}
+
 				if (isset($oVEvent))
 				{
 					$sCalendarId = '';
@@ -1621,9 +1626,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 								$oVCalServer->METHOD = $oMethod;
 							}
 							$aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
-							if (count($aVEventsServer) > 0)
+							$oVEventServer = (isset($aVEventsServer) && count($aVEventsServer) > 0) ? $aVEventsServer[0] : null;
+							if(!isset($oVEvent))
 							{
-								$oVEventServer = $aVEventsServer[0];
+								$oVEventServer = $oVCalServer->VEVENT[0];
+							}
+
+							if (isset($oVEventServer))
+							{
 								if (!isset($oVEvent->{'LAST-MODIFIED'}) && isset($oVEvent->{'DTSTAMP'}))
 								{
 									$oVEvent->add('LAST-MODIFIED', $oVEvent->{'DTSTAMP'}->getDateTime());
