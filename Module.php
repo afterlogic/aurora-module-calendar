@@ -42,24 +42,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->aErrors = [
 			Enums\ErrorCodes::CannotFindCalendar => $this->i18N('ERROR_NO_CALENDAR'),
 		];
-		
+
 		$this->AddEntries(array(
 				'calendar-pub' => 'EntryCalendarPub',
 				'calendar-download' => 'EntryCalendarDownload'
 			)
-		);
-
-		\Aurora\Modules\Core\Classes\User::extend(
-			self::GetName(),
-			[
-				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
-				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
-				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', 9)),
-				'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', 18)),
-				'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', 0)),
-				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
-			]
-
 		);
 
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
@@ -116,6 +103,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			{
 				$aSettings['DefaultTab'] = $oUser->{self::GetName().'::DefaultTab'};
 			}
+
+			$oUser->save();
 		}
 
 		return $aSettings;
@@ -131,12 +120,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($oUser->isNormalOrTenant())
 			{
 				$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-				$oUser->{self::GetName().'::HighlightWorkingDays'} = $HighlightWorkingDays;
-				$oUser->{self::GetName().'::HighlightWorkingHours'} = $HighlightWorkingHours;
-				$oUser->{self::GetName().'::WorkdayStarts'} = $WorkdayStarts;
-				$oUser->{self::GetName().'::WorkdayEnds'} = $WorkdayEnds;
-				$oUser->{self::GetName().'::WeekStartsOn'} = $WeekStartsOn;
-				$oUser->{self::GetName().'::DefaultTab'} = $DefaultTab;
+				$oUser->setExtendedProps([
+					self::GetName().'::HighlightWorkingDays' => $HighlightWorkingDays,
+					self::GetName().'::HighlightWorkingHours' => $HighlightWorkingHours,
+					self::GetName().'::WorkdayStarts' => $WorkdayStarts,
+					self::GetName().'::WorkdayEnds' => $WorkdayEnds,
+					self::GetName().'::WeekStartsOn' => $WeekStartsOn,
+					self::GetName().'::DefaultTab' => $DefaultTab
+				]);
 				return $oCoreDecorator->UpdateUserObject($oUser);
 			}
 			if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
@@ -458,7 +449,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
 		}
 	}
-	
+
 	/**
 	 *
 	 * @param int $UserId
@@ -481,9 +472,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $newCalendarId);
-		
+
 		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 		$oEvent->IdCalendar = $newCalendarId;
 		$oEvent->Name = $subject;
@@ -549,7 +540,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $CalendarId);
 
 		return $this->getManager()->createEventFromRaw($sUserPublicId, $CalendarId, $EventId, $Data);
@@ -569,9 +560,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-			
+
 			$this->_checkUserCalendar($sUserPublicId, $CalendarId);
-			
+
 			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Name = $Subject;
@@ -600,9 +591,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-			
+
 			$this->_checkUserCalendar($sUserPublicId, $CalendarId);
-			
+
 			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Id = $TaskId;
@@ -658,7 +649,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $calendarId);
 		if ($calendarId !== $newCalendarId)
 		{
@@ -706,7 +697,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			$oEvent->Status = $status && $type === 'VTODO';
 		}
-		
+
 		if ($allEvents === 1)
 		{
 			$mResult = $this->getManager()->updateExclusion($sUserPublicId, $oEvent, $recurrenceId);
@@ -746,9 +737,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $calendarId);
-		
+
 		$mResult = false;
 		if ($sUserPublicId)
 		{
@@ -783,7 +774,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$mResult = false;
 
 		$this->_checkUserCalendar($sUserPublicId, $CalendarId);
-		
+
 		if (empty($CalendarId) || empty($File))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
