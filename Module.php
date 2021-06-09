@@ -42,7 +42,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->aErrors = [
 			Enums\ErrorCodes::CannotFindCalendar => $this->i18N('ERROR_NO_CALENDAR'),
 		];
-		
+
 		$this->AddEntries(array(
 				'calendar-pub' => 'EntryCalendarPub',
 				'calendar-download' => 'EntryCalendarDownload'
@@ -458,7 +458,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
 		}
 	}
-	
+
 	/**
 	 *
 	 * @param int $UserId
@@ -481,9 +481,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $newCalendarId);
-		
+
 		$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 		$oEvent->IdCalendar = $newCalendarId;
 		$oEvent->Name = $subject;
@@ -549,7 +549,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $CalendarId);
 
 		return $this->getManager()->createEventFromRaw($sUserPublicId, $CalendarId, $EventId, $Data);
@@ -569,9 +569,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-			
+
 			$this->_checkUserCalendar($sUserPublicId, $CalendarId);
-			
+
 			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Name = $Subject;
@@ -600,9 +600,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-			
+
 			$this->_checkUserCalendar($sUserPublicId, $CalendarId);
-			
+
 			$oEvent = new \Aurora\Modules\Calendar\Classes\Event();
 			$oEvent->IdCalendar = $CalendarId;
 			$oEvent->Id = $TaskId;
@@ -658,7 +658,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $calendarId);
 		if ($calendarId !== $newCalendarId)
 		{
@@ -706,7 +706,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			$oEvent->Status = $status && $type === 'VTODO';
 		}
-		
+
 		if ($allEvents === 1)
 		{
 			$mResult = $this->getManager()->updateExclusion($sUserPublicId, $oEvent, $recurrenceId);
@@ -746,9 +746,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		
+
 		$this->_checkUserCalendar($sUserPublicId, $calendarId);
-		
+
 		$mResult = false;
 		if ($sUserPublicId)
 		{
@@ -783,7 +783,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$mResult = false;
 
 		$this->_checkUserCalendar($sUserPublicId, $CalendarId);
-		
+
 		if (empty($CalendarId) || empty($File))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
@@ -990,6 +990,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							$oIcs->Attendee = null;
 							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
 							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
+							$oIcs->Summary = !empty($mResult['Summary']) ? $mResult['Summary'] : '';
 							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
 							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
 							$this->broadcastEvent(
