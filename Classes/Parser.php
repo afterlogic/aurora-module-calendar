@@ -32,7 +32,7 @@ class Parser
 		$aExcludedRecurrences = array();
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$sTimeZone = $oUser->DefaultTimeZone;
 		}
@@ -65,7 +65,7 @@ class Parser
 			$aExcludedRecurrences = self::getExcludedRecurrences($oVCal);
 		}
         
-		if (isset($oExpandedVCal, $oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || $oCalendar->IsPublic))
+		if (isset($oExpandedVCal, $oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Models\User || $oCalendar->IsPublic))
 		{
 			foreach ($oExpandedVCal->{$sComponent} as $oVComponent)
 			{
@@ -98,7 +98,7 @@ class Parser
 					);
 					$sOwnerEmail = $aArgs['sOwnerEmail'];
 					$oOwner = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sOwnerEmail);
-					$sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Classes\User) ? $oOwner->Name : '';
+					$sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Models\User) ? $oOwner->Name : '';
 					$bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
 					$sCurrentTimeZone = ($bAllDay) ? 'UTC' : $sTimeZone;
 					$aEvent['alarms'] = self::parseAlarms($oVComponent);

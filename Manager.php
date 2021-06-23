@@ -40,7 +40,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	{
 		$oResult = null;
 		$oUser = \Aurora\System\Api::getUserById($sUserUUID);
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$oResult = $this->oStorage->getCalendarAccess($oUser->PublicId, $sCalendarId);
 		}
@@ -49,9 +49,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Models\Account $oAccount
 	 *
-	 * @return \Aurora\Modules\StandardAuth\Classes\Account|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
 	 */
 	public function getTenantAccount($oAccount)
 	{
@@ -209,7 +209,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @return \Aurora\Modules\StandardAuth\Classes\Account|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
 	 */
 	public function getPublicAccount()
 	{
@@ -456,7 +456,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					$aShare['email'] !== $this->getPublicUser())
 				{
 					$oSharedUser = \Aurora\System\Api::GetModule('Core')->getUsersManager()->getUserByPublicId($aShare['email']);
-					if (!$oSharedUser instanceof \Aurora\Modules\Core\Classes\User)
+					if (!$oSharedUser instanceof \Aurora\Modules\Core\Models\User)
 					{
 						return $oResult;
 					}
@@ -1491,7 +1491,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		$oResult = false;
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$aData = $this->oStorage->getEvent($oUser->PublicId, $sCalendarId, $sEventId);
 			if ($aData !== false && isset($aData['vcal']) && $aData['vcal'] instanceof \Sabre\VObject\Component\VCalendar)
@@ -1548,12 +1548,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		$aAccountEmails = [$oAuthenticatedUser->PublicId];
 
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$aUserAccounts = \Aurora\System\Api::GetModuleDecorator('Mail')->GetAccounts($oUser->EntityId);
 			foreach ($aUserAccounts as $oMailAccount)
 			{
-				if ($oMailAccount instanceof \Aurora\Modules\Mail\Classes\Account)
+				if ($oMailAccount instanceof \Aurora\Modules\Mail\Models\MailAccount)
 				{
 					$aAccountEmails[] = $oMailAccount->Email;
 				}
@@ -1765,10 +1765,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Models\Account $oAccount
 	 * @param string $sEmail
 	 *
-	 * @return \Aurora\Modules\StandardAuth\Classes\Account|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
 	 */
 	public function getAccountFromAccountList($oAccount, $sEmail)
 	{
@@ -1811,7 +1811,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	{
 		$bResult = false;
 
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$bResult = $this->oStorage->clearAllCalendars($sUserPublicId);
 		}

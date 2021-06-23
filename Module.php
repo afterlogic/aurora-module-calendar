@@ -305,7 +305,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aShares = json_decode($Shares, true) ;
 		$oUser = null;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		if ($oAuthenticatedUser->EntityId !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+		if ($oAuthenticatedUser->Id !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
 		{
 			$oUser = \Aurora\System\Api::getUserById($UserId);
 		}
@@ -941,7 +941,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public function onExtendMessageData($aData, &$oMessage)
 	{
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($oUser->EntityId);
+		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($oUser->Id);
 		$sFromEmail = '';
 		$oFromCollection = $oMessage->getFrom();
 		if ($oFromCollection && 0 < $oFromCollection->Count())
@@ -1028,7 +1028,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($aArgs['UserId']);
 
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		}
@@ -1037,7 +1037,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
 		}
 
-		$sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Classes\User ? $oUser->PublicId : null;
+		$sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Models\User ? $oUser->PublicId : null;
 		if ($sUserPublicId)
 		{
 			$this->getManager()->deletePrincipalCalendars($sUserPublicId);
