@@ -1550,7 +1550,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
-			$aUserAccounts = \Aurora\System\Api::GetModuleDecorator('Mail')->GetAccounts($oUser->EntityId);
+			$aUserAccounts = \Aurora\System\Api::GetModuleDecorator('Mail')->GetAccounts($oUser->Id);
 			foreach ($aUserAccounts as $oMailAccount)
 			{
 				if ($oMailAccount instanceof \Aurora\Modules\Mail\Models\MailAccount)
@@ -1570,7 +1570,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	//			}
 	//		}
 
-//			$aIdentities = \Aurora\System\Api::GetModuleDecorator('Mail')->GetIdentities($oUser->EntityId);
+//			$aIdentities = \Aurora\System\Api::GetModuleDecorator('Mail')->GetIdentities($oUser->Id);
 //			if (is_array($aIdentities) && 0 < count($aIdentities))
 //			{
 //				foreach ($aIdentities as $oIdentity)
