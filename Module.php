@@ -49,19 +49,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			)
 		);
 
-		\Aurora\Modules\Core\Classes\User::extend(
-			self::GetName(),
-			[
-				'HighlightWorkingDays'	=> array('bool', $this->getConfig('HighlightWorkingDays', false)),
-				'HighlightWorkingHours'	=> array('bool', $this->getConfig('HighlightWorkingHours', false)),
-				'WorkdayStarts'			=> array('int', $this->getConfig('WorkdayStarts', 9)),
-				'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', 18)),
-				'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', 0)),
-				'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
-			]
-
-		);
-
 		$this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
@@ -116,6 +103,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			{
 				$aSettings['DefaultTab'] = $oUser->{self::GetName().'::DefaultTab'};
 			}
+
+			$oUser->save();
 		}
 
 		return $aSettings;
@@ -131,12 +120,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			if ($oUser->isNormalOrTenant())
 			{
 				$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-				$oUser->{self::GetName().'::HighlightWorkingDays'} = $HighlightWorkingDays;
-				$oUser->{self::GetName().'::HighlightWorkingHours'} = $HighlightWorkingHours;
-				$oUser->{self::GetName().'::WorkdayStarts'} = $WorkdayStarts;
-				$oUser->{self::GetName().'::WorkdayEnds'} = $WorkdayEnds;
-				$oUser->{self::GetName().'::WeekStartsOn'} = $WeekStartsOn;
-				$oUser->{self::GetName().'::DefaultTab'} = $DefaultTab;
+				$oUser->setExtendedProps([
+					self::GetName().'::HighlightWorkingDays' => $HighlightWorkingDays,
+					self::GetName().'::HighlightWorkingHours' => $HighlightWorkingHours,
+					self::GetName().'::WorkdayStarts' => $WorkdayStarts,
+					self::GetName().'::WorkdayEnds' => $WorkdayEnds,
+					self::GetName().'::WeekStartsOn' => $WeekStartsOn,
+					self::GetName().'::DefaultTab' => $DefaultTab
+				]);
 				return $oCoreDecorator->UpdateUserObject($oUser);
 			}
 			if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
@@ -314,7 +305,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$aShares = json_decode($Shares, true) ;
 		$oUser = null;
 		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-		if ($oAuthenticatedUser->EntityId !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
+		if ($oAuthenticatedUser->Id !== $UserId && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
 		{
 			$oUser = \Aurora\System\Api::getUserById($UserId);
 		}
@@ -950,7 +941,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public function onExtendMessageData($aData, &$oMessage)
 	{
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($oUser->EntityId);
+		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($oUser->Id);
 		$sFromEmail = '';
 		$oFromCollection = $oMessage->getFrom();
 		if ($oFromCollection && 0 < $oFromCollection->Count())
@@ -1038,7 +1029,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($aArgs['UserId']);
 
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
 		{
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
 		}
@@ -1047,7 +1038,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
 		}
 
-		$sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Classes\User ? $oUser->PublicId : null;
+		$sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Models\User ? $oUser->PublicId : null;
 		if ($sUserPublicId)
 		{
 			$this->getManager()->deletePrincipalCalendars($sUserPublicId);
