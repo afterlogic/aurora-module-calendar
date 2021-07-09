@@ -49,9 +49,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @param \Aurora\Modules\StandardAuth\Models\Account $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Models\StandardAuthAccount $oAccount
 	 *
-	 * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Models\StandardAuthAccount|false $oAccount
 	 */
 	public function getTenantAccount($oAccount)
 	{
@@ -209,7 +209,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Models\StandardAuthAccount|false $oAccount
 	 */
 	public function getPublicAccount()
 	{
@@ -1765,10 +1765,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
 	/**
 	 *
-	 * @param \Aurora\Modules\StandardAuth\Models\Account $oAccount
+	 * @param \Aurora\Modules\StandardAuth\Models\StandardAuthAccount $oAccount
 	 * @param string $sEmail
 	 *
-	 * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
+	 * @return \Aurora\Modules\StandardAuth\Models\StandardAuthAccount|false $oAccount
 	 */
 	public function getAccountFromAccountList($oAccount, $sEmail)
 	{
