@@ -236,7 +236,7 @@ class Helper
 	 * @param \Aurora\Modules\Calendar\Classes\Event $oEvent
 	 * @param \Sabre\VObject\Component\VEvent $oVEvent
 	 */
-	public static function populateVCalendar($sUserPublicId, $oEvent, &$oVEvent)
+	public static function populateVCalendar($sUserPublicId, $oEvent, &$oVCal, &$oVEvent)
 	{
 		$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 		$oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
@@ -263,7 +263,7 @@ class Helper
 			unset($oVEvent->{'PERCENT-COMPLETE'});
 		}
 		
-		$oVCal =& $oVEvent->parent;
+//		$oVCal =& $oVEvent->parent;
 
 		$oVEvent->UID = $oEvent->Id;
 
@@ -327,7 +327,7 @@ class Helper
 			{
 				$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
 				$oRRule = false;
-				if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+				if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 				{
 					$oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($oUser->DefaultTimeZone, $oVCal, (string)$oVEvent->UID);
 				}

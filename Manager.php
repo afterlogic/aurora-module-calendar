@@ -989,7 +989,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			);
 			$oVCal->add($oComponent);
 
-			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->$sComponentName);
+			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal, $oVCal->$sComponentName);
 			$aArgs = [
 				'sUserPublicId' => $sUserPublicId,
 				'oEvent' => $oEvent
@@ -1048,7 +1048,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					$iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVComponentIndex($oVCal->{$sComponent});
 					if ($iIndex !== false)
 					{
-						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->{$sComponent}[$iIndex]);
+						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal, $oVCal->{$sComponent}[$iIndex]);
 						$aArgs = [
 							'sUserPublicId' => $sUserPublicId,
 							'oEvent' => $oEvent
@@ -1259,10 +1259,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						if ($oVEventRecur)
 						{
 							$oEvent->RRule = null;
-							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVEventRecur);
+							\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal, $oVEventRecur);
 							$aArgs = [
 								'sUserPublicId' => $sUserPublicId,
-								'oEvent' => $oEvent
+								'oEvent' => $oEvent,
+								'oVCal' => $oVCal
 							];
 							$this->GetModule()->broadcastEvent(
 								'populateVCalendar',
