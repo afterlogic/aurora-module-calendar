@@ -992,7 +992,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal, $oVCal->$sComponentName);
 			$aArgs = [
 				'sUserPublicId' => $sUserPublicId,
-				'oEvent' => $oEvent
+				'oEvent' => $oEvent,
+				'oVCal' => $oVCal
 			];
 			$this->GetModule()->broadcastEvent(
 				'populateVCalendar',
@@ -1051,7 +1052,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal, $oVCal->{$sComponent}[$iIndex]);
 						$aArgs = [
 							'sUserPublicId' => $sUserPublicId,
-							'oEvent' => $oEvent
+							'oEvent' => $oEvent,
+							'oVCal' => $oVCal
 						];
 						$this->GetModule()->broadcastEvent(
 							'populateVCalendar',
