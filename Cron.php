@@ -235,12 +235,12 @@ class Reminder
 		$oMessage = $this->createMessage($oUser, $sSubject,
 			$this->createBodyHtml($oUser, $sEventName, $sDate, $sCalendarName, $sEventText, $sCalendarColor),
 			$this->createBodyText($oUser, $sEventName, $sDate, $sCalendarName, $sEventText));
-
 		try
 		{
 			$oAccount = $this->oApiAccountsManager->getAccountUsedToAuthorize($oUser->PublicId);
 			if (!$oAccount instanceof \Aurora\Modules\Mail\Classes\Account)
 			{
+				\Aurora\System\Api::Log('Mail account for ' . $oUser->PublicId . ' user not found.', \Aurora\System\Enums\LogLevel::Error, 'cron-');
 				return false;
 			}
 			return $this->oApiMailManager->sendMessage($oAccount, $oMessage);
@@ -438,15 +438,21 @@ class Reminder
 				$oStartDT_UTC = new \DateTimeImmutable("@$sCurRunFileTS");
 			}
 		}
+		else
+		{
+			\Aurora\System\Api::Log('reminder-run file not found', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+		}
 
 		$iStartTS = $oStartDT_UTC->getTimestamp();
 
+		\Aurora\System\Api::Log('Start time: '.$oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+		\Aurora\System\Api::Log('End time: '.$oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+	
 		if ($iNowTS >= $iStartTS)
 		{
-			\Aurora\System\Api::Log('Start time: '.$oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
-			\Aurora\System\Api::Log('End time: '.$oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
-
 			$aEvents = $this->GetReminders($iStartTS, $iNowTS);
+
+			\Aurora\System\Api::Log('Number of reminders found: '. count($aEvents), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
 			foreach ($aEvents as $sEmail => $aUserCalendars)
 			{
