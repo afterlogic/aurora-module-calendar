@@ -65,11 +65,11 @@ class Parser
 			$aExcludedRecurrences = self::getExcludedRecurrences($oVCal);
 		}
         
-		if (isset($oExpandedVCal, $oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || $oCalendar->IsPublic))
+		if (isset($oExpandedVCal, $oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Classes\User || (isset($oCalendar) && $oCalendar->IsPublic)))
 		{
 			foreach ($oExpandedVCal->{$sComponent} as $oVComponent)
 			{
-				$sOwnerEmail = $oCalendar->Owner;
+				$sOwnerEmail = isset($oCalendar) ? $oCalendar->Owner : '';
 				$aEvent = array();
 				
 				if (isset($oVComponent, $oVComponent->UID))
@@ -136,7 +136,7 @@ class Parser
 						}
 					}
 					
-					$aEvent['calendarId'] = $oCalendar->Id;
+					$aEvent['calendarId'] = isset($oCalendar) ? $oCalendar->Id : '';
 					$aEvent['id'] = $sId;
 					$aEvent['uid'] = $sUid;
 					$aEvent['subject'] = $oVComponent->SUMMARY ? (string)$oVComponent->SUMMARY : '';

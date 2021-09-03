@@ -94,6 +94,10 @@ class Ics
 	 */
 	public $Calendars;
 
+	public $StartTS;
+
+	public $EndTS;
+
 	private function __construct()
 	{
 		$this->Uid = '';
@@ -106,6 +110,8 @@ class Ics
 		$this->When = '';
 		$this->CalendarId = '';
 		$this->Calendars = array();
+		$this->StartTS = null;
+		$this->EndTS = null;
 	}
 
 	/**
@@ -132,7 +138,9 @@ class Ics
 			// so client-side can't display it properly.
 			'Description' => \MailSo\Base\HtmlUtils::ConvertPlainToHtml($this->Description),
 			'When' => $this->When,
-			'CalendarId' => $this->CalendarId
+			'CalendarId' => $this->CalendarId,
+			'StartTS' => $this->StartTS,
+			'EndTS' => $this->EndTS
 		);		
 	}
 }

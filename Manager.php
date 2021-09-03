@@ -1751,17 +1751,25 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					if (!$bUpdateAttendeeStatus)
 					{
 						$sWhen = '';
+						$iStartTS = null;
 						if (isset($oVEventResult->DTSTART))
 						{
+							$oDateTime = \Aurora\Modules\Calendar\Classes\Helper::getDateTime($oVEventResult->DTSTART, $oUser->DefaultTimeZone);
+							$iStartTS = $oDateTime->getTimestamp();
 							if (!$oVEventResult->DTSTART->hasTime())
 							{
-								$oDateTime = \Aurora\Modules\Calendar\Classes\Helper::getDateTime($oVEventResult->DTSTART, $oUser->DefaultTimeZone);
 								$sWhen = $oDateTime->format('D, M d, Y');
 							}
 							else
 							{
 								$sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'D, M d, Y, H:i');
 							}
+						}
+						$iEndTS = null;
+						if (isset($oVEventResult->DTEND))
+						{
+							$oDateTime = \Aurora\Modules\Calendar\Classes\Helper::getDateTime($oVEventResult->DTEND, $oUser->DefaultTimeZone);
+							$iEndTS = $oDateTime->getTimestamp();
 						}
 						$mResult = [
 							'Calendars' => $aCalendars,
@@ -1773,7 +1781,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
 							'Summary' => isset($oVEventResult->SUMMARY) ? (string)$oVEventResult->SUMMARY : '',
 							'When' => $sWhen,
-							'Sequence' => isset($sequence) ? $sequence : 1
+							'Sequence' => isset($sequence) ? $sequence : 1,
+							'StartTS' => $iStartTS,
+							'EndTS' => $iEndTS
 						];
 
 						$aAccountEmails = ($sMethod === 'REPLY') ? [$mFromEmail] : $aAccountEmails;

@@ -992,6 +992,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
 							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
 							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
+
+							$oIcs->StartTS = $mResult['StartTS'];
+							$oIcs->EndTS = $mResult['EndTS'];
+
 							$this->broadcastEvent(
 								'CreateIcs',
 								$mResult,
