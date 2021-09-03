@@ -1052,4 +1052,31 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$this->getManager()->deletePrincipalCalendars($sUserPublicId);
 		}
 	}
+
+	public function CheckIfHasEventOverlap($UserId, $uid, $startTS, $endTS)
+	{
+		$mResult = false;
+
+		$aCalendars = $this->GetCalendars($UserId);
+		if (isset($aCalendars['Calendars']) && count($aCalendars['Calendars']) > 0)
+		{
+			$aCalendarIds = array_keys($aCalendars['Calendars']);
+			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+			$aEvents = $this->getManager()->getEventsByPeriod($sUserPublicId, $aCalendarIds, $startTS, $endTS);
+			if (isset($uid))
+			{
+				foreach ($aEvents as $iKey => $aEvent)
+				{
+					if ($aEvent['uid'] === $uid)
+					{
+						unset($aEvents[$iKey]);
+					}
+				}
+			}
+			$mResult = is_array($aEvents) ? count($aEvents) > 0 : false;
+		}
+
+		return $mResult;
+
+	}
 }

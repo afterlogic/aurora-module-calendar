@@ -654,6 +654,41 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		return $aResult;
 	}
 
+	/* Account object
+	*
+	* @param string $sUserUUID
+	* @param array | string $mCalendarId Calendar ID
+	* @param string $dStart Date range start
+	* @param string $dFinish Date range end
+	*
+	* @return array|bool
+	*/
+   public function getEventsByPeriod($sUserUUID, $mCalendarId, $dStart = null, $dFinish = null)
+   {
+	   $aResult = array();
+	   try
+	   {
+		   $dStart = ($dStart != null) ? date('Ymd\THis\Z', $dStart) : null;
+		   $dFinish = ($dFinish != null) ? date('Ymd\THis\Z', $dFinish) : null;
+		   $mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
+
+		   foreach ($mCalendarId as $sCalendarId)
+		   {
+			   $aEvents = $this->oStorage->getEvents($sUserUUID, $sCalendarId, $dStart, $dFinish);
+			   if ($aEvents && is_array($aEvents))
+			   {
+				   $aResult = array_merge($aResult, $aEvents);
+			   }
+		   }
+	   }
+	   catch (\Exception $oException)
+	   {
+		   $aResult = false;
+		   $this->setLastException($oException);
+	   }
+	   return $aResult;
+   }
+
 	/**
 	 * @param array | string $mCalendarId Calendar ID
 	 * @param string $dStart Date range start
