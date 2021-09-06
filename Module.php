@@ -1066,8 +1066,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		{
 			$aCalendarIds = array_keys($aCalendars['Calendars']);
 			$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+			\Aurora\System\Logger::Log('$startTS = ' . $startTS . '; $endTS = ' . $endTS);
 			$aEvents = $this->getManager()->getEventsByPeriod($sUserPublicId, $aCalendarIds, $startTS, $endTS);
-			if (isset($uid))
+			if (is_array($aEvents) && isset($uid))
 			{
 				foreach ($aEvents as $iKey => $aEvent)
 				{
@@ -1077,7 +1078,25 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					}
 				}
 			}
+
+			if (!is_array($aEvents))
+			{
+				\Aurora\System\Logger::Log('$aEvents is not array');
+			}
+			else if (count($aEvents) < 1)
+			{
+				\Aurora\System\Logger::Log('count($aEvents) = ' . count($aEvents));
+			}
+			if (isset($uid))
+			{
+				\Aurora\System\Logger::Log('$uid = ' . $uid);
+			}
+
 			$mResult = is_array($aEvents) ? count($aEvents) > 0 : false;
+		}
+		else
+		{
+			\Aurora\System\Logger::Log('Cannot find calendars for the user.');
 		}
 
 		return $mResult;

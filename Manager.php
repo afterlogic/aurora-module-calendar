@@ -668,8 +668,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	   $aResult = array();
 	   try
 	   {
-		   $dStart = ($dStart != null) ? date('Ymd\THis\Z', $dStart) : null;
-		   $dFinish = ($dFinish != null) ? date('Ymd\THis\Z', $dFinish) : null;
+		   $dStart = ($dStart != null) ? gmdate('Ymd\THis\Z', $dStart) : null;
+		   $dFinish = ($dFinish != null) ? gmdate('Ymd\THis\Z', $dFinish) : null;
 		   $mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
 
 		   foreach ($mCalendarId as $sCalendarId)
