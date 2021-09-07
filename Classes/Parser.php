@@ -164,6 +164,15 @@ class Parser
 					}
 					$aEvent['status'] = $bStatus;
 					$aEvent['withDate'] = isset($oVComponent->DTSTART) && isset($oDTEND);
+					$aEvent['isPrivate'] = isset($oVComponent->CLASS) && (string) $oVComponent->CLASS === 'PRIVATE';
+					$oAuthenticatedUser = \Aurora\Api::getAuthenticatedUser();
+					if ($aEvent['isPrivate'] && $sOwnerEmail !== $oAuthenticatedUser->PublicId)
+					{
+						$aEvent['subject'] = '';
+						$aEvent['description'] = '';
+						$aEvent['location'] = '';
+					}
+
 				}
 				
 				$aResult[] = $aEvent;
