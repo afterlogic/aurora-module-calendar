@@ -363,6 +363,10 @@ class Helper
 		{
 			$oVEvent->CLASS = 'PRIVATE';
 		}
+		else
+		{
+			$oVEvent->CLASS = 'PUBLIC';
+		}
 	}
 
 	/**
