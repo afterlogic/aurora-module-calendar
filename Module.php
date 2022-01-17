@@ -168,7 +168,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function GetCalendar($UserId, $CalendarId)
 	{
-		$oCalendar = $this->getManager()->getCalendar($UserId, $CalendarId);
+		$oUser = \Aurora\System\Api::getUserById($UserId);
+
+		$oCalendar = $this->getManager()->getCalendar($oUser->PublicId, $CalendarId);
 		if ($oCalendar)
 		{
 //			$oCalendar = $this->getManager()->populateCalendarShares($UserId, $oCalendar);
