@@ -456,9 +456,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 					$aShare['email'] !== $this->getPublicUser())
 				{
 					$oSharedUser = \Aurora\System\Api::GetModule('Core')->getUsersManager()->getUserByPublicId($aShare['email']);
-					if (!$oSharedUser instanceof \Aurora\Modules\Core\Models\User)
+					if ($oSharedUser instanceof \Aurora\Modules\Core\Models\User)
 					{
-						return $oResult;
+						//return $oResult; //TODO: Uncomment if not import
 					}
 					unset($oSharedUser);
 				}
