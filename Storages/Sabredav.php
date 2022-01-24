@@ -1664,7 +1664,7 @@ class Sabredav extends Storage
 
 	public function updateReminder($sEmail, $sCalendarUri, $sEventId, $sData)
 	{
-		\Afterlogic\DAV\Backend::Reminders()->updateReminder(trim($sCalendarUri, '/') . '/' . $sEventId . '.ics', $sData, $sEmail);
+		\Afterlogic\DAV\Backend::Reminders()->updateReminder(trim($sCalendarUri, '/') . '/' . $sEventId /*. '.ics'*/, $sData, $sEmail);
 	}
 
 	public function deleteReminder($sEventId)
