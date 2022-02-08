@@ -488,16 +488,19 @@ class Reminder
 											if (isset($aBaseEvents[0]))
 											{
 												$oEventStartDT = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oNowDT_UTC, $aBaseEvents[0]);
-												$sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
-												if ($bAllDay)
+												if (isset($oEventStartDT))
 												{
-													$sDate = $oEventStartDT->format('d m Y');
+													$sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
+													if ($bAllDay)
+													{
+														$sDate = $oEventStartDT->format('d m Y');
+													}
+													else
+													{
+														$sDate = $oEventStartDT->format('d m Y H:i');
+													}
+													$iEventStartTS = $oEventStartDT->getTimestamp();
 												}
-												else
-												{
-													$sDate = $oEventStartDT->format('d m Y H:i');
-												}
-												$iEventStartTS = $oEventStartDT->getTimestamp();
 											}
 										}
 
