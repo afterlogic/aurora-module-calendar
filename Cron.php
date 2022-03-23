@@ -245,7 +245,7 @@ class Reminder
 			}
 			return $this->oApiMailManager->sendMessage($oAccount, $oMessage);
 		}
-		catch (Exception $oException)
+		catch (\Exception $oException)
 		{
 			\Aurora\System\Api::Log('MessageSend Exception', \Aurora\System\Enums\LogLevel::Error, 'cron-');
 			\Aurora\System\Api::LogException($oException, \Aurora\System\Enums\LogLevel::Error, 'cron-');
