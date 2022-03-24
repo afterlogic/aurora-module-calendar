@@ -522,7 +522,8 @@ class Reminder
 											$bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
 											if ($bIsMessageSent)
 											{
-												$this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId, $vCal->serialize());
+												$sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
+												$this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventUrl, $vCal->serialize());
 												\Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
 											}
 											else

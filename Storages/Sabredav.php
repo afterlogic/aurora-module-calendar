@@ -1463,7 +1463,7 @@ class Sabredav extends Storage
 				$sData = $oVCal->serialize();
 				$oCalDAVCalendar->createFile($sEventUrl, $sData);
 
-				$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+				$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventUrl, $sData);
 
 				return $sEventId;
 			}
@@ -1542,7 +1542,7 @@ class Sabredav extends Storage
 
 				$oChild->put($sData);
 
-				$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+				$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventUrl, $sData);
 				unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 				return true;
 			}
