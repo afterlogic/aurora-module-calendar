@@ -329,7 +329,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 		return false;
 	}
 
-	public function updateReminder($sEmail, $calendarUri, $eventId, $sData)
+	public function updateReminder($oCalendar, $sEventId, $sData)
 	{
 		return false;
 	}

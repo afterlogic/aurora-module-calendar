@@ -1420,7 +1420,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		$oResult = null;
 		try
 		{
-			$oResult = $this->oStorage->updateReminder($sEmail, $sCalendarUri, $sEventId, $sData);
+			$oCalendar = $this->getCalendar($sEmail, $sCalendarUri);
+			if ($oCalendar) {
+				$oResult = $this->oStorage->updateReminder($oCalendar, $sEventId, $sData);
+			}
 		}
 		catch (\Exception $oException)
 		{

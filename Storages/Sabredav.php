@@ -226,6 +226,9 @@ class Sabredav extends Storage
 		}
 
 		$aProps = $oCalDAVCalendar->getProperties(array());
+		if (isset($aProps['id'])) {
+			$oCalendar->IntId = $aProps['id'][0];
+		}
 		if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description']))
 		{
 			$oCalendar->Description = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'];
@@ -1463,7 +1466,7 @@ class Sabredav extends Storage
 				$sData = $oVCal->serialize();
 				$oCalDAVCalendar->createFile($sEventUrl, $sData);
 
-				$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventUrl, $sData);
+				$this->updateReminder($oCalendar, $sEventUrl, $sData);
 
 				return $sEventId;
 			}
@@ -1500,7 +1503,7 @@ class Sabredav extends Storage
 					if ($oChild)
 					{
 						$oChild->put($sData);
-						$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+						$this->updateReminder($oCalendar, $sEventId, $sData);
 						unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 						return true;
 					}
@@ -1508,7 +1511,7 @@ class Sabredav extends Storage
 				else
 				{
 					$oCalDAVCalendar->createFile($sEventUrl, $sData);
-					$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+					$this->updateReminder($oCalendar, $sEventId, $sData);
 					return true;
 				}
 			}
@@ -1542,7 +1545,7 @@ class Sabredav extends Storage
 
 				$oChild->put($sData);
 
-				$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventUrl, $sData);
+				$this->updateReminder($oCalendar, $sEventUrl, $sData);
 				unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 				return true;
 			}
@@ -1581,7 +1584,7 @@ class Sabredav extends Storage
 					$oChild->delete();
 
 					$this->deleteReminder($sEventId);
-					$this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+					$this->updateReminder($oCalendar, $sEventId, $sData);
 					unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 					return true;
 				}
@@ -1662,8 +1665,11 @@ class Sabredav extends Storage
 		return \Afterlogic\DAV\Backend::Reminders()->addReminders($sEmail, $sCalendarUri, $sEventId, $time, $starttime);
 	}
 
-	public function updateReminder($sEmail, $sCalendarUri, $sEventId, $sData)
+	public function updateReminder($oCalendar, $sEventId, $sData)
 	{
+		$sEmail = basename($oCalendar->Principals[0]);
+		$sCalendarUri = $oCalendar->RealUrl;
+
 		\Afterlogic\DAV\Backend::Reminders()->updateReminder(trim($sCalendarUri, '/') . '/' . $sEventId /*. '.ics'*/, $sData, $sEmail);
 	}
 
