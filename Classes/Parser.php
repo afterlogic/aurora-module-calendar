@@ -140,8 +140,7 @@ class Parser
 					$aEvent['id'] = $sId;
 					$aEvent['uid'] = $sUid;
 					$aEvent['subject'] = $oVComponent->SUMMARY ? (string)$oVComponent->SUMMARY : '';
-					$aDescription = $oVComponent->DESCRIPTION ? \Sabre\VObject\Parser\MimeDir::unescapeValue((string)$oVComponent->DESCRIPTION) : array('');
-					$aEvent['description'] = $aDescription[0];
+					$aEvent['description'] = $oVComponent->DESCRIPTION ? (string)$oVComponent->DESCRIPTION : '';
 					$aEvent['location'] = $oVComponent->LOCATION ? (string)$oVComponent->LOCATION : '';
 					$aEvent['start'] = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVComponent->DTSTART, $sCurrentTimeZone);
 					$aEvent['startTS'] = \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->DTSTART, $sCurrentTimeZone);

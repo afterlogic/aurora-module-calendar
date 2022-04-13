@@ -429,7 +429,19 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$mResult = $this->getManager()->getEvents($sUserPublicId, $CalendarIds, $Start, $End);
 		}
 
-		return $mResult;
+		$aResult = [];
+		if (is_array($mResult)) {
+			foreach ($mResult as $event) {
+				$sDescription = $event['description'];
+				$bHtmlDescription = $sDescription != strip_tags($sDescription);
+				if (!$bHtmlDescription) {
+					$event['description'] = \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription);
+				}
+				$aResult[] = $event;
+			}
+		}
+
+		return $aResult;
 	}
 
 	/**

@@ -128,6 +128,8 @@ class Ics
 
 	public function toResponseArray()
 	{
+		$sDescription = $this->Description;
+		$bHtmlDescription = $sDescription != strip_tags($sDescription);
 		return array(
 			'Uid' => $this->Uid,
 			'Sequence' => $this->Sequence,
@@ -138,7 +140,7 @@ class Ics
 			// Description should be converted to HTML for displaying links.
 			// If only links will be converted description will become half-plain and half-HTML,
 			// so client-side can't display it properly.
-			'Description' => \MailSo\Base\HtmlUtils::ConvertPlainToHtml($this->Description),
+			'Description' => $bHtmlDescription ? $sDescription: \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription),
 			'Summary' => $this->Summary,
 			'When' => $this->When,
 			'CalendarId' => $this->CalendarId
