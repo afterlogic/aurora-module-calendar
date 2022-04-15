@@ -522,7 +522,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				$oEvent->RRule = $oRRule;
 			}
 		}
-		$oEvent->Attendees = null;
+		$oEvent->Attendees = [];
 		$oEvent->Type = $type;
 		$oEvent->Status = $status && $type === 'VTODO';
 		if ($type === 'VTODO')
@@ -704,7 +704,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				$oEvent->RRule = $oRRule;
 			}
 		}
-		$oEvent->Attendees = null;
+		$oEvent->Attendees = [];
 		$oEvent->Type = $type;
 		if ($type === 'VTODO')
 		{
