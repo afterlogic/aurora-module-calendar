@@ -146,21 +146,23 @@ class Sabredav extends Storage
 	protected function getCalDAVCalendar($sPath)
 	{
 		$oCalendar = false;
-		list(, $sCalendarId) = \Sabre\Uri\split($sPath);
-		if (count($this->CalDAVCalendarsCache) > 0 && isset($this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId]))
-		{
-			$oCalendar = $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId];
-		}
-		else
-		{
-			$oCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
-			if (isset($oCalendars) && $oCalendars->childExists($sCalendarId))
+		if (!empty($sPath)) {
+			list(, $sCalendarId) = \Sabre\Uri\split($sPath);
+			if (count($this->CalDAVCalendarsCache) > 0 && isset($this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId]))
 			{
-				$oCalendar = $oCalendars->getChild($sCalendarId);
-				$this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId] = $oCalendar;
+				$oCalendar = $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId];
+			}
+			else
+			{
+				$oCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+				if (isset($oCalendars) && $oCalendars->childExists($sCalendarId))
+				{
+					$oCalendar = $oCalendars->getChild($sCalendarId);
+					$this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId] = $oCalendar;
+				}
 			}
 		}
-
+		
 		return $oCalendar;
 	}
 
