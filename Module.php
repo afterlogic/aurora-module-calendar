@@ -972,7 +972,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				{
 					try
 					{
-						$mResult = $this->getManager()->processICS($sUserPublicId, $sData, $sFromEmail);
+						$mResult = $this->getManager()->processICS($sUserPublicId, $sData, $sFromEmail, true);
 					}
 					catch (\Exception $oEx)
 					{

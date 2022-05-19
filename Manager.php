@@ -1748,8 +1748,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						}
 					}
 
-					if (!$bUpdateAttendeeStatus)
-					{
+//					if (!$bUpdateAttendeeStatus)
+//					{
 						$sWhen = '';
 						$iStartTS = null;
 						if (isset($oVEventResult->DTSTART))
@@ -1800,7 +1800,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 								$mResult
 							);
 						}
-					}
+//					}
 				}
 			}
 		}
