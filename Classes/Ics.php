@@ -98,6 +98,10 @@ class Ics
 
 	public $EndTS;
 
+	public $Organizer;
+
+	public $AttendeeList;
+
 	private function __construct()
 	{
 		$this->Uid = '';
@@ -112,6 +116,8 @@ class Ics
 		$this->Calendars = array();
 		$this->StartTS = null;
 		$this->EndTS = null;
+		$this->AttendeeList = [];
+		$this->Organizer = '';
 	}
 
 	/**
@@ -140,7 +146,9 @@ class Ics
 			'When' => $this->When,
 			'CalendarId' => $this->CalendarId,
 			'StartTS' => $this->StartTS,
-			'EndTS' => $this->EndTS
+			'EndTS' => $this->EndTS,
+			'AttendeeList' => $this->AttendeeList,
+			'Organizer' => $this->Organizer
 		);		
 	}
 }

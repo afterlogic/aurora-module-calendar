@@ -1778,6 +1778,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							$oDateTime = \Aurora\Modules\Calendar\Classes\Helper::getDateTime($oVEventResult->DTEND, $oUser->DefaultTimeZone);
 							$iEndTS = $oDateTime->getTimestamp();
 						}
+
+						$organizer = isset($oVEventResult->ORGANIZER) ? str_ireplace('mailto:', '', (string) $oVEventResult->ORGANIZER) : '';
+						$ateendeeList = [];
+						if (isset($oVEventResult->ATTENDEE)) {
+							foreach ($oVEventResult->ATTENDEE as $oAttendee) {
+								$ateendee = str_ireplace('mailto:', '', (string) $oAttendee);
+								if (strtolower($ateendee) !== strtolower($organizer)) {
+									$ateendeeList[] = $ateendee;
+								}
+							}
+						}
 						$mResult = [
 							'Calendars' => $aCalendars,
 							'CalendarId' => $sCalendarId,
@@ -1790,7 +1801,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							'When' => $sWhen,
 							'Sequence' => isset($sequence) ? $sequence : 1,
 							'StartTS' => $iStartTS,
-							'EndTS' => $iEndTS
+							'EndTS' => $iEndTS,
+							'Organizer' => $organizer,
+							'AttendeeList' => $ateendeeList,
 						];
 
 						$aAccountEmails = ($sMethod === 'REPLY') ? [$mFromEmail] : $aAccountEmails;
