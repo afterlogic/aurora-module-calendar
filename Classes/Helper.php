@@ -133,7 +133,9 @@ class Helper
 		if (isset($result))
 		{
 			$sTimeZone = $sTimeZone === null ? 'UTC' : $sTimeZone;
-			$result = $result->setTimezone(new \DateTimeZone($sTimeZone));
+			if (!empty($sTimeZone)) {
+				$result = $result->setTimezone(new \DateTimeZone($sTimeZone));
+			}
 		}
 		return $result;
 	}
@@ -372,7 +374,9 @@ class Helper
 		if (is_numeric($mDateTime) && strlen($mDateTime) !== 8)
 		{
 			$oDateTime->setTimestamp($mDateTime);
-			$oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
+			if (!empty($sTimeZone)) {
+				$oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
+			}
 		}
 		else
 		{
