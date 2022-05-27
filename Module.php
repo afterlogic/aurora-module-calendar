@@ -992,6 +992,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							$oIcs->Attendee = null;
 							$oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
 							$oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
+							$oIcs->Summary = !empty($mResult['Summary']) ? $mResult['Summary'] : '';
 							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
 							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
 

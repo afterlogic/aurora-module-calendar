@@ -74,6 +74,13 @@ class Ics
 	public $Description;
 
 	/**
+	 * Event summary.
+	 * 
+	 * @var string
+	 */
+	public $Summary;
+
+	/**
 	 * Date of the event.
 	 * 
 	 * @var string
@@ -111,6 +118,7 @@ class Ics
 		$this->Type = '';
 		$this->Location = '';
 		$this->Description = '';
+		$this->Summary = '';
 		$this->When = '';
 		$this->CalendarId = '';
 		$this->Calendars = array();
@@ -143,6 +151,7 @@ class Ics
 			// If only links will be converted description will become half-plain and half-HTML,
 			// so client-side can't display it properly.
 			'Description' => \MailSo\Base\HtmlUtils::ConvertPlainToHtml($this->Description),
+			'Summary' => $this->Summary,
 			'When' => $this->When,
 			'CalendarId' => $this->CalendarId,
 			'StartTS' => $this->StartTS,
