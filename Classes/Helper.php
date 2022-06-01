@@ -360,6 +360,15 @@ class Helper
 				));
 			}
 		}
+
+		if ($oEvent->IsPrivate)
+		{
+			$oVEvent->CLASS = 'PRIVATE';
+		}
+		else
+		{
+			$oVEvent->CLASS = 'PUBLIC';
+		}
 	}
 
 	/**

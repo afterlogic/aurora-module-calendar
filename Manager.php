@@ -1442,8 +1442,15 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 */
 	public function getDefaultCalendar($sUserPublicId)
 	{
+		$mResult = null;
 		$aCalendars = $this->getCalendars($sUserPublicId);
-		return (is_array($aCalendars) && isset($aCalendars[\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID])) ? $aCalendars[\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID] : false;
+		foreach($aCalendars as $key => $val) {
+			if (strpos($key, \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID) !== false) {
+				$mResult = $val;
+				break;
+			}
+		}
+		return $mResult;
 	}
 
 	/**
