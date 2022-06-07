@@ -101,6 +101,10 @@ class Ics
 	 */
 	public $Calendars;
 
+	public $Organizer;
+
+	public $AttendeeList;
+
 	private function __construct()
 	{
 		$this->Uid = '';
@@ -114,6 +118,8 @@ class Ics
 		$this->When = '';
 		$this->CalendarId = '';
 		$this->Calendars = array();
+		$this->AttendeeList = [];
+		$this->Organizer = '';
 	}
 
 	/**
@@ -143,7 +149,9 @@ class Ics
 			'Description' => $bHtmlDescription ? $sDescription: \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription),
 			'Summary' => $this->Summary,
 			'When' => $this->When,
-			'CalendarId' => $this->CalendarId
+			'CalendarId' => $this->CalendarId,
+			'AttendeeList' => $this->AttendeeList,
+			'Organizer' => $this->Organizer,
 		);
 	}
 }
