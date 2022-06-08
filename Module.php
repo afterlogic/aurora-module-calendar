@@ -495,7 +495,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @return array|boolean
 	 */
 	public function CreateEvent($UserId, $newCalendarId, $subject, $description, $location, $startTS,
-			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true, $owner = '')
+			$endTS, $allDay, $alarms, $attendees, $rrule, $selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true, $owner = '', $isPrivate = false)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -507,6 +507,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Name = $subject;
 		$oEvent->Description = $description;
 		$oEvent->Location = $location;
+		$oEvent->IsPrivate = $isPrivate;
 		if ($withDate)
 		{
 			$oEvent->Start = $startTS;
@@ -671,7 +672,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 */
 	public function UpdateEvent($UserId, $newCalendarId, $calendarId, $uid, $subject, $description,
 			$location, $startTS, $endTS, $allDay, $alarms, $attendees, $rrule, $allEvents, $recurrenceId,
-			$selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true, $owner = '')
+			$selectStart, $selectEnd, $type = 'VEVENT', $status = false, $withDate = true, $isPrivate = false, $owner = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -689,6 +690,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$oEvent->Name = $subject;
 		$oEvent->Description = $description;
 		$oEvent->Location = $location;
+		$oEvent->IsPrivate = $isPrivate;
 		if ($withDate)
 		{
 			$oEvent->Start = $startTS;
@@ -1011,6 +1013,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 							$oIcs->Summary = !empty($mResult['Summary']) ? $mResult['Summary'] : '';
 							$oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
 							$oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
+							$oIcs->AttendeeList = $mResult['AttendeeList'];
+							$oIcs->Organizer = $mResult['Organizer'];
+
 							$this->broadcastEvent(
 								'CreateIcs',
 								$mResult,

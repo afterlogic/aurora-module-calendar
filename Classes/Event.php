@@ -45,6 +45,7 @@ class Event
     public $Sequence;
 	public $Type;
 	public $Status;
+	public $IsPrivate;
 
 	public function __construct()
 	{
@@ -64,5 +65,6 @@ class Event
         $this->Sequence       = 0;
 		$this->Type			  = 'VEVENT';
 		$this->Status		  =	false;
+		$this->IsPrivate	  =	false;
 	}
 }
