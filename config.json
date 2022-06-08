@@ -1,82 +1,82 @@
 {
-  "Disabled": [
-    false,
-    "bool"
-  ],
-  "Disabled_Description": [
-    "",
-    "string"
-  ],
-  "AddDescriptionToTitle": [
-    false,
-    "bool"
-  ],
-  "AddDescriptionToTitle_Description": [
-    "",
-    "string"
-  ],
-  "AllowTasks": [
-    false,
-    "bool"
-  ],
-  "AllowTasks_Description": [
-    "",
-    "string"
-  ],
-  "AllowShare": [
-    true,
-    "bool"
-  ],
-  "AllowShare_Description": [
-    "",
-    "string"
-  ],
-  "DefaultTab": [
-    3,
-    "int"
-  ],
-  "DefaultTab_Description": [
-    "",
-    "string"
-  ],
-  "HighlightWorkingDays": [
-    true,
-    "bool"
-  ],
-  "HighlightWorkingDays_Description": [
-    "",
-    "string"
-  ],
-  "HighlightWorkingHours": [
-    true,
-    "bool"
-  ],
-  "HighlightWorkingHours_Description": [
-    "",
-    "string"
-  ],
-  "WeekStartsOn": [
-    0,
-    "int"
-  ],
-  "WeekStartsOn_Description": [
-    "",
-    "string"
-  ],
-  "WorkdayEnds": [
-    18,
-    "int"
-  ],
-  "WorkdayEnds_Description": [
-    "",
-    "string"
-  ],
-  "WorkdayStarts": [
-    9,
-    "int"
-  ],
-  "WorkdayStarts_Description": [
-    "",
-    "string"
-  ]
+	"Disabled": [
+		false,
+		"bool"
+	],
+	"Disabled_Description": [
+		"",
+		"string"
+	],
+	"AddDescriptionToTitle": [
+		false,
+		"bool"
+	],
+	"AddDescriptionToTitle_Description": [
+		"",
+		"string"
+	],
+	"AllowTasks": [
+		false,
+		"bool"
+	],
+	"AllowTasks_Description": [
+		"",
+		"string"
+	],
+	"AllowShare": [
+		true,
+		"bool"
+	],
+	"AllowShare_Description": [
+		"",
+		"string"
+	],
+	"DefaultTab": [
+		3,
+		"int"
+	],
+	"DefaultTab_Description": [
+		"",
+		"string"
+	],
+	"HighlightWorkingDays": [
+		true,
+		"bool"
+	],
+	"HighlightWorkingDays_Description": [
+		"",
+		"string"
+	],
+	"HighlightWorkingHours": [
+		true,
+		"bool"
+	],
+	"HighlightWorkingHours_Description": [
+		"",
+		"string"
+	],
+	"WeekStartsOn": [
+		0,
+		"int"
+	],
+	"WeekStartsOn_Description": [
+		"",
+		"string"
+	],
+	"WorkdayEnds": [
+		18,
+		"int"
+	],
+	"WorkdayEnds_Description": [
+		"",
+		"string"
+	],
+	"WorkdayStarts": [
+		9,
+		"int"
+	],
+	"WorkdayStarts_Description": [
+		"",
+		"string"
+	]
 }
