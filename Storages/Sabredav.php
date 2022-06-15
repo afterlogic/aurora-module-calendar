@@ -261,7 +261,7 @@ class Sabredav extends Storage
 
 		$oCalendar->Url = 'calendars/'.$oCalDAVCalendar->getName();
 		$oCalendar->RealUrl = 'calendars/'.$oCalDAVCalendar->getName();
-		$oCalendar->SyncToken = $oCalDAVCalendar->getSyncToken();
+		$oCalendar->SyncToken = (string) $oCalDAVCalendar->getSyncToken();
 
 		$sPrincipalUri = '';
 		$aProperties = $oCalDAVCalendar->getProperties(['principaluri']);
