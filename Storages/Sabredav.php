@@ -6,6 +6,12 @@
 
 namespace Aurora\Modules\Calendar\Storages;
 
+use Aurora\System\Api;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use Sabre\CalDAV\Subscriptions\Subscription;
+use Sabre\DAV\Xml\Property\Href;
+
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2019, Afterlogic Corp.
@@ -171,8 +177,12 @@ class Sabredav extends Storage
      */
 	public function parseCalendar($oCalDAVCalendar)
 	{
-		if (!($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar))
+		if (!($oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar || $oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription))
 		{
+			return false;
+		}
+
+		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription && !Api::GetModule('Calendar')->getConfig('AllowSubscribedCalendars', false)) {
 			return false;
 		}
 
@@ -225,7 +235,19 @@ class Sabredav extends Storage
 			$oCalendar->Owner = $oUser->PublicId;
 		}
 
-		$aProps = $oCalDAVCalendar->getProperties(array());
+		$aProps = $oCalDAVCalendar->getProperties([
+			'id',
+			'{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description',
+			'{DAV:}displayname',
+			'{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag',
+			'{http://apple.com/ns/ical/}calendar-color',
+			'{http://apple.com/ns/ical/}calendar-order',
+			'{http://sabredav.org/ns}owner-principal',
+			'{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source'
+		]);
+		if (isset($aProps['id'])) {
+			$oCalendar->IntId = $aProps['id'][0];
+		}
 		if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description']))
 		{
 			$oCalendar->Description = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'];
@@ -256,7 +278,7 @@ class Sabredav extends Storage
 
 		$oCalendar->Url = 'calendars/'.$oCalDAVCalendar->getName();
 		$oCalendar->RealUrl = 'calendars/'.$oCalDAVCalendar->getName();
-		$oCalendar->SyncToken = $oCalDAVCalendar->getSyncToken();
+		$oCalendar->SyncToken = $oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar ? (string) $oCalDAVCalendar->getSyncToken() : '';
 
 		$sPrincipalUri = '';
 		$aProperties = $oCalDAVCalendar->getProperties(['principaluri']);
@@ -266,8 +288,18 @@ class Sabredav extends Storage
 		}
 
 		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
-		$oCalendar->IsDefault = (!$oCalendar->Shared && (\substr($oCalendar->Id, 0, \strlen(\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID)) === \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID));
 		$oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
+
+		if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription) {
+			$oCalendar->Subscribed = true;
+			if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source']))
+			{
+				$oCalendar->Source = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source']->getHref();
+			}
+		}
+		if (!$oCalendar->Subscribed) {
+			$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) && $oCalDAVCalendar->isDefault());
+		}
 
 		return $oCalendar;
 	}
@@ -486,6 +518,38 @@ class Sabredav extends Storage
 		return $sSystemName;
 	}
 
+	public function createSubscribedCalendar($sUserPublicId, $sName, $sSource, $iOrder, $sColor, $sUUID = null)
+	{
+		$this->init($sUserPublicId);
+
+		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+
+		if ($sUUID === null)
+		{
+			$sSystemName = \Sabre\DAV\UUIDUtil::getUUID();
+		}
+		else
+		{
+			$sSystemName = $sUUID;
+		}
+
+		$oUserCalendars->createExtendedCollection($sSystemName,
+			new \Sabre\DAV\MkCol(
+				[
+					'{DAV:}collection',
+					'{http://calendarserver.org/ns/}subscribed'
+				],
+				[
+					'{DAV:}displayname' => $sName,
+					'{http://calendarserver.org/ns/}source' => new Href($sSource),
+					'{http://apple.com/ns/ical/}calendar-color' => $sColor,
+					'{http://apple.com/ns/ical/}calendar-order' => $iOrder
+				]
+			)
+		);
+		return $sSystemName;
+	}
+
 	/**
 	 * @param string $sUserPublicId
 	 * @param string $sCalendarId
@@ -519,6 +583,54 @@ class Sabredav extends Storage
 					$aUpdateProperties = array(
 						'{DAV:}displayname' => $sName,
 						'{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description' => $sDescription,
+						'{http://apple.com/ns/ical/}calendar-color' => $sColor,
+						'{http://apple.com/ns/ical/}calendar-order' => $iOrder
+					);
+				}
+
+				unset($this->CalDAVCalendarsCache[$sCalendarId]);
+				unset($this->CalDAVCalendarObjectsCache[$sCalendarId]);
+				$oPropPatch = new \Sabre\DAV\PropPatch($aUpdateProperties);
+				$oCalDAVCalendar->propPatch($oPropPatch);
+				return $oPropPatch->commit();
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param string $sUserPublicId
+	 * @param string $sCalendarId
+	 * @param string $sName
+	 * @param string $sDescription
+	 * @param int $iOrder
+	 * @param string $sColor
+	 *
+	 * @return bool
+	 */
+	public function updateSubscribedCalendar($sUserPublicId, $sCalendarId, $sName, $sSource, $iOrder, $sColor)
+	{
+		$this->init($sUserPublicId);
+
+		$oUserCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+		if ($oUserCalendars->childExists($sCalendarId))
+		{
+			$oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
+			if ($oCalDAVCalendar)
+			{
+				$aUpdateProperties = array();
+				$bOnlyColor = ($sName === null && $sSource === null && $iOrder === null);
+				if ($bOnlyColor)
+				{
+					$aUpdateProperties = array(
+						'{http://apple.com/ns/ical/}calendar-color' => $sColor
+					);
+				}
+				else
+				{
+					$aUpdateProperties = array(
+						'{DAV:}displayname' => $sName,
+						'{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source' => new Href($sSource),
 						'{http://apple.com/ns/ical/}calendar-color' => $sColor,
 						'{http://apple.com/ns/ical/}calendar-order' => $iOrder
 					);
@@ -1367,8 +1479,39 @@ class Sabredav extends Storage
 
 		if ($oCalDAVCalendar)
 		{
-			$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
-			$mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
+			if ($oCalDAVCalendar instanceof Subscription) {
+				$aProps = $oCalDAVCalendar->getProperties([
+					'{http://calendarserver.org/ns/}source'
+				]);
+				if (isset($aProps['{http://calendarserver.org/ns/}source'])) {
+					$client = new Client();
+					try {
+						$res = $client->get(
+							$aProps['{http://calendarserver.org/ns/}source']->getHref(),
+							[
+								'headers' => [
+									'Accept'     => '*/*',
+								],
+								'http_errors' => false
+							]
+						);
+						if ($res->getStatusCode() === 200) {
+							$data = (string) $res->getBody();
+							$oVCal = \Sabre\VObject\Reader::read($data);
+							$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+		
+							$mResult = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+							foreach (array_keys($mResult) as $key)
+							{
+								$mResult[$key]['lastModified'] = $oCalDAVCalendar->getLastModified();
+							}
+						}
+					} catch (ConnectException $oEx) {}
+				}	
+			} else {
+				$aUrls = $this->getEventUrls($oCalDAVCalendar, $dStart, $dEnd);
+				$mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);	
+			}
 		}
 
 		return $mResult;

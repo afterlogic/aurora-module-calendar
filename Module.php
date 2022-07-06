@@ -87,6 +87,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			'WeekStartsOn' => $this->getConfig('WeekStartsOn', 0),
 			'WorkdayEnds' => $this->getConfig('WorkdayEnds', 18),
 			'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
+			'AllowSubscribedCalendars' => $this->getConfig('AllowSubscribedCalendars', false),
 		);
 
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
@@ -267,6 +268,25 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		return $mResult;
 	}
 
+	public function CreateSubscribedCalendar($UserId, $Name, $Source, $Color, $UUID = null)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+		$mResult = false;
+
+		$mCalendarId = $this->getManager()->createSubscribedCalendar($sUserPublicId, $Name, $Source, 1, $Color, $UUID);
+		if ($mCalendarId)
+		{
+			$oCalendar = $this->getManager()->getCalendar($sUserPublicId, $mCalendarId);
+			if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar)
+			{
+				$mResult = $oCalendar->toResponseArray($sUserPublicId);
+			}
+		}
+
+		return $mResult;
+	}
+
 	/**
 	 *
 	 * @param int $UserId
@@ -281,6 +301,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		return $this->getManager()->updateCalendar($sUserPublicId, $Id, $Name, $Description, 0, $Color);
+	}
+
+	/**
+	 *
+	 * @param int $UserId
+	 * @param string $Id
+	 * @param string $Name
+	 * @param string $Description
+	 * @param string $Color
+	 * @return array|boolean
+	 */
+	public function UpdateSubscribedCalendar($UserId, $Id, $Name, $Source, $Color)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+		return $this->getManager()->updateSubscribedCalendar($sUserPublicId, $Id, $Name, $Source, 0, $Color);
 	}
 
 	/**

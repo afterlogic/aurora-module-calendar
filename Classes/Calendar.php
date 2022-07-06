@@ -36,6 +36,8 @@ class Calendar
 	public $PubHash;
 	public $RealUrl;
 	public $SyncToken;
+	public $Subscribed;
+	public $Source;
 
 	/**
 	 * @param string $sId
@@ -66,6 +68,8 @@ class Calendar
 		$this->IsPublic = false;
 		$this->PubHash = null;
 		$this->SyncToken = null;
+		$this->Subscribed = false;
+		$this->Source = '';
 	}
 
 	/**
@@ -112,7 +116,9 @@ class Calendar
 			'Shares' => $this->Shares,
 			'CTag' => $this->CTag,
 			'Etag' => $this->ETag,
-			'SyncToken' => $this->SyncToken
+			'SyncToken' => $this->SyncToken,
+			'Subscribed' => $this->Subscribed,
+			'Source' => $this->Source
 		);
 	}
 }

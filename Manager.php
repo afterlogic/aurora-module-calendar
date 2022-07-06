@@ -264,6 +264,21 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		return $oResult;
 	}
 
+	public function createSubscribedCalendar($sUserPublicId, $sName, $sSource, $iOrder, $sColor, $sUUID = null)
+	{
+		$oResult = null;
+		try
+		{
+			$oResult = $this->oStorage->createSubscribedCalendar($sUserPublicId, $sName, $sSource, $iOrder, $sColor, $sUUID);
+		}
+		catch (\Exception $oException)
+		{
+			$oResult = false;
+			$this->setLastException($oException);
+		}
+		return $oResult;
+	}
+
 	/**
 	 * Updates calendar properties.
 	 *
@@ -282,6 +297,33 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oResult = $this->oStorage->updateCalendar($sUserPublicId, $sCalendarId, $sName, $sDescription, $iOrder, $sColor);
+		}
+		catch (\Exception $oException)
+		{
+			$oResult = false;
+			$this->setLastException($oException);
+		}
+		return $oResult;
+	}
+
+	/**
+	 * Updates calendar properties.
+	 *
+	 * @param string $sUserPublicId
+	 * @param string $sCalendarId Calendar ID
+	 * @param string $sName Name of the calendar
+	 * @param string $sDescription Description of the calendar
+	 * @param int $iOrder Ordinal number of the calendar in calendars list
+	 * @param string $sColor Color code
+	 *
+	 * @return \Aurora\Modules\Calendar\Classes\Calendar|false
+	 */
+	public function updateSubscribedCalendar($sUserPublicId, $sCalendarId, $sName, $sSource, $iOrder, $sColor)
+	{
+		$oResult = null;
+		try
+		{
+			$oResult = $this->oStorage->updateSubscribedCalendar($sUserPublicId, $sCalendarId, $sName, $sSource, $iOrder, $sColor);
 		}
 		catch (\Exception $oException)
 		{
