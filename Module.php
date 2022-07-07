@@ -6,6 +6,8 @@
 
 namespace Aurora\Modules\Calendar;
 
+use Aurora\System\Exceptions\ApiException;
+
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2020, Afterlogic Corp.
@@ -41,6 +43,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		$this->aErrors = [
 			Enums\ErrorCodes::CannotFindCalendar => $this->i18N('ERROR_NO_CALENDAR'),
+			Enums\ErrorCodes::InvalidSubscribedIcs => $this->i18N('ERROR_INVALID_SUBSCRIBED_ICS')
 		];
 
 		$this->AddEntries(array(
@@ -280,6 +283,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 		$mResult = false;
 
+		if (!$this->getManager()->validateSubscribedCalebdarSource($Source)) {
+			throw new ApiException(Enums\ErrorCodes::InvalidSubscribedIcs);
+		}
+
 		$mCalendarId = $this->getManager()->createSubscribedCalendar($sUserPublicId, $Name, $Source, 1, $Color, $UUID);
 		if ($mCalendarId)
 		{
@@ -322,6 +329,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+
+		if (!$this->getManager()->validateSubscribedCalebdarSource($Source)) {
+			throw new ApiException(Enums\ErrorCodes::InvalidSubscribedIcs);
+		}
+
 		return $this->getManager()->updateSubscribedCalendar($sUserPublicId, $Id, $Name, $Source, 0, $Color);
 	}
 
