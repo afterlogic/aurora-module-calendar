@@ -6,6 +6,10 @@
 
 namespace Aurora\Modules\Calendar;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use Sabre\VObject\ParseException;
+
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2019, Afterlogic Corp.
@@ -262,6 +266,35 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			$this->setLastException($oException);
 		}
 		return $oResult;
+	}
+
+	public function validateSubscribedCalebdarSource($sSource)
+	{
+		$isValid = false;
+
+		$client = new Client();
+		try {
+			$res = $client->get(
+				$sSource,
+				[
+					'headers' => [
+						'Accept'     => '*/*',
+					],
+					'http_errors' => false
+				]
+			);
+			if ($res->getStatusCode() === 200) {
+				$data = (string) $res->getBody();
+				try {
+					\Sabre\VObject\Reader::read($data);
+					$isValid = true;
+				} catch (ParseException $oEx) {
+					$isValid = false;
+				}
+			}
+		} catch (ConnectException $oEx) {}
+
+		return $isValid;
 	}
 
 	public function createSubscribedCalendar($sUserPublicId, $sName, $sSource, $iOrder, $sColor, $sUUID = null)

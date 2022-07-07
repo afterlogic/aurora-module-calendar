@@ -15,11 +15,13 @@ namespace Aurora\Modules\Calendar\Enums;
 class ErrorCodes
 {
 	const CannotFindCalendar = 1001;
+	const InvalidSubscribedIcs = 1002;
 	
 	/**
 	 * @var array
 	 */
 	protected $aConsts = [
 		'CannotFindCalendar' => self::CannotFindCalendar,
+		'InvalidSubscribedIcs' => self::InvalidSubscribedIcs,
 	];
 }
