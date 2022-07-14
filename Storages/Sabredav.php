@@ -672,7 +672,10 @@ class Sabredav extends Storage
 
 	public function deletePrincipalCalendars($sUserPublicId)
 	{
-		return $this->getBackend()->deletePrincipalCalendars('principals/' . $sUserPublicId);
+		$this->getBackend()->deletePrincipalCalendars('principals/' . $sUserPublicId);
+		$this->getBackend()->deleteSubscriptionsByPrincipal('principals/' . $sUserPublicId);
+		$this->deleteRemindersByUser($sUserPublicId);
+
 	}
 
 	/**
@@ -1823,6 +1826,11 @@ class Sabredav extends Storage
 	public function deleteReminderByCalendar($sCalendarUri)
 	{
 		return \Afterlogic\DAV\Backend::Reminders()->deleteReminderByCalendar($sCalendarUri);
+	}
+
+	public function deleteRemindersByUser($sUser)
+	{
+		return \Afterlogic\DAV\Backend::Reminders()->deleteRemindersByUser($sUser);
 	}
 
 }
