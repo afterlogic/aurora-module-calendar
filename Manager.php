@@ -1846,7 +1846,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						if (isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence)
 						{
 							$aArgs = [
-								'oVEventResult'		=> $oVEventResult,
+								'oVEventResult'		=> $oVEvent,
 								'sMethod'			=> $sMethod,
 								'aAccountEmails'	=> $aAccountEmails
 							];
