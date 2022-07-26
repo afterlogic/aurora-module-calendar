@@ -6,6 +6,8 @@
 
 namespace Aurora\Modules\Calendar\Storages;
 
+use Afterlogic\DAV\CalDAV\Shared\Calendar;
+use Afterlogic\DAV\CalDAV\SharedWithAll\Calendar as SharedWithAllCalendar;
 use Aurora\System\Api;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
@@ -382,6 +384,10 @@ class Sabredav extends Storage
 	public function getPublicCalendar($sCalendar)
 	{
 		$oCalendar = false;
+
+		// $oBackend = $this->getBackend();
+		// dd(get_class_methods($oBackend));
+
 		$aCalendar = $this->getBackend()->getPublicCalendar($sCalendar);
 		if ($aCalendar)
 		{
@@ -1605,6 +1611,10 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar)
 		{
+			if (($oCalDAVCalendar instanceof Calendar || $oCalDAVCalendar instanceof SharedWithAllCalendar) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
+				return false;
+			}
+			
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{
@@ -1682,6 +1692,10 @@ class Sabredav extends Storage
 		$oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		if ($oCalDAVCalendar)
 		{
+			if (($oCalDAVCalendar instanceof Calendar || $oCalDAVCalendar instanceof SharedWithAllCalendar) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
+				return false;
+			}
+
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{

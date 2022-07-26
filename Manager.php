@@ -1669,7 +1669,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 //					}
 //				}
 //			}
-//			$aAccountEmails = array_unique($aAccountEmails);
+			$aAccountEmails = array_unique($aAccountEmails);
 
 			$oVCal = \Sabre\VObject\Reader::read($sData);
 			if ($oVCal)
