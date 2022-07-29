@@ -562,7 +562,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent->End = $endTS;
 			$oEvent->AllDay = $allDay;
 			$oEvent->Alarms = @json_decode($alarms, true);
-			$aRRule = @json_decode($rrule, true);
+			$aRRule = isset($rrule) ? @json_decode($rrule, true) : false;
 			if ($aRRule)
 			{
 				$oUser = \Aurora\System\Api::getAuthenticatedUser();
