@@ -1458,6 +1458,9 @@ class Sabredav extends Storage
 		if ($oCalDAVCalendar)
 		{
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+			if (($oCalendar->Shared || $oCalendar->SharedToAll) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
+				return false;
+			}
 			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{
 				$sData = $oVCal->serialize();
@@ -1535,6 +1538,9 @@ class Sabredav extends Storage
 		if ($oCalDAVCalendar)
 		{
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
+			if (($oCalendar->Shared || $oCalendar->SharedToAll) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
+				return false;
+			}
 			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{
 				$oChild = $oCalDAVCalendar->getChild($sEventUrl);

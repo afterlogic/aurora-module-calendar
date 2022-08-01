@@ -168,7 +168,7 @@ class Parser
 					$oAuthenticatedUser = \Aurora\Api::getAuthenticatedUser();
 					if ($aEvent['isPrivate'] && $sOwnerEmail !== $oAuthenticatedUser->PublicId)
 					{
-						$aEvent['subject'] = '';
+						// $aEvent['subject'] = '';
 						$aEvent['description'] = '';
 						$aEvent['location'] = '';
 					}
