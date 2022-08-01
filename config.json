@@ -78,5 +78,13 @@
 	"WorkdayStarts_Description": [
 		"Defines workday start time",
 		"string"
+	],
+	"AllowPrivateEvents": [
+		true,
+		"bool"
+	],
+	"AllowPrivateEvents_Description": [
+		"Setting to true enables private events features",
+		"string"
 	]
 }
