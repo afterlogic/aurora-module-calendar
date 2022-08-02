@@ -871,15 +871,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 *
 	 * @param int $UserId
 	 * @param array $UploadData
-	 * @param string $AdditionalData
+	 * @param string $CalendarID
 	 * @return array
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function UploadCalendar($UserId,$UploadData, $CalendarID)
+	public function UploadCalendar($UserId, $UploadData, $CalendarID, $IsPrivateEvent = false)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$aAdditionalData = @json_decode($AdditionalData, true);
 
 		$sCalendarId = isset($CalendarID) ? $CalendarID : '';
 
@@ -898,9 +897,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 				if ($this->getFilecacheManager()->moveUploadedFile($sUserPublicId, $sSavedName, $UploadData['tmp_name'], '', self::GetName()))
 				{
 					$iImportedCount = $this->getManager()->importToCalendarFromIcs(
-							$sUserPublicId,
-							$sCalendarId,
-							$this->getFilecacheManager()->generateFullFilePath($sUserPublicId, $sSavedName, '', self::GetName())
+						$sUserPublicId,
+						$sCalendarId,
+						$this->getFilecacheManager()->generateFullFilePath($sUserPublicId, $sSavedName, '', self::GetName()),
+						$IsPrivateEvent
 					);
 
 					if (false !== $iImportedCount && -1 !== $iImportedCount)

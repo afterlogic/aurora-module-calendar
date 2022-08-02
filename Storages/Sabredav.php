@@ -266,7 +266,7 @@ class Sabredav extends Storage
 		}
 
 		$oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
-		$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) && $oCalDAVCalendar->isDefault());
+		$oCalendar->IsDefault = (!$oCalendar->Shared && (\substr($oCalendar->Id, 0, \strlen(\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID)) === \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID));
 		$oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
 
 		return $oCalendar;
@@ -892,7 +892,7 @@ class Sabredav extends Storage
 	 *
 	 * @return mixed
 	 */
-	public function importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName)
+	public function importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName, $bIsPrivate = false)
 	{
 		$this->init($sUserPublicId);
 
@@ -907,18 +907,23 @@ class Sabredav extends Storage
 			$iCount = 0;
 			while($oVCalendar = $splitter->getNext())
 			{
-				$oVEvents = $oVCalendar->getBaseComponents('VEVENT');
-				if (!isset($oVEvents) || 0 === count($oVEvents))
+				if (isset($oVCalendar->VEVENT) || 0 < count($oVCalendar->VEVENT))
 				{
-					$oVEvents = $oVCalendar->getBaseComponents('VTODO');
+					$oVEvent =& $oVCalendar->VEVENT;
+				} else {
+					$oVEvent =& $oVCalendar->VTODO;
 				}
-				if (isset($oVEvents) && 0 < count($oVEvents) && isset($oVEvents[0]))
+				if (isset($oVEvent) && 0 < count($oVEvent))
 				{
-					$sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
+					$sUid = str_replace(array("/", "=", "+"), "", $oVEvent->UID);
 
 					if (!$oCalendar->childExists($sUid . '.ics'))
 					{
-						$oVEvents[0]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
+						$oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
+						if ($bIsPrivate) {
+							$oVEvent->CLASS	= 'PRIVATE';
+						}
+
 						$oCalendar->createFile($sUid . '.ics', $oVCalendar->serialize());
 						$iCount++;
 					}

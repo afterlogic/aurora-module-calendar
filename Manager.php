@@ -603,12 +603,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return int|bool integer (number of events added)
 	 */
-	public function importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName)
+	public function importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName, $bIsPrivate = false)
 	{
 		$mResult = null;
 		try
 		{
-			$mResult = $this->oStorage->importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName);
+			$mResult = $this->oStorage->importToCalendarFromIcs($sUserPublicId, $sCalendarId, $sTempFileName, $bIsPrivate);
 		}
 		catch (\Exception $oException)
 		{
