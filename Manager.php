@@ -1003,7 +1003,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return mixed
 	 */
-	public function createEvent($sUserPublicId, $oEvent)
+	public function createEvent($sUserPublicId, $oEvent, $appointmentMailBody = null)
 	{
 		$oResult = null;
 		try
@@ -1027,7 +1027,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 			\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->$sComponentName);
 			$aArgs = [
 				'sUserPublicId' => $sUserPublicId,
-				'oEvent' => $oEvent
+				'oEvent' => $oEvent,
+				'appointmentMailBody' => $appointmentMailBody
 			];
 			$this->GetModule()->broadcastEvent(
 				'populateVCalendar',
@@ -1052,7 +1053,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	 *
 	 * @return bool
 	 */
-	public function updateEvent($sUserPublicId, $oEvent)
+	public function updateEvent($sUserPublicId, $oEvent, $appointmentMailBody = null)
 	{
 		$oResult = null;
 		try
@@ -1086,7 +1087,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						\Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->{$sComponent}[$iIndex]);
 						$aArgs = [
 							'sUserPublicId' => $sUserPublicId,
-							'oEvent' => $oEvent
+							'oEvent' => $oEvent,
+							'appointmentMailBody' => $appointmentMailBody
 						];
 						$this->GetModule()->broadcastEvent(
 							'populateVCalendar',
