@@ -520,8 +520,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->broadcastEvent(
 			'UpdateEventAttendees',
 			$aArgs,
-			$oEvent,
-			$appointmentMailBody
+			$oEvent
 		);
 
 		$mResult = $this->getManager()->createEvent($sUserPublicId, $oEvent);
