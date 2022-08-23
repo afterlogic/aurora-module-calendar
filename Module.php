@@ -523,7 +523,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			$oEvent
 		);
 
-		$mResult = $this->getManager()->createEvent($sUserPublicId, $oEvent);
+		$mResult = $this->getManager()->createEvent($sUserPublicId, $oEvent, $appointmentMailBody);
 
 		if ($mResult)
 		{
@@ -715,7 +715,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		else
 		{
-			$mResult = $this->getManager()->updateEvent($sUserPublicId, $oEvent);
+			$mResult = $this->getManager()->updateEvent($sUserPublicId, $oEvent, $appointmentMailBody);
 			if ($mResult && $newCalendarId !== $oEvent->IdCalendar)
 			{
 				$mResult = $this->getManager()->moveEvent($sUserPublicId, $oEvent->IdCalendar, $newCalendarId, $oEvent->Id);
