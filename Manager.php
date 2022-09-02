@@ -1796,7 +1796,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							foreach ($oVEventResult->ATTENDEE as $oAttendee) {
 								$ateendee = str_ireplace('mailto:', '', (string) $oAttendee);
 								if (strtolower($ateendee) !== strtolower($organizer)) {
-									$ateendeeList[] = $ateendee;
+									$ateendeeList[] = (isset($oAttendee['CN']) ? (string)$oAttendee['CN'] . ' <' : '') . $ateendee . ((isset($oAttendee['CN']) ? '>' : ''));
 								}
 							}
 						}
