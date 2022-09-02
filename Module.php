@@ -715,12 +715,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		}
 		else
 		{
-			$mResult = $this->getManager()->updateEvent($sUserPublicId, $oEvent, $appointmentMailBody);
-			if ($mResult && $newCalendarId !== $oEvent->IdCalendar)
+			if ($newCalendarId !== $oEvent->IdCalendar)
 			{
 				$mResult = $this->getManager()->moveEvent($sUserPublicId, $oEvent->IdCalendar, $newCalendarId, $oEvent->Id);
 				$oEvent->IdCalendar = $newCalendarId;
 			}
+			$mResult = $this->getManager()->updateEvent($sUserPublicId, $oEvent, $appointmentMailBody);
 		}
 		if ($mResult)
 		{
