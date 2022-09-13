@@ -115,24 +115,20 @@ class RRule
 			}
 
 			$sByDay = null;
-			if (in_array($sFreq, array('WEEKLY', 'MONTHLY', 'YEARLY')))
-			{
-				$sByDay = implode(',', $this->ByDays);
-			}
-			if (!empty($sByDay))
-			{
-				if (in_array($sFreq, array('MONTHLY', 'YEARLY')) && isset($iWeekNumber))
-				{
-					if ($iWeekNumber >= 0 && $iWeekNumber < 4)
-					{
-						$sByDay = (int)$iWeekNumber + 1 . $sByDay;
+			if (in_array($sFreq, array('WEEKLY', 'MONTHLY', 'YEARLY'))) {
+				$aByDays = $this->ByDays;
+
+				if (in_array($sFreq, array('MONTHLY', 'YEARLY')) && isset($iWeekNumber)) {
+					if ($iWeekNumber >= 0 && $iWeekNumber < 4) {
+						$iWeekNumber = (int) $iWeekNumber + 1;
+					} else if ($iWeekNumber === 4) {
+						$iWeekNumber = -1;
 					}
-					else if ($iWeekNumber === 4)
-					{
-						$sByDay = '-1' . $sByDay;
-					}
+					$aByDays = array_map(function($byDay) use ($iWeekNumber) {
+						return $iWeekNumber . $byDay;
+					}, $this->ByDays);
 				}
-				$sRule .= ';BYDAY=' . $sByDay;
+				$sRule .= ';BYDAY=' . implode(',', $aByDays);
 			}
 		}
         return $sRule;
