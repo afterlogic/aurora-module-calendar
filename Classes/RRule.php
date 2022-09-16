@@ -128,7 +128,10 @@ class RRule
 						return $iWeekNumber . $byDay;
 					}, $this->ByDays);
 				}
-				$sRule .= ';BYDAY=' . implode(',', $aByDays);
+				$sByDays = implode(',', $aByDays);
+				if (!empty($sByDays)) {
+					$sRule .= ';BYDAY=' . $sByDays;
+				}
 			}
 		}
         return $sRule;
