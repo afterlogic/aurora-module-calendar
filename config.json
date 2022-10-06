@@ -80,7 +80,7 @@
 		"string"
 	],
 	"AllowPrivateEvents": [
-		true,
+		false,
 		"bool"
 	],
 	"AllowPrivateEvents_Description": [
