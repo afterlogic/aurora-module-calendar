@@ -1663,6 +1663,7 @@ class Sabredav extends Storage
 					$oChild = $oCalDAVCalendar->getChild($oCalDAVCalendarObject->getName());
 					if ($oChild)
 					{
+						Server::getInstance()->setUser($sUserPublicId);
 						Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 						Server::getInstance()->updateFile($oCalendar->Url . '/' . $sEventUrl, $sData);
 //						$oChild->put($sData);
@@ -1713,6 +1714,7 @@ class Sabredav extends Storage
 				$sData = $oVCal->serialize();
 //				$oChild->put($sData);
 
+				Server::getInstance()->setUser($sUserPublicId);
 				Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 				Server::getInstance()->updateFile($oCalendar->Url . '/' . $sEventUrl, $sData);
 
