@@ -1293,7 +1293,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 							{
 								if ($oExDate->getDateTime() !== $oDTExdate)
 								{
-									$oVCal->{$sComponent}[$iIndex]->EXDATE = $oExDate;
+									$oVCal->{$sComponent}[$iIndex]->add('EXDATE', $oExDate->getDateTime());
 								}
 							}
 						}
