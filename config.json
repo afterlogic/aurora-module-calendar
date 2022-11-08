@@ -86,5 +86,13 @@
 	"AllowPrivateEvents_Description": [
 		"Setting to true enables private events features",
 		"string"
+	],
+	"AllowDefaultReminders": [
+		false,
+		"bool"
+	],
+	"AllowDefaultReminders_Description": [
+		"Setting to true enables default reminders features",
+		"string"
 	]
 }

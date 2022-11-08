@@ -79,6 +79,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
 			'AllowSubscribedCalendars' => $this->getConfig('AllowSubscribedCalendars', false),
 			'AllowPrivateEvents' => $this->getConfig('AllowPrivateEvents', true),
+			'AllowDefaultReminders' => $this->getConfig('AllowDefaultReminders', true),
+			'DefaultReminders' => $this->getConfig('DefaultReminders', []),
 		);
 
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
@@ -108,6 +110,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 			{
 				$aSettings['DefaultTab'] = $oUser->{self::GetName().'::DefaultTab'};
 			}
+			if (isset($oUser->{self::GetName().'::DefaultReminders'}))
+			{
+				$aSettings['DefaultReminders'] = $oUser->{self::GetName().'::DefaultReminders'};
+			}
 
 			$oUser->save();
 		}
@@ -115,7 +121,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		return $aSettings;
 	}
 
-	public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab)
+	public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab, $DefaultReminders)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -131,7 +137,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 					self::GetName().'::WorkdayStarts' => $WorkdayStarts,
 					self::GetName().'::WorkdayEnds' => $WorkdayEnds,
 					self::GetName().'::WeekStartsOn' => $WeekStartsOn,
-					self::GetName().'::DefaultTab' => $DefaultTab
+					self::GetName().'::DefaultTab' => $DefaultTab,
+					self::GetName().'::DefaultReminders' => $DefaultReminders,
 				]);
 				return $oCoreDecorator->UpdateUserObject($oUser);
 			}
