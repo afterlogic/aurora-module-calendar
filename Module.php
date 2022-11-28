@@ -18,6 +18,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 {
 	public $oManager = null;
 	public $oFilecacheManager = null;
+	protected $oUserForDelete = null;
 
 	public function getManager()
 	{
@@ -56,6 +57,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 		$this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
 		$this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
 		$this->subscribeEvent('Core::DeleteUser::before', array($this, 'onBeforeDeleteUser'));
+		$this->subscribeEvent('Core::DeleteUser::after', array($this, 'onAftereDeleteUser'));
 	}
 
 	/**
@@ -1100,20 +1102,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 	public function onBeforeDeleteUser($aArgs, &$mResult)
 	{
-		$oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-
-		$oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserUnchecked($aArgs['UserId']);
-
-		if ($oUser instanceof \Aurora\Modules\Core\Models\User && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+		if (isset($aArgs['UserId']))
 		{
-			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::TenantAdmin);
+			$this->oUserForDelete = \Aurora\System\Api::getUserById($aArgs['UserId']);
 		}
-		else
-		{
-			\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::SuperAdmin);
-		}
+	}
 
-		$sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Models\User ? $oUser->PublicId : null;
+	public function onAfterDeleteUser($aArgs, &$mResult)
+	{
+		$sUserPublicId = $this->oUserForDelete instanceof \Aurora\Modules\Core\Models\User ? $this->oUserForDelete->PublicId : null;
 		if ($sUserPublicId)
 		{
 			$this->getManager()->deletePrincipalCalendars($sUserPublicId);
