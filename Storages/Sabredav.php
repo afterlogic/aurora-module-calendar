@@ -1749,6 +1749,7 @@ class Sabredav extends Storage
 				$oCalendar = $this->parseCalendar($oCalDAVCalendarNew);
 				if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 				{
+					Server::getInstance()->setUser($sUserPublicId);
 					Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 					Server::getInstance()->createFile($oCalendar->Url . '/' . $sEventUrl, $sData);
 
@@ -1789,10 +1790,8 @@ class Sabredav extends Storage
 			$oCalendar = $this->parseCalendar($oCalDAVCalendar);
 			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{
-				// $oChild = $oCalDAVCalendar->getChild($sEventUrl);
-				// $oChild->delete();
-
-//				Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
+				Server::getInstance()->setUser($sUserPublicId);
+				Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 				Server::getInstance()->tree->delete($oCalendar->Url . '/' . $sEventUrl);
 
 				$this->deleteReminder($sEventId);
