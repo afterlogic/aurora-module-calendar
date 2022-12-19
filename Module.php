@@ -20,6 +20,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	public $oFilecacheManager = null;
 	protected $oUserForDelete = null;
 
+	/**
+	 *
+	 * @return Module
+	 */
+	public static function getInstance()
+	{
+		return \Aurora\System\Api::GetModule(self::GetName());
+	}
+
 	public function getManager()
 	{
 		if ($this->oManager === null)
@@ -353,7 +362,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @param int $UserId
 	 * @param string $Id
 	 * @param boolean $IsPublic
-	 * @param array $Shares
+	 * @param string $Shares
 	 * @param boolean $ShareToAll
 	 * @param int $ShareToAllAccess
 	 * @return array|boolean
@@ -938,11 +947,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 	 * @return array
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function UploadCalendar($UserId,$UploadData, $CalendarID)
+	public function UploadCalendar($UserId, $UploadData, $CalendarID)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-		$aAdditionalData = @json_decode($AdditionalData, true);
 
 		$sCalendarId = isset($CalendarID) ? $CalendarID : '';
 
