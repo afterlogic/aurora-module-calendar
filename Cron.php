@@ -37,10 +37,10 @@ class Reminder
 		$this->aCalendars = array();
 		$this->sCurRunFilePath = \Aurora\System\Api::DataPath().'/reminder-run';
 
-		$oMailModule =  \Aurora\System\Api::GetModule('Mail');
-		$this->oCalendarModule = \Aurora\System\Api::GetModule('Calendar');
+		$oMailModule =  \Aurora\Modules\Mail\Module::getInstance();
+		$this->oCalendarModule = \Aurora\Modules\Calendar\Module::getInstance();
 
-		$this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->getUsersManager() ;
+		$this->oApiUsersManager = \Aurora\Modules\Core\Module::getInstance()->getUsersManager() ;
 		$this->oApiCalendarManager = $this->oCalendarModule->getManager();
 		$this->oApiMailManager = $oMailModule->getMailManager();
 		$this->oApiAccountsManager = $oMailModule->getAccountsManager();

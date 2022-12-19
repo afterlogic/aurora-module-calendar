@@ -6,14 +6,17 @@
 
 namespace Aurora\Modules\Calendar\Storages;
 
+use Afterlogic\DAV\CalDAV\Backend\PDO;
 use Afterlogic\DAV\CalDAV\Shared\Calendar;
 use Afterlogic\DAV\CalDAV\SharedWithAll\Calendar as SharedWithAllCalendar;
 use Afterlogic\DAV\Server;
 use Aurora\System\Api;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use Sabre\CalDAV\SharedCalendar;
 use Sabre\CalDAV\Subscriptions\Subscription;
 use Sabre\DAV\Xml\Property\Href;
+use Sabre\VObject\Component\VCalendar;
 
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
@@ -97,7 +100,7 @@ class Sabredav extends Storage
 	}
 
 	/**
-	 * @return \Afterlogic\DAV\
+	 * @return \Afterlogic\DAV\CalDAV\Backend\PDO
 	 */
 	public function getBackend()
 	{
@@ -303,7 +306,7 @@ class Sabredav extends Storage
 			}
 		}
 		if (!$oCalendar->Subscribed) {
-			$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) && $oCalDAVCalendar->isDefault());
+			$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Shared\Calendar) && $oCalDAVCalendar->isDefault());
 		}
 
 		return $oCalendar;
@@ -386,13 +389,13 @@ class Sabredav extends Storage
 	{
 		$oCalendar = false;
 
-		// $oBackend = $this->getBackend();
-		// dd(get_class_methods($oBackend));
+		$oBackend = $this->getBackend();
 
-		$aCalendar = $this->getBackend()->getPublicCalendar($sCalendar);
-		if ($aCalendar)
-		{
-			$oCalendar = new \Afterlogic\DAV\CalDAV\PublicCalendar($this->getBackend(), $aCalendar);
+		if ($oBackend instanceof PDO) {
+			$aCalendar = $oBackend->getPublicCalendar($sCalendar);
+			if ($aCalendar) {
+				$oCalendar = new \Afterlogic\DAV\CalDAV\PublicCalendar($oBackend, $aCalendar);
+			}
 		}
 
 		return $oCalendar;
@@ -679,10 +682,14 @@ class Sabredav extends Storage
 
 	public function deletePrincipalCalendars($sUserPublicId)
 	{
-		$this->getBackend()->deletePrincipalCalendars('principals/' . $sUserPublicId);
-		$this->getBackend()->deleteSubscriptionsByPrincipal('principals/' . $sUserPublicId);
-		$this->deleteRemindersByUser($sUserPublicId);
+		$oBackend = $this->getBackend();
 
+		if ($oBackend instanceof PDO) {
+			$oBackend->deletePrincipalCalendars('principals/' . $sUserPublicId);
+			$oBackend->deleteSubscriptionsByPrincipal('principals/' . $sUserPublicId);
+		}
+
+		$this->deleteRemindersByUser($sUserPublicId);
 	}
 
 	/**
@@ -779,7 +786,7 @@ class Sabredav extends Storage
 			$oDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 		}
 
-		if ($oDAVCalendar)
+		if ($oDAVCalendar instanceof SharedCalendar)
 		{
 			$aServerShares = $oDAVCalendar->getInvites();
 			$aShereEmails = array_map(
@@ -1031,22 +1038,24 @@ class Sabredav extends Storage
 			$iCount = 0;
 			while($oVCalendar = $splitter->getNext())
 			{
-				$oVEvents = $oVCalendar->getBaseComponents('VEVENT');
-				if (!isset($oVEvents) || 0 === count($oVEvents))
-				{
-					$oVEvents = $oVCalendar->getBaseComponents('VTODO');
-				}
-				if (isset($oVEvents) && 0 < count($oVEvents) && isset($oVEvents[0]))
-				{
-					$sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
-
-					if (!$oCalendar->childExists($sUid . '.ics'))
+				if ($oVCalendar instanceof VCalendar) {
+					$oVEvents = $oVCalendar->getBaseComponents('VEVENT');
+					if (!isset($oVEvents) || 0 === count($oVEvents))
 					{
-						$oVEvents[0]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
-						Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sUid . '.ics');
-						Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
-//						$oCalendar->createFile($sUid . '.ics', $oVCalendar->serialize());
-						$iCount++;
+						$oVEvents = $oVCalendar->getBaseComponents('VTODO');
+					}
+					if (isset($oVEvents) && 0 < count($oVEvents) && isset($oVEvents[0]))
+					{
+						$sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
+
+						if (!$oCalendar->childExists($sUid . '.ics'))
+						{
+							$oVEvents[0]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
+							Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sUid . '.ics');
+							Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
+	//						$oCalendar->createFile($sUid . '.ics', $oVCalendar->serialize());
+							$iCount++;
+						}
 					}
 				}
 			}
@@ -1362,7 +1371,7 @@ class Sabredav extends Storage
 	 * @param object $dStart
 	 * @param object $dEnd
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public function getEventUrls($oCalendar, $dStart, $dEnd)
 	{
