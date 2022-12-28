@@ -6,6 +6,9 @@
 		"afterlogic/aurora-framework": "~0.10.0",
 		"afterlogic/aurora-module-dav": "~0.10.0"
 	},
+	"autoload": {
+		"classmap": ["/"]
+	},
 	"extra": {
 		"installer-name": "Calendar"
 	}
