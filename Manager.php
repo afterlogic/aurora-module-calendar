@@ -6,6 +6,7 @@
 
 namespace Aurora\Modules\Calendar;
 
+use Aurora\System\Api;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use Sabre\VObject\ParseException;
@@ -582,30 +583,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 		try
 		{
 			$oResult = $this->oStorage->getPublishStatus($sCalendarId);
-		}
-		catch (\Exception $oException)
-		{
-			$oResult = false;
-			$this->setLastException($oException);
-		}
-		return $oResult;
-	}
-
-	/**
-	 * (Aurora only) Removes sharing calendar with the specific user account.
-	 *
-	 * @param string $sUserPublicId Account object
-	 * @param string $sCalendarId Calendar ID
-	 * @param string $sUserId User ID
-	 *
-	 * @return bool
-	 */
-	public function deleteCalendarShare($sUserPublicId, $sCalendarId, $sUserId)
-	{
-		$oResult = null;
-		try
-		{
-			$oResult = $this->updateCalendarShare($sUserPublicId, $sCalendarId, $sUserId);
 		}
 		catch (\Exception $oException)
 		{
@@ -1272,7 +1249,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 						// if exclude first event in occurrence
 						if ($oDTExdate === $oDTStart)
 						{
-							$it = new \Sabre\VObject\RecurrenceIterator($oVCal, (string) $oVCal->{$sComponent}[$iIndex]->UID);
+							$it = new \Sabre\VObject\Recur\EventIterator($oVCal, (string) $oVCal->{$sComponent}[$iIndex]->UID);
 							$it->fastForward($oDTStart);
 							$it->next();
 
@@ -1911,6 +1888,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 	public function clearAllCalendars($sUserPublicId)
 	{
 		$bResult = false;
+
+		$oUser = Api::getUserById(Api::getUserIdByPublicId($sUserPublicId));
 
 		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{

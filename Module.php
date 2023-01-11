@@ -230,7 +230,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
 	/**
 	 *
-	 * @return boolean
+	 * @return void
 	 */
 	public function EntryCalendarDownload()
 	{

@@ -60,6 +60,11 @@ class Sabredav extends Storage
 	 * @var string
 	 */
 	protected $TenantUser;
+	
+	/*
+	 * @var string
+	 */
+	protected $UserPublicId;
 
 	/**
 	 * @param \Aurora\System\Managers\AbstractManager $oManager
@@ -306,7 +311,7 @@ class Sabredav extends Storage
 			}
 		}
 		if (!$oCalendar->Subscribed) {
-			$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Shared\Calendar) && $oCalDAVCalendar->isDefault());
+			$oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Shared\Calendar) && $oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Calendar && $oCalDAVCalendar->isDefault());
 		}
 
 		return $oCalendar;
@@ -745,6 +750,8 @@ class Sabredav extends Storage
 				}
 			}
 		}
+
+		return true;
 	}
 
 	/**
@@ -1417,7 +1424,7 @@ class Sabredav extends Storage
 		if ($oCalendar)
 		{
 			$aEventUrls = $this->getEventUrls($oCalendar, $dStart, $dEnd);
-			$aTodoUrls = $this->getTodoUrls($oCalendar);
+			$aTodoUrls = $this->getTasksUrls($oCalendar);
 			$aUrls = array_merge($aEventUrls, $aTodoUrls);
 
 			foreach ($aUrls as $sUrl)
