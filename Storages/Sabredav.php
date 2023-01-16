@@ -1641,9 +1641,6 @@ class Sabredav extends Storage
 				$sData = $oVCal->serialize();
 				Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 				Server::getInstance()->createFile($oCalendar->Url . '/' . $sEventUrl, $sData);
-//				$oCalDAVCalendar->createFile($sEventUrl, $sData);
-
-				$this->updateReminder($oCalendar, $sEventUrl, $sData);
 
 				return $sEventId;
 			}
@@ -1683,7 +1680,6 @@ class Sabredav extends Storage
 					if ($oChild)
 					{
 						Server::getInstance()->updateFile($oCalendar->Url . '/' . $sEventUrl, $sData);
-						$this->updateReminder($oCalendar, $sEventId, $sData);
 						unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 						return true;
 					}
@@ -1691,7 +1687,6 @@ class Sabredav extends Storage
 				else
 				{
 					Server::getInstance()->createFile($oCalendar->Url . '/' . $sEventUrl, $sData);
-					$this->updateReminder($oCalendar, $sEventId, $sData);
 					return true;
 				}
 			}
@@ -1724,15 +1719,12 @@ class Sabredav extends Storage
 
 			if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read)
 			{
-//				$oChild = $oCalDAVCalendar->getChild($sEventUrl);
 				$sData = $oVCal->serialize();
-//				$oChild->put($sData);
 
 				Server::getInstance()->setUser($sUserPublicId);
 				Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 				Server::getInstance()->updateFile($oCalendar->Url . '/' . $sEventUrl, $sData);
 
-				$this->updateReminder($oCalendar, $sEventUrl, $sData);
 				unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 				return true;
 			}
@@ -1769,15 +1761,13 @@ class Sabredav extends Storage
 					Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sEventUrl);
 					Server::getInstance()->createFile($oCalendar->Url . '/' . $sEventUrl, $sData);
 
-//					$oCalDAVCalendarNew->createFile($sEventUrl, $sData);
+					$oCalendarOld = $this->parseCalendar($oCalDAVCalendar);
+					if ($oCalendarOld->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
+						Server::getInstance()->tree->delete($oCalendarOld->Url . '/' . $sEventUrl);
+					}
 
-					// $oChild = $oCalDAVCalendar->getChild($sEventUrl);
-					// $oChild->delete();
-
-					Server::getInstance()->tree->delete($oCalendar->Url . '/' . $sEventUrl);
-
-					$this->deleteReminder($sEventId);
-					$this->updateReminder($oCalendar, $sEventId, $sData);
+					// $this->deleteReminder($sEventId);
+					// $this->updateReminder($oCalendar, $sEventId, $sData);
 					unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
 					return true;
 				}
