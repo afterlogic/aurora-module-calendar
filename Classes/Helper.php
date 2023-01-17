@@ -426,24 +426,4 @@ class Helper
 		}
 		return $result;
 	}
-
-	/**
-	 * @param string $sString
-	 *
-	 * @return array
-	 */
-	public static function findGroupsHashTagsFromString($sString)
-	{
-		$aResult = array();
-		
-		preg_match_all("/[#]([^#\s]+)/", $sString, $aMatches);
-		
-		if (\is_array($aMatches) && isset($aMatches[0]) && \is_array($aMatches[0]) && 0 < \count($aMatches[0]))
-		{
-			$aResult = $aMatches[0];
-		}
-		
-		return $aResult;
-	}
-	
 }
