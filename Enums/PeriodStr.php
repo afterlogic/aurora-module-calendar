@@ -4,24 +4,24 @@ namespace Aurora\Modules\Calendar\Enums;
 
 class PeriodStr extends \Aurora\System\Enums\AbstractEnumeration
 {
-	const Secondly = 'secondly';
-	const Minutely = 'minutely';
-	const Hourly   = 'hourly';
-	const Daily	   = 'daily';
-	const Weekly   = 'weekly';
-	const Monthly  = 'monthly';
-	const Yearly   = 'yearly';
+    public const Secondly = 'secondly';
+    public const Minutely = 'minutely';
+    public const Hourly   = 'hourly';
+    public const Daily	   = 'daily';
+    public const Weekly   = 'weekly';
+    public const Monthly  = 'monthly';
+    public const Yearly   = 'yearly';
 
-	/**
-	 * @var array
-	 */
-	protected $aConsts = array(
-		'Secondly' => self::Secondly,
-		'Minutely' => self::Minutely,
-		'Hourly'   => self::Hourly,
-		'Daily'	   => self::Daily,
-		'Weekly'   => self::Weekly,
-		'Monthly'  => self::Monthly,
-		'Yearly'   => self::Yearly
-	);
+    /**
+     * @var array
+     */
+    protected $aConsts = array(
+        'Secondly' => self::Secondly,
+        'Minutely' => self::Minutely,
+        'Hourly'   => self::Hourly,
+        'Daily'	   => self::Daily,
+        'Weekly'   => self::Weekly,
+        'Monthly'  => self::Monthly,
+        'Yearly'   => self::Yearly
+    );
 }
