@@ -16,6 +16,7 @@ class ErrorCodes
 {
     public const CannotFindCalendar = 1001;
     public const InvalidSubscribedIcs = 1002;
+    public const NoWriteAccessForCalendar = 1003;
 
     /**
      * @var array
@@ -23,5 +24,6 @@ class ErrorCodes
     protected $aConsts = [
         'CannotFindCalendar' => self::CannotFindCalendar,
         'InvalidSubscribedIcs' => self::InvalidSubscribedIcs,
+        'NoWriteAccessForCalendar' => self::NoWriteAccessForCalendar,
     ];
 }

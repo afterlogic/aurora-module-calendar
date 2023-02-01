@@ -489,6 +489,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oCalendar = $this->getManager()->getCalendar($sUserPublicId, $sCalendarId);
         if (!$oCalendar) {
             throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
+        } else if ($oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Read){
+            throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::NoWriteAccessForCalendar);
         }
     }
 
