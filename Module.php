@@ -166,6 +166,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function GetCalendar($UserId, $CalendarId)
     {
+        \Aurora\System\Api::CheckAccess($UserId);
         $oUser = \Aurora\System\Api::getUserById($UserId);
 
         $oCalendar = $this->getManager()->getCalendar($oUser->PublicId, $CalendarId);
@@ -192,7 +193,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oCalendar = $this->getManager()->getPublicCalendar($PublicCalendarId);
             $mCalendars = array($oCalendar);
         } else {
-            \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+            \Aurora\System\Api::CheckAccess($UserId);
             $oUser = \Aurora\System\Api::getUserById($UserId);
             if ($oUser) {
                 $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
@@ -245,7 +246,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function CreateCalendar($UserId, $Name, $Description, $Color, $UUID = null)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         $mResult = false;
 
@@ -262,7 +263,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
     public function CreateSubscribedCalendar($UserId, $Name, $Source, $Color, $UUID = null)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         $mResult = false;
 
@@ -292,7 +293,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function UpdateCalendar($UserId, $Id, $Name, $Description, $Color)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         return $this->getManager()->updateCalendar($sUserPublicId, $Id, $Name, $Description, 0, $Color);
     }
@@ -308,7 +309,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function UpdateSubscribedCalendar($UserId, $Id, $Name, $Source, $Color)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
         if (!$this->getManager()->validateSubscribedCalebdarSource($Source)) {
@@ -327,7 +328,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function UpdateCalendarColor($UserId, $Id, $Color)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         return $this->getManager()->updateCalendarColor($sUserPublicId, $Id, $Color);
     }
@@ -344,7 +345,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \Aurora\Modules\Calendar\Enums\Permission::Read)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         $aShares = json_decode($Shares, true) ;
         $oUser = null;
@@ -388,7 +389,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function UpdateCalendarPublic($Id, $IsPublic, $UserId = null)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $oUser = null;
         $oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oAuthenticatedUser->PublicId !== $Id && $oAuthenticatedUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin) {
@@ -405,7 +406,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function DeleteCalendar($UserId, $Id)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         return $this->getManager()->deleteCalendar($sUserPublicId, $Id);
     }
@@ -419,7 +420,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function GetBaseEvent($UserId, $calendarId, $uid)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         return $this->getManager()->getBaseEvent($sUserPublicId, $calendarId, $uid);
     }
@@ -441,7 +442,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
             $mResult = $this->getManager()->getPublicEvents($CalendarIds, $Start, $End, $Expand, $DefaultTimeZone);
         } else {
-            \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+            \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
             $mResult = $this->getManager()->getEvents($sUserPublicId, $CalendarIds, $Start, $End);
         }
@@ -475,7 +476,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     {
         $mResult = [];
         if ($this->getConfig('AllowTasks', true)) {
-            \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+            \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
             $mResult = $this->getManager()->getTasks($sUserPublicId, $CalendarIds, $Completed, $Search, $Start, $End, $Expand);
@@ -532,7 +533,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $isPrivate = false
     )
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
         $this->_checkUserCalendar($sUserPublicId, $newCalendarId);
@@ -597,7 +598,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function CreateEventFromData($UserId, $CalendarId, $EventId, $Data)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
         $this->_checkUserCalendar($sUserPublicId, $CalendarId);
@@ -614,9 +615,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function CreateTask($UserId, $CalendarId, $Subject)
     {
+
         $mResult = false;
         if ($this->getConfig('AllowTasks', true)) {
-            \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+            \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
             $this->_checkUserCalendar($sUserPublicId, $CalendarId);
@@ -646,7 +648,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     {
         $bResult = false;
         if ($this->getConfig('AllowTasks', true)) {
-            \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+            \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
             $this->_checkUserCalendar($sUserPublicId, $CalendarId);
@@ -721,7 +723,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $owner = ''
     )
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         $mResult = false;
 
@@ -801,7 +803,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function DeleteEvent($UserId, $calendarId, $uid, $allEvents, $recurrenceId)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
         $this->_checkUserCalendar($sUserPublicId, $calendarId);
@@ -911,7 +913,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function ProcessICS($UserId, $Data, $FromEmail)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
 
         return $this->getManager()->processICS($UserId, $Data, $FromEmail);
     }
@@ -926,7 +928,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function UploadCalendar($UserId, $UploadData, $CalendarID)
     {
-        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
         $sCalendarId = isset($CalendarID) ? $CalendarID : '';
