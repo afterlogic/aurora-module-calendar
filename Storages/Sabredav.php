@@ -282,7 +282,7 @@ class Sabredav extends Storage
             }
         }
         if (!$oCalendar->Subscribed) {
-            $oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Shared\Calendar) && $oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Calendar && $oCalDAVCalendar->isDefault());
+            $oCalendar->IsDefault = (!$oCalendar->Shared && ($oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Calendar || $oCalDAVCalendar instanceof \Afterlogic\DAV\CalDAV\Shared\Calendar) && $oCalDAVCalendar->isDefault());
         }
 
         return $oCalendar;

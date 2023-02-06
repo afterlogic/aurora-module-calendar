@@ -58,7 +58,7 @@ class Calendar
     {
         $this->Id = rtrim(urldecode($sId), '/');
         $this->IntId = 0;
-        $this->IsDefault = (basename($sId) === \Afterlogic\DAV\Constants::ADDRESSBOOK_DEFAULT_NAME);
+        $this->IsDefault = (\substr($this->Id, 0, \strlen(\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID)) === \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID);
         $this->DisplayName = $sDisplayName;
         $this->CTag = $sCTag;
         $this->ETag = $sETag;
