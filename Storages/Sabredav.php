@@ -942,8 +942,9 @@ class Sabredav extends Storage
         $this->init($sUserPublicId);
 
         $mResult = false;
-        $oCalendar = $this->getCalDAVCalendar($sCalendarId);
-        if ($oCalendar) {
+        $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+        if ($oCalDAVCalendar) {
+            $oCalendar = $this->parseCalendar($oCalDAVCalendar);
             // You can either pass a readable stream, or a string.
             $h = fopen($sTempFileName, 'r');
             $splitter = new \Sabre\VObject\Splitter\ICalendar($h);
@@ -958,11 +959,10 @@ class Sabredav extends Storage
                     if (isset($oVEvents) && 0 < count($oVEvents) && isset($oVEvents[0])) {
                         $sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
 
-                        if (!$oCalendar->childExists($sUid . '.ics')) {
+                        if (!$oCalDAVCalendar->childExists($sUid . '.ics')) {
                             $oVEvents[0]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
                             Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sUid . '.ics');
                             Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
-                            //						$oCalendar->createFile($sUid . '.ics', $oVCalendar->serialize());
                             $iCount++;
                         }
                     }
