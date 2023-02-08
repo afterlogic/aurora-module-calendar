@@ -452,8 +452,17 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             foreach ($mResult as $event) {
                 $sDescription = $event['description'];
                 $bHtmlDescription = $sDescription != strip_tags($sDescription);
-                if (!$bHtmlDescription) {
+                if ($bHtmlDescription) {
+                    $event['description'] = $this->clearHtml($sDescription);
+                }
+                else {
                     $event['description'] = \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription);
+                }
+
+                $sLocation = $event['location'];
+                $bHtmlLocation = $sLocation != strip_tags($sLocation);
+                if ($bHtmlLocation) {
+                    $event['location'] = $this->clearHtml($sLocation);
                 }
                 $aResult[] = $event;
             }
@@ -493,6 +502,61 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         } else if ($oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Read){
             throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::NoWriteAccessForCalendar);
         }
+    }
+
+    private function clearHtml($sText)
+    {
+        $oDom = \MailSo\Base\HtmlUtils::GetDomFromText($sText);
+        $aNodes = $oDom->getElementsByTagName('*');
+
+        $bHasExternals = false;
+        $aFoundCIDs = [];
+        $aContentLocationUrls = [];
+        $aFoundedContentLocationUrls = [];
+
+        foreach ($aNodes as /* @var $oElement \DOMElement */ $oElement) {
+            $sTagNameLower = \strtolower($oElement->tagName);
+            if ('img' === $sTagNameLower) {
+                $oElement->parentNode->removeChild($oElement);
+            }
+
+            $sBackground = $oElement->hasAttribute('background') ? \trim($oElement->getAttribute('background')) : '';
+            $sBackgroundColor = $oElement->hasAttribute('bgcolor') ? \trim($oElement->getAttribute('bgcolor')) : '';
+
+            if (!empty($sBackground) || !empty($sBackgroundColor)) {
+
+                if (!empty($sBackground)) {
+                    $oElement->removeAttribute('background');
+                }
+
+                if (!empty($sBackgroundColor)) {
+                    $oElement->removeAttribute('bgcolor');
+                }
+            }
+
+            if ($oElement->hasAttribute('style')) {
+                $oElement->setAttribute(
+                    'style',
+                    \MailSo\Base\HtmlUtils::ClearStyle(
+                        $oElement->getAttribute('style'),
+                        $oElement,
+                        $bHasExternals,
+                        $aFoundCIDs,
+                        $aContentLocationUrls,
+                        $aFoundedContentLocationUrls
+                    )
+                );
+            }
+    
+        }
+        $sText = $oDom->saveHTML();
+        unset($oDom);
+
+        $sText = \MailSo\Base\HtmlUtils::ClearTags($sText);
+        $sText = \MailSo\Base\HtmlUtils::ClearBodyAndHtmlTag($sText);
+        $sText = \MailSo\Base\HtmlUtils::ClearOn($sText);
+
+        return $sText;
     }
 
     /**
@@ -541,8 +605,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
         $oEvent->IdCalendar = $newCalendarId;
         $oEvent->Name = $subject;
-        $oEvent->Description = $description;
-        $oEvent->Location = $location;
+        $oEvent->Description = $this->clearHtml($description);
+        $oEvent->Location = $this->clearHtml($location);
         $oEvent->IsPrivate = $isPrivate;
         if ($withDate) {
             $oEvent->Start = $startTS;
@@ -736,8 +800,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oEvent->IdCalendar = $calendarId;
         $oEvent->Id = $uid;
         $oEvent->Name = $subject;
-        $oEvent->Description = $description;
-        $oEvent->Location = $location;
+        $oEvent->Description = $this->clearHtml($description);
+        $oEvent->Location = $this->clearHtml($location);
         $oEvent->IsPrivate = $isPrivate;
         if ($withDate) {
             $oEvent->Start = $startTS;
