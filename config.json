@@ -94,5 +94,13 @@
 	"AllowDefaultReminders_Description": [
 		"Setting to true enables default reminders features",
 		"string"
+	],
+	"AllowSubscribedCalendars": [
+		false,
+		"bool"
+	],
+	"AllowSubscribedCalendars_Description": [
+		"Setting to true enables external calendars features",
+		"string"
 	]
 }
