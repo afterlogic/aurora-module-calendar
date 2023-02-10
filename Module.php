@@ -454,8 +454,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 $bHtmlDescription = $sDescription != strip_tags($sDescription);
                 if ($bHtmlDescription) {
                     $event['description'] = $this->clearHtml($sDescription);
-                }
-                else {
+                } else {
                     $event['description'] = \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription);
                 }
 
@@ -499,7 +498,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oCalendar = $this->getManager()->getCalendar($sUserPublicId, $sCalendarId);
         if (!$oCalendar) {
             throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
-        } else if ($oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Read){
+        } elseif ($oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Read) {
             throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::NoWriteAccessForCalendar);
         }
     }
@@ -524,7 +523,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $sBackgroundColor = $oElement->hasAttribute('bgcolor') ? \trim($oElement->getAttribute('bgcolor')) : '';
 
             if (!empty($sBackground) || !empty($sBackgroundColor)) {
-
                 if (!empty($sBackground)) {
                     $oElement->removeAttribute('background');
                 }
@@ -547,7 +545,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                     )
                 );
             }
-    
         }
         $sText = $oDom->saveHTML();
         unset($oDom);
@@ -595,8 +592,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $withDate = true,
         $owner = '',
         $isPrivate = false
-    )
-    {
+    ) {
         \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
@@ -679,7 +675,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      */
     public function CreateTask($UserId, $CalendarId, $Subject)
     {
-
         $mResult = false;
         if ($this->getConfig('AllowTasks', true)) {
             \Aurora\System\Api::CheckAccess($UserId);
@@ -785,8 +780,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $withDate = true,
         $isPrivate = false,
         $owner = ''
-    )
-    {
+    ) {
         \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         $mResult = false;

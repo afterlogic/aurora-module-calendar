@@ -54,8 +54,7 @@ class Calendar
         $sDescription = null,
         $sColor = null,
         $sOrder = null
-    )
-    {
+    ) {
         $this->Id = rtrim(urldecode($sId), '/');
         $this->IntId = 0;
         $this->IsDefault = (\substr($this->Id, 0, \strlen(\Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID)) === \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID);

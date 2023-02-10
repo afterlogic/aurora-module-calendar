@@ -1000,25 +1000,25 @@ class Sabredav extends Storage
                         return $oChild;
                     }
                 } else {
-					$oCalendar = $this->parseCalendar($oCalDAVCalendar);
-					$curPrincipal = $this->Principal;
-					if ($this->Principal['id'] !== $oCalendar->Owner) {
-						$this->Principal = [
-							'uri' => 'principals/' . $oCalendar->Owner,
-							'id' => $oCalendar->Owner
-						];
-					}
-					$oCalendarHome = $this->getCalendarHome();
-					$sChildUri = $oCalendarHome->getCalendarObjectByUID($sEventId);
-					$this->Principal = $curPrincipal;
-					if (!empty($sChildUri)) {
-						list(, $sEventFileName) = \Sabre\Uri\split($sChildUri);
-						$oChild = $oCalDAVCalendar->getChild($sEventFileName);
-						if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
-							$this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
-							return $oChild;
-						}
-					}
+                    $oCalendar = $this->parseCalendar($oCalDAVCalendar);
+                    $curPrincipal = $this->Principal;
+                    if ($this->Principal['id'] !== $oCalendar->Owner) {
+                        $this->Principal = [
+                            'uri' => 'principals/' . $oCalendar->Owner,
+                            'id' => $oCalendar->Owner
+                        ];
+                    }
+                    $oCalendarHome = $this->getCalendarHome();
+                    $sChildUri = $oCalendarHome->getCalendarObjectByUID($sEventId);
+                    $this->Principal = $curPrincipal;
+                    if (!empty($sChildUri)) {
+                        list(, $sEventFileName) = \Sabre\Uri\split($sChildUri);
+                        $oChild = $oCalDAVCalendar->getChild($sEventFileName);
+                        if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
+                            $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
+                            return $oChild;
+                        }
+                    }
                 }
             }
         }
