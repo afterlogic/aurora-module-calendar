@@ -1048,8 +1048,6 @@ class Sabredav extends Storage
                 $bIsTodo = true;
             }
 
-            xxxxx = 1;
-
             $oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
             if (isset($oBaseVEvent) && isset($oBaseVEvent[0]->DTSTART)) {
                 $oExpandedVCal = $oVCal->expand(
