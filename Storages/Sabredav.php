@@ -1013,10 +1013,12 @@ class Sabredav extends Storage
                     $this->Principal = $curPrincipal;
                     if (!empty($sChildUri)) {
                         list(, $sEventFileName) = \Sabre\Uri\split($sChildUri);
-                        $oChild = $oCalDAVCalendar->getChild($sEventFileName);
-                        if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
-                            $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
-                            return $oChild;
+                        if ($oCalDAVCalendar->childExists($sEventFileName)) {
+                            $oChild = $oCalDAVCalendar->getChild($sEventFileName);
+                            if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
+                                $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
+                                return $oChild;
+                            }
                         }
                     }
                 }
@@ -1045,6 +1047,8 @@ class Sabredav extends Storage
                 );
                 $bIsTodo = true;
             }
+
+            xxxxx = 1;
 
             $oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
             if (isset($oBaseVEvent) && isset($oBaseVEvent[0]->DTSTART)) {
