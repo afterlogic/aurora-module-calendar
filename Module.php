@@ -178,6 +178,18 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
     /**
      *
+     * @param string $CalendarId
+     * 
+     * @return \Aurora\Modules\Calendar\Classes\Calendar|false
+     */
+    public function GetPublicCalendar($CalendarId)
+    {
+        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
+        return $this->getManager()->getPublicCalendar($CalendarId);
+    }
+
+    /**
+     *
      * @param int $UserId
      * @param boolean $IsPublic
      * @param string $PublicCalendarId
@@ -189,8 +201,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $mCalendars = false;
 
         if ($IsPublic) {
-            \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-            $oCalendar = $this->getManager()->getPublicCalendar($PublicCalendarId);
+            $oCalendar = self::Decorator()->GetPublicCalendar($PublicCalendarId);
             $mCalendars = array($oCalendar);
         } else {
             \Aurora\System\Api::CheckAccess($UserId);
