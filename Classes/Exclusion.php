@@ -20,16 +20,16 @@ namespace Aurora\Modules\Calendar\Classes;
  */
 class Exclusion
 {
-	public $IdRecurrence;
-	public $IdRepeat;
-	public $StartTime;
+    public $IdRecurrence;
+    public $IdRepeat;
+    public $StartTime;
     public $Deleted;
 
-	public function __construct()
-	{
-		$this->IdRecurrence = null;
-		$this->IdRepeat   = null;
-		$this->StartTime  = null;
-		$this->Deleted    = null;
-	}
+    public function __construct()
+    {
+        $this->IdRecurrence = null;
+        $this->IdRepeat   = null;
+        $this->StartTime  = null;
+        $this->Deleted    = null;
+    }
 }

@@ -4,6 +4,6 @@ namespace Aurora\Modules\Calendar\Enums;
 
 class DefaultWorkDay
 {
-	const Starts = 9;
-	const Ends = 17;
+    public const Starts = 9;
+    public const Ends = 17;
 }

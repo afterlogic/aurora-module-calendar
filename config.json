@@ -38,5 +38,9 @@
     "WorkdayStarts": [
 		9,
 		"int"
+	],
+	"AllowSubscribedCalendars": [
+		false,
+		"bool"
 	]
 }
