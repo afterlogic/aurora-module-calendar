@@ -1193,7 +1193,7 @@ class Sabredav extends Storage
         ];
     }
 
-    public function getTasksUrls(\Sabre\CalDAV\Calendar $oCalendar, $bShowCompleted = true, $sSearch = '')
+    public function getTasksUrls($oCalendar, $bShowCompleted = true, $sSearch = '')
     {
         $aFilter = [];
         if (!$bShowCompleted) {
@@ -1327,6 +1327,36 @@ class Sabredav extends Storage
         return $mResult;
     }
 
+    public function getVCalFromSubscription($oCalDAVCalendar)
+    {
+        $mResult = false;
+
+        $aProps = $oCalDAVCalendar->getProperties([
+            '{http://calendarserver.org/ns/}source'
+        ]);
+        if (isset($aProps['{http://calendarserver.org/ns/}source'])) {
+            $client = new Client();
+            try {
+                $res = $client->get(
+                    $aProps['{http://calendarserver.org/ns/}source']->getHref(),
+                    [
+                        'headers' => [
+                            'Accept'     => '*/*',
+                        ],
+                        'http_errors' => false
+                    ]
+                );
+                if ($res->getStatusCode() === 200) {
+                    $data = (string) $res->getBody();
+                    $mResult = \Sabre\VObject\Reader::read($data);
+                }
+            } catch (ConnectException $oEx) {
+            }
+        }
+
+        return $mResult;
+    }
+
     /**
      * @param string $sUserPublicId
      * @param string $sCalendarId
@@ -1345,32 +1375,12 @@ class Sabredav extends Storage
 
         if ($oCalDAVCalendar) {
             if ($oCalDAVCalendar instanceof Subscription) {
-                $aProps = $oCalDAVCalendar->getProperties([
-                    '{http://calendarserver.org/ns/}source'
-                ]);
-                if (isset($aProps['{http://calendarserver.org/ns/}source'])) {
-                    $client = new Client();
-                    try {
-                        $res = $client->get(
-                            $aProps['{http://calendarserver.org/ns/}source']->getHref(),
-                            [
-                                'headers' => [
-                                    'Accept'     => '*/*',
-                                ],
-                                'http_errors' => false
-                            ]
-                        );
-                        if ($res->getStatusCode() === 200) {
-                            $data = (string) $res->getBody();
-                            $oVCal = \Sabre\VObject\Reader::read($data);
-                            $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-
-                            $mResult = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
-                            foreach (array_keys($mResult) as $key) {
-                                $mResult[$key]['lastModified'] = $oCalDAVCalendar->getLastModified();
-                            }
-                        }
-                    } catch (ConnectException $oEx) {
+                $oVCal = $this->getVCalFromSubscription($oCalDAVCalendar);
+                if ($oVCal) {
+                    $oCalendar = $this->parseCalendar($oCalDAVCalendar);
+                    $mResult = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+                    foreach (array_keys($mResult) as $key) {
+                        $mResult[$key]['lastModified'] = $oCalDAVCalendar->getLastModified();
                     }
                 }
             } else {
@@ -1439,8 +1449,22 @@ class Sabredav extends Storage
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
 
         if ($oCalDAVCalendar) {
-            $aUrls = $this->getTasksUrls($oCalDAVCalendar, $bCompeted, $sSearch);
-            $mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
+            if ($oCalDAVCalendar instanceof Subscription) {
+                $oVCal = $this->getVCalFromSubscription($oCalDAVCalendar);
+                if ($oVCal) {
+                    $oCalendar = $this->parseCalendar($oCalDAVCalendar);
+                    $mResult = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+                    foreach ($mResult as $key => $value) {
+                        $mResult[$key]['lastModified'] = $oCalDAVCalendar->getLastModified();
+                        if ($value['type'] !== 'VTODO') {
+                            unset($mResult[$key]);
+                        }
+                    }
+                }
+            } else {
+                $aUrls = $this->getTasksUrls($oCalDAVCalendar, $bCompeted, $sSearch);
+                $mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);    
+            }
         }
 
         return $mResult;
