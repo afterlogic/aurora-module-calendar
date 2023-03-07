@@ -10,7 +10,7 @@ use Aurora\System\Exceptions\ApiException;
 
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
- * @copyright Copyright (c) 2020, Afterlogic Corp.
+ * @copyright Copyright (c) 2023, Afterlogic Corp.
  *
  * @package Modules
  */

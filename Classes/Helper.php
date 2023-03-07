@@ -8,7 +8,7 @@ namespace Aurora\Modules\Calendar\Classes;
 
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
- * @copyright Copyright (c) 2019, Afterlogic Corp.
+ * @copyright Copyright (c) 2023, Afterlogic Corp.
  *
  * @internal
  *
