@@ -880,6 +880,14 @@ class Sabredav extends Storage
                         case 'VEVENT':
                         case 'VTODO':
                         case 'VJOURNAL':
+
+							if ($oCalendar->getShareAccess() !== \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER && (string) $oNodeChild->CLASS === 'PRIVATE') {
+								$oNodeChild->SUBJECT = \Aurora\Api::GetModule('Calendar')->i18N('PRIVATE_EVENT_FAKE_TITLE');
+								$oNodeChild->SUMMARY = \Aurora\Api::GetModule('Calendar')->i18N('PRIVATE_EVENT_FAKE_TITLE');
+								$oNodeChild->DESCRIPTION = '';
+								$oNodeChild->LOCATION = '';
+							}
+
                             $aObjects[] = $oNodeChild;
                             break;
 
