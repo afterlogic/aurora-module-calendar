@@ -141,7 +141,7 @@ class Parser
                     $aEvent['isPrivate'] = isset($oVComponent->CLASS) && (string) $oVComponent->CLASS === 'PRIVATE';
                     $oAuthenticatedUser = \Aurora\Api::getAuthenticatedUser();
                     if ($aEvent['isPrivate'] && $sOwnerEmail !== $oAuthenticatedUser->PublicId) {
-                        //						$aEvent['subject'] = '';
+                        $aEvent['subject'] = \Aurora\Api::GetModule('Calendar')->i18N('PRIVATE_EVENT_FAKE_TITLE');
                         $aEvent['description'] = '';
                         $aEvent['location'] = '';
                     }
