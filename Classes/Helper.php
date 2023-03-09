@@ -124,7 +124,9 @@ class Helper
         }
         if (isset($result)) {
             $sTimeZone = $sTimeZone === null ? 'UTC' : $sTimeZone;
-            $result = $result->setTimezone(new \DateTimeZone($sTimeZone));
+            if (!empty($sTimeZone)) {
+                $result = $result->setTimezone(new \DateTimeZone($sTimeZone));
+            }
         }
         return $result;
     }
@@ -190,7 +192,7 @@ class Helper
         $iMinutes = 0;
         try {
             $iMinutes = $oInterval->i + $oInterval->h*60 + $oInterval->d*24*60;
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $iMinutes = 15;
         }
 
@@ -328,7 +330,9 @@ class Helper
         $oDateTime = new \DateTime();
         if (is_numeric($mDateTime) && strlen($mDateTime) !== 8) {
             $oDateTime->setTimestamp($mDateTime);
-            $oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
+            if (!empty($sTimeZone)) {
+                $oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
+            }
         } else {
             $oDateTime = \Sabre\VObject\DateTimeParser::parse($mDateTime, new \DateTimeZone($sTimeZone));
         }

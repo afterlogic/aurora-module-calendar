@@ -136,8 +136,7 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
         $sDescription,
         $iOrder,
         $sColor
-    )
-    {
+    ) {
         return false;
     }
 

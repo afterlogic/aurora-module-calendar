@@ -54,8 +54,7 @@ class Calendar
         $sDescription = null,
         $sColor = null,
         $sOrder = null
-    )
-    {
+    ) {
         $this->Id = rtrim(urldecode($sId), '/');
         $this->IntId = 0;
         $this->IsDefault = (basename($sId) === \Afterlogic\DAV\Constants::ADDRESSBOOK_DEFAULT_NAME);
