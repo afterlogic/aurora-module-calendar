@@ -29,6 +29,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         return \Aurora\System\Api::GetModule(self::GetName());
     }
 
+    /**
+     * 
+     * @return Manager
+     */
     public function getManager()
     {
         if ($this->oManager === null) {
