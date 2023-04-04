@@ -531,6 +531,9 @@ class Sabredav extends Storage
         if ($oUserCalendars->childExists($sCalendarId)) {
             $oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
             if ($oCalDAVCalendar) {
+
+                Server::checkPrivileges('calendars/'.$oCalDAVCalendar->getName(), '{DAV:}write-properties');
+
                 $aUpdateProperties = array();
                 $bOnlyColor = ($sName === null && $sDescription === null && $iOrder === null);
                 if ($bOnlyColor) {
