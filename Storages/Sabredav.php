@@ -24,7 +24,7 @@ use Sabre\VObject\Component\VCalendar;
  *
  * @internal
  */
-class Sabredav extends Storage
+class Sabredav extends \Aurora\System\Managers\AbstractStorage
 {
     /**
      * @var array
@@ -165,7 +165,7 @@ class Sabredav extends Storage
                 $oCalendar = $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId];
             } else {
                 $oCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
-                if (isset($oCalendars) && $oCalendars->childExists($sCalendarId)) {
+                if ($oCalendars && $oCalendars->childExists($sCalendarId)) {
                     $oCalendar = $oCalendars->getChild($sCalendarId);
                     $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId] = $oCalendar;
                 }
@@ -320,7 +320,7 @@ class Sabredav extends Storage
     }
 
     /**
-     * @return \Aurora\Modules\Core\Classes\User
+     * @return string
      */
     public function getPublicAccount()
     {
@@ -563,7 +563,7 @@ class Sabredav extends Storage
      * @param string $sUserPublicId
      * @param string $sCalendarId
      * @param string $sName
-     * @param string $sDescription
+     * @param string $sSource
      * @param int $iOrder
      * @param string $sColor
      *
@@ -703,7 +703,7 @@ class Sabredav extends Storage
 
         $oCalendar = $this->getCalendar($sUserPublicId, $sCalendarId);
         if ($oCalendar) {
-            $this->getBackend()->updateShares($oCalendar->IntId, array(), array($sUserPublicId));
+//            $this->getBackend()->updateShares($oCalendar->IntId, array(), array($sUserPublicId));
         }
 
         return true;
@@ -805,7 +805,7 @@ class Sabredav extends Storage
                     $add[] = $aItem;
                 }
 
-                $this->getBackend()->updateShares($oCalendar->IntId, $add, $remove);
+//                $this->getBackend()->updateShares($oCalendar->IntId, $add, $remove);
             }
         }
 
@@ -853,7 +853,7 @@ class Sabredav extends Storage
     }
 
     /**
-     * @param stirng $sUserPublicId
+     * @param string $sUserPublicId
      * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
      *
      * @return array
@@ -956,10 +956,10 @@ class Sabredav extends Storage
             while ($oVCalendar = $splitter->getNext()) {
                 if ($oVCalendar instanceof VCalendar) {
                     $oVEvents = $oVCalendar->getBaseComponents('VEVENT');
-                    if (!isset($oVEvents) || 0 === count($oVEvents)) {
+                    if (!$oVEvents || 0 === count($oVEvents)) {
                         $oVEvents = $oVCalendar->getBaseComponents('VTODO');
                     }
-                    if (isset($oVEvents) && 0 < count($oVEvents) && isset($oVEvents[0])) {
+                    if ($oVEvents && 0 < count($oVEvents) && isset($oVEvents[0])) {
                         $sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
 
                         if (!$oCalDAVCalendar->childExists($sUid . '.ics')) {
@@ -1035,8 +1035,11 @@ class Sabredav extends Storage
     /**
      * @param string $sUserPublicId
      * @param object $oCalendar
+     * @param \Sabre\VObject\Component\VCalendar $oVCal
      * @param string $dStart
      * @param string $dEnd
+     * @param bool $bExpand
+     * @param string $sDefaultTimeZone
      *
      * @return array
      */
@@ -1045,6 +1048,7 @@ class Sabredav extends Storage
         if ($bExpand && $dStart !== null && $dEnd !== null) {
             $bIsTodo = false;
             if (isset($oVCal->VTODO)) {
+                /** @var \Sabre\VObject\Component\VCalendar */
                 $oVCal = \Sabre\VObject\Reader::read(
                     str_replace('VTODO', 'VEVENT', $oVCal->serialize())
                 );
@@ -1052,7 +1056,7 @@ class Sabredav extends Storage
             }
 
             $oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
-            if (isset($oBaseVEvent) && isset($oBaseVEvent[0]->DTSTART)) {
+            if ($oBaseVEvent && isset($oBaseVEvent[0]->DTSTART)) {
                 $oExpandedVCal = $oVCal->expand(
                     \Sabre\VObject\DateTimeParser::parse($dStart),
                     \Sabre\VObject\DateTimeParser::parse($dEnd)
@@ -1720,7 +1724,7 @@ class Sabredav extends Storage
 
     public function AddReminder($sEmail, $sCalendarUri, $sEventId, $time = null, $starttime = null)
     {
-        return \Afterlogic\DAV\Backend::Reminders()->addReminders($sEmail, $sCalendarUri, $sEventId, $time, $starttime);
+        return \Afterlogic\DAV\Backend::Reminders()->addReminder($sEmail, $sCalendarUri, $sEventId, $time, $starttime);
     }
 
     public function updateReminder($oCalendar, $sEventId, $sData)

@@ -7,13 +7,13 @@ require_once dirname(__file__)."/../../system/autoload.php";
 
 class Reminder
 {
-    private $oApiUsersManager;
+    private $oUsersManager;
 
-    private $oApiCalendarManager;
+    private $oCalendarManager;
 
-    private $oApiMailManager;
+    private $oMailManager;
 
-    private $oApiAccountsManager;
+    private $oAccountsManager;
 
     private $oCalendarModule;
 
@@ -41,10 +41,10 @@ class Reminder
         $oMailModule =  \Aurora\Modules\Mail\Module::getInstance();
         $this->oCalendarModule = \Aurora\Modules\Calendar\Module::getInstance();
 
-        $this->oApiUsersManager = \Aurora\Modules\Core\Module::getInstance()->getUsersManager() ;
-        $this->oApiCalendarManager = $this->oCalendarModule->getManager();
-        $this->oApiMailManager = $oMailModule->getMailManager();
-        $this->oApiAccountsManager = $oMailModule->getAccountsManager();
+        $this->oUsersManager = \Aurora\Modules\Core\Module::getInstance()->getUsersManager() ;
+        $this->oCalendarManager = $this->oCalendarModule->getManager();
+        $this->oMailManager = $oMailModule->getMailManager();
+        $this->oAccountsManager = $oMailModule->getAccountsManager();
     }
 
     public static function NewInstance()
@@ -54,8 +54,9 @@ class Reminder
 
     /**
      * @param string $sKey
-     * @param Aurora\Modules\Core\Classes\User $oUser = null
+     * @param \Aurora\Modules\Core\Models\User $oUser = null
      * @param array $aParams = null
+     * @param int $iMinutes
      *
      * @return string
      */
@@ -67,14 +68,14 @@ class Reminder
     /**
      * @param string $sLogin
      *
-     * @return CAccount
+     * @return \Aurora\Modules\Core\Models\User
      */
     private function &getUser($sLogin)
     {
         $mResult = null;
 
         if (!isset($this->aUsers[$sLogin])) {
-            $this->aUsers[$sLogin] = $this->oApiUsersManager->getUserByPublicId($sLogin);
+            $this->aUsers[$sLogin] = $this->oUsersManager->getUserByPublicId($sLogin);
         }
 
         $mResult =& $this->aUsers[$sLogin];
@@ -87,17 +88,17 @@ class Reminder
     }
 
     /**
-     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param \Aurora\Modules\Core\Models\User $oUser
      * @param string $sUri
      *
-     * @return CalendarInfo|null
+     * @return Classes\Calendar|null
      */
     private function &getCalendar($oUser, $sUri)
     {
         $mResult = null;
-        if ($this->oApiCalendarManager) {
+        if ($this->oCalendarManager) {
             if (!isset($this->aCalendars[$sUri])) {
-                $this->aCalendars[$sUri] = $this->oApiCalendarManager->getCalendar($oUser->PublicId, $sUri);
+                $this->aCalendars[$sUri] = $this->oCalendarManager->getCalendar($oUser->PublicId, $sUri);
             }
 
             if (isset($this->aCalendars[$sUri])) {
@@ -109,7 +110,7 @@ class Reminder
     }
 
     /**
-     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param \Aurora\Modules\Core\Models\User $oUser
      * @param string $sEventName
      * @param string $sDateStr
      * @param string $sCalendarName
@@ -148,7 +149,7 @@ class Reminder
     }
 
     /**
-     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param \Aurora\Modules\Core\Models\User $oUser
      * @param string $sEventName
      * @param string $sDateStr
      * @param string $sCalendarName
@@ -174,7 +175,7 @@ class Reminder
     }
 
     /**
-     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param \Aurora\Modules\Core\Models\User $oUser
      * @param string $sSubject
      * @param string $mHtml = null
      * @param string $mText = null
@@ -215,7 +216,7 @@ class Reminder
 
     /**
      *
-     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param \Aurora\Modules\Core\Models\User $oUser
      * @param string $sSubject
      * @param string $sEventName
      * @param string $sDate
@@ -235,11 +236,11 @@ class Reminder
         );
 
         try {
-            $oAccount = $this->oApiAccountsManager->getAccountUsedToAuthorize($oUser->PublicId);
+            $oAccount = $this->oAccountsManager->getAccountUsedToAuthorize($oUser->PublicId);
             if (!$oAccount instanceof \Aurora\Modules\Mail\Models\MailAccount) {
                 return false;
             }
-            return $this->oApiMailManager->sendMessage($oAccount, $oMessage);
+            return $this->oMailManager->sendMessage($oAccount, $oMessage);
         } catch (\Exception $oException) {
             \Aurora\System\Api::Log('MessageSend Exception', \Aurora\System\Enums\LogLevel::Error, 'cron-');
             \Aurora\System\Api::LogException($oException, \Aurora\System\Enums\LogLevel::Error, 'cron-');
@@ -320,7 +321,7 @@ class Reminder
 
     public function GetReminders($iStart, $iEnd)
     {
-        $aReminders = $this->oApiCalendarManager->getReminders($iStart, $iEnd);
+        $aReminders = $this->oCalendarManager->getReminders($iStart, $iEnd);
         $aEvents = array();
 
         if ($aReminders && is_array($aReminders) && count($aReminders) > 0) {
@@ -333,8 +334,8 @@ class Reminder
                 $iStartTime = $aReminder['starttime'];
                 $iReminderTime = $aReminder['time'];
 
-                if (!isset($aCacheEvents[$sEventId]) && isset($oUser)) {
-                    $aCacheEvents[$sEventId]['data'] = $this->oApiCalendarManager->getEvent($oUser->PublicId, $sCalendarUri, $sEventId);
+                if (!isset($aCacheEvents[$sEventId]) && $oUser) {
+                    $aCacheEvents[$sEventId]['data'] = $this->oCalendarManager->getEvent($oUser->PublicId, $sCalendarUri, $sEventId);
 
                     $dt = new \DateTime();
                     $dt->setTimestamp($iStartTime);
@@ -431,7 +432,7 @@ class Reminder
                                             $aBaseEvents = $vCal->getBaseComponents('VEVENT');
                                             if (isset($aBaseEvents[0])) {
                                                 $oEventStartDT = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oNowDT_UTC, $aBaseEvents[0]);
-                                                if (isset($oEventStartDT)) {
+                                                if ($oEventStartDT) {
                                                     $sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
                                                     if ($bAllDay) {
                                                         $sDate = $oEventStartDT->format('d m Y');
@@ -446,15 +447,15 @@ class Reminder
                                         $sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay);
 
                                         $aUsers = array(
-                                            $oUser->IdUser => $oUser
+                                            $oUser->Id => $oUser
                                         );
 
-                                        $aCalendarUsers = $this->oApiCalendarManager->getCalendarUsers($oUser, $oCalendar);
+                                        $aCalendarUsers = $this->oCalendarManager->getCalendarUsers($oUser, $oCalendar);
                                         if (0 < count($aCalendarUsers)) {
                                             foreach ($aCalendarUsers as $aCalendarUser) {
                                                 $oCalendarUser = $this->getUser($aCalendarUser['email']);
                                                 if ($oCalendarUser) {
-                                                    $aUsers[$oCalendarUser->IdUser] = $oCalendarUser;
+                                                    $aUsers[$oCalendarUser->Id] = $oCalendarUser;
                                                 }
                                             }
                                         }
@@ -463,7 +464,7 @@ class Reminder
                                             $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
                                             if ($bIsMessageSent) {
                                                 $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
-                                                $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventUrl, $vCal->serialize());
+                                                $this->oCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventUrl, $vCal->serialize());
                                                 \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             } else {
                                                 \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');

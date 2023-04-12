@@ -62,11 +62,11 @@ class Helper
     }
 
     /**
-     * @param DateTime $sDtStart
+     * @param \DateTimeImmutable $sDtStart
      * @param \Sabre\VObject\Component\VCalendar $oVCal
      * @param string $sUid Default value is **null**.
      *
-     * @return DateTime
+     * @return \DateTimeImmutable
      */
     public static function getRRuleIteratorNextRepeat(\DateTimeImmutable $sDtStart, $oVCal, $sUid = null)
     {
@@ -89,7 +89,7 @@ class Helper
             return false;
         }
         $iData = round($iData);
-        return (isset($iMin) && isset($iMax)) ? ($iMin <= $iData && $iData <= $iMax) : ($iData > 0);
+        return $iMin <= $iData && $iData <= $iMax;
     }
 
     /**
@@ -111,7 +111,7 @@ class Helper
     }
 
     /**
-     * @param \DateTime $dt
+     * @param \Sabre\VObject\Property\ICalendar\DateTime $dt
      * @param string $sTimeZone
      *
      * @return \DateTime|null
@@ -122,7 +122,7 @@ class Helper
         if ($dt) {
             $result = $dt->getDateTime();
         }
-        if (isset($result)) {
+        if ($result) {
             $sTimeZone = $sTimeZone === null ? 'UTC' : $sTimeZone;
             if (!empty($sTimeZone)) {
                 $result = $result->setTimezone(new \DateTimeZone($sTimeZone));
@@ -246,24 +246,26 @@ class Helper
         if (!empty($oEvent->Start) && !empty($oEvent->End)) {
             $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
             $oDTStart = self::prepareDateTime($oEvent->Start, $oUser->DefaultTimeZone);
-            if (isset($oDTStart)) {
-                $oVEvent->DTSTART = $oDTStart;
-                if ($oEvent->AllDay) {
-                    $oVEvent->DTSTART->offsetSet('VALUE', 'DATE');
-                }
+
+            $oVEvent->DTSTART = $oDTStart;
+            if ($oEvent->AllDay) {
+                /* @phpstan-ignore-next-line */
+                $oVEvent->DTSTART->offsetSet('VALUE', 'DATE');
             }
+
             $oDTEnd = self::prepareDateTime($oEvent->End, $oUser->DefaultTimeZone);
-            if (isset($oDTEnd)) {
-                if ($oEvent->Type === 'VTODO') {
-                    $oVEvent->DUE = $oDTEnd;
-                    if ($oEvent->AllDay) {
-                        $oVEvent->DUE->offsetSet('VALUE', 'DATE');
-                    }
-                } else {
-                    $oVEvent->DTEND = $oDTEnd;
-                    if ($oEvent->AllDay) {
-                        $oVEvent->DTEND->offsetSet('VALUE', 'DATE');
-                    }
+
+            if ($oEvent->Type === 'VTODO') {
+                $oVEvent->DUE = $oDTEnd;
+                if ($oEvent->AllDay) {
+                    /* @phpstan-ignore-next-line */
+                    $oVEvent->DUE->offsetSet('VALUE', 'DATE');
+                }
+            } else {
+                $oVEvent->DTEND = $oDTEnd;
+                if ($oEvent->AllDay) {
+                    /* @phpstan-ignore-next-line */
+                    $oVEvent->DTEND->offsetSet('VALUE', 'DATE');
                 }
             }
         } else {
@@ -285,10 +287,10 @@ class Helper
         if (isset($oEvent->RRule)) {
             $sRRULE = '';
             if (isset($oVEvent->RRULE) && null === $oEvent->RRule) {
-                $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+                $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
                 $oRRule = false;
                 if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
-                    $oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($oUser->DefaultTimeZone, $oVCal, (string)$oVEvent->UID);
+                    $oRRule = \Aurora\Modules\Calendar\Classes\Parser::parseRRule($oUser->DefaultTimeZone, $oVCal);
                 }
                 if ($oRRule && $oRRule instanceof \Aurora\Modules\Calendar\Classes\RRule) {
                     $sRRULE = (string) $oRRule;
@@ -351,7 +353,7 @@ class Helper
     }
 
     /**
-     * @param \DateTime $dt
+     * @param \Sabre\VObject\Property\ICalendar\DateTime $dt
      * @param string $sTimeZone
      * @param string $format
      *

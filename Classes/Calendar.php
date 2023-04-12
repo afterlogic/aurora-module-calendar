@@ -92,7 +92,7 @@ class Calendar
     }
 
     /**
-     * @param \Aurora\Modules\StandardAuth\Classes\Account $oAccount
+     * @param \Aurora\Modules\StandardAuth\Models\Account $oAccount
      * @return bool
      */
     public function IsCalendarOwner($oAccount)

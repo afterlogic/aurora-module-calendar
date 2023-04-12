@@ -18,10 +18,10 @@ namespace Aurora\Modules\Calendar\Classes;
 class Parser
 {
     /**
-     * @param string $sUUID
      * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
      * @param \Sabre\VObject\Component\VCalendar $oExpandedVCal
      * @param \Sabre\VObject\Component\VCalendar $oVCal Default value is **null**.
+     * @param string $sDefaultTimeZone
      *
      * @return array
      */
@@ -31,7 +31,7 @@ class Parser
         $aRules = array();
         $aExcludedRecurrences = array();
 
-        $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+        $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
         if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
             $sTimeZone = $oUser->DefaultTimeZone;
         } elseif ($sDefaultTimeZone) {
@@ -40,7 +40,7 @@ class Parser
             $sTimeZone = 'UTC';
         }
 
-        $sComponent = 'VEVENT';
+        $sComponent = $sType = 'VEVENT';
         if (isset($oExpandedVCal->{$sComponent})) {
             $sType = $sComponent;
         } else {
@@ -55,9 +55,9 @@ class Parser
             $aExcludedRecurrences = self::getExcludedRecurrences($oVCal);
         }
 
-        if (isset($oExpandedVCal, $oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Models\User || $oCalendar->IsPublic)) {
+        if (isset($oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Models\User || $oCalendar->IsPublic)) {
             foreach ($oExpandedVCal->{$sComponent} as $oVComponent) {
-                $sOwnerEmail = isset($oCalendar) ? $oCalendar->Owner : '';
+                $sOwnerEmail = $oCalendar->Owner;
                 $aEvent = array();
 
                 if (isset($oVComponent, $oVComponent->UID)) {
@@ -83,7 +83,7 @@ class Parser
                         $aEvent
                     );
                     $sOwnerEmail = $aArgs['sOwnerEmail'];
-                    $oOwner = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sOwnerEmail);
+                    $oOwner = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sOwnerEmail);
                     $sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Models\User) ? $oOwner->Name : '';
                     $bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
                     $sCurrentTimeZone = ($bAllDay) ? 'UTC' : $sTimeZone;
@@ -106,13 +106,14 @@ class Parser
                         if (isset($oVComponent->DTSTART)) {
                             $dtStart = $oVComponent->DTSTART->getDateTime();
                             if ($dtStart) {
+                                /* @phpstan-ignore-next-line */
                                 $oVComponent->DTEND = $dtStart->add(new \DateInterval('PT1H'));
                                 $oDTEND = $oVComponent->DTEND;
                             }
                         }
                     }
 
-                    $aEvent['calendarId'] = isset($oCalendar) ? $oCalendar->Id : '';
+                    $aEvent['calendarId'] = $oCalendar->Id;
                     $aEvent['id'] = $sId;
                     $aEvent['uid'] = $sUid;
                     $aEvent['subject'] = $oVComponent->SUMMARY ? (string)$oVComponent->SUMMARY : '';
@@ -244,7 +245,7 @@ class Parser
             \Aurora\Modules\Calendar\Enums\PeriodStr::Yearly
         );
 
-        if (isset($oVComponentBase->RRULE, $DefaultTimeZone)) {
+        if (isset($oVComponentBase->RRULE)) {
             $oResult = new RRule($DefaultTimeZone);
             $aRules = $oVComponentBase->RRULE->getParts();
             if (isset($aRules['FREQ'])) {
@@ -314,7 +315,7 @@ class Parser
     }
 
     /**
-     * @param string $sUUID
+     * @param string $DefaultTimeZone
      * @param \Sabre\VObject\Component\VCalendar $oVCal
      * @param string $sComponent
      *

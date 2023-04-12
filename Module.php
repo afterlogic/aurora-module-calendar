@@ -24,6 +24,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      *
      * @return Module
      */
+    public static function Decorator()
+    {
+        return parent::Decorator();
+    }
+
+    /**
+     *
+     * @return Module
+     */
     public static function getInstance()
     {
         return \Aurora\System\Api::GetModule(self::GetName());
@@ -164,7 +173,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * Loads calendar.
      *
      * @param int $UserId
-     * @param string sCalendarId Calendar ID
+     * @param string $CalendarId Calendar ID
      *
      * @return \Aurora\Modules\Calendar\Classes\Calendar|false $oCalendar
      */
@@ -318,7 +327,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param int $UserId
      * @param string $Id
      * @param string $Name
-     * @param string $Description
+     * @param string $Source
      * @param string $Color
      * @return array|boolean
      */
@@ -491,7 +500,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param array $CalendarIds
      * @param int $Start
      * @param int $End
-     * @param boolean $IsPublic
      * @param boolean $Expand
      * @return array|boolean
      */
@@ -624,7 +632,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oEvent->End = $endTS;
             $oEvent->AllDay = $allDay;
             $oEvent->Alarms = @json_decode($alarms, true);
-            $aRRule = isset($rrule) ? @json_decode($rrule, true) : false;
+            $aRRule = !empty($rrule) ? @json_decode($rrule, true) : false;
             if ($aRRule) {
                 $oUser = \Aurora\System\Api::getAuthenticatedUser();
                 $oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser->DefaultTimeZone);
@@ -665,11 +673,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
     /**
      *
-     * @param type $UserId
-     * @param type $CalendarId
-     * @param type $EventId
-     * @param type $Data
-     * @return type
+     * @param int $UserId
+     * @param string $CalendarId
+     * @param string $EventId
+     * @param array $Data
+     * @return mixed
      */
     public function CreateEventFromData($UserId, $CalendarId, $EventId, $Data)
     {
@@ -714,8 +722,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      *
      * @param int $UserId
      * @param string $CalendarId
+     * @param string $TaskId
      * @param string $Subject
-     * @param string $Sescription
+     * @param string $Status
+     * @param bool $WithDate
      * @return array|boolean
      */
     public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status, $WithDate = false)
@@ -961,7 +971,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
                     $sAuthToken = isset($_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY] : '';
                     $sResult = strtr($sResult, array(
-                        '{{AppVersion}}' => AU_APP_VERSION,
+                        '{{AppVersion}}' => \Aurora\System\Application::GetVersion(),
                         '{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
                         '{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
                         '{{IntegratorBody}}' => $oApiIntegrator->buildBody(
@@ -995,7 +1005,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      *
      * @param int $UserId
      * @param array $UploadData
-     * @param string $AdditionalData
+     * @param string $CalendarID
      * @return array
      * @throws \Aurora\System\Exceptions\ApiException
      */
@@ -1004,7 +1014,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
-        $sCalendarId = isset($CalendarID) ? $CalendarID : '';
+        $sCalendarId = !empty($CalendarID) ? $CalendarID : '';
 
         $sError = '';
         $aResponse = array(
@@ -1115,6 +1125,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
     public function onGetMobileSyncInfo($aArgs, &$mResult)
     {
+        /** @var \Aurora\Modules\Dav\Module */
         $oDavModule = \Aurora\Modules\Dav\Module::Decorator();
         $iUserId = \Aurora\System\Api::getAuthenticatedUserId();
         $aCalendars = self::Decorator()->GetCalendars($iUserId);
