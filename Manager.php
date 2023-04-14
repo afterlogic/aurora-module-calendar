@@ -1404,7 +1404,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
         $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
         if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
-            
             /** @var \Aurora\Modules\Mail\Module */
             $oMailModuleDecorator = \Aurora\System\Api::GetModuleDecorator('Mail');
             if ($oMailModuleDecorator) {

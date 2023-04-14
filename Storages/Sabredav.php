@@ -531,7 +531,6 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         if ($oUserCalendars->childExists($sCalendarId)) {
             $oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
             if ($oCalDAVCalendar) {
-
                 Server::checkPrivileges('calendars/'.$oCalDAVCalendar->getName(), '{DAV:}write-properties');
 
                 $aUpdateProperties = array();
@@ -1499,7 +1498,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 }
             } else {
                 $aUrls = $this->getTasksUrls($oCalDAVCalendar, $bCompeted, $sSearch);
-                $mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);    
+                $mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
             }
         }
 

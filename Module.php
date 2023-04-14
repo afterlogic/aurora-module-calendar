@@ -39,7 +39,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     }
 
     /**
-     * 
+     *
      * @return Manager
      */
     public function getManager()
@@ -192,7 +192,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     /**
      *
      * @param string $CalendarId
-     * 
+     *
      * @return \Aurora\Modules\Calendar\Classes\Calendar|false
      */
     public function GetPublicCalendar($CalendarId)
