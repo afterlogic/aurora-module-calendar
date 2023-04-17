@@ -193,35 +193,37 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      *
      * @param string $CalendarId
      *
-     * @return \Aurora\Modules\Calendar\Classes\Calendar|false
+     * @return array|false
      */
     public function GetPublicCalendar($CalendarId)
     {
+        $mResult = false;
+
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-        return $this->getManager()->getPublicCalendar($CalendarId);
+        $oPublicCalendar = $this->getManager()->getPublicCalendar($CalendarId);
+        if ($oPublicCalendar) {
+            $mResult = [
+                'Calendars' => [$oPublicCalendar]
+            ];
+        }
+
+        return $mResult;
     }
 
     /**
      *
      * @param int $UserId
-     * @param boolean $IsPublic
-     * @param string $PublicCalendarId
      * @return array|boolean
      */
-    public function GetCalendars($UserId, $IsPublic = false, $PublicCalendarId = '')
+    public function GetCalendars($UserId)
     {
         $mResult = false;
         $mCalendars = false;
 
-        if ($IsPublic) {
-            $oCalendar = self::Decorator()->GetPublicCalendar($PublicCalendarId);
-            $mCalendars = array($oCalendar);
-        } else {
-            \Aurora\System\Api::CheckAccess($UserId);
-            $oUser = \Aurora\System\Api::getUserById($UserId);
-            if ($oUser) {
-                $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
-            }
+        \Aurora\System\Api::CheckAccess($UserId);
+        $oUser = \Aurora\System\Api::getUserById($UserId);
+        if ($oUser) {
+            $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
         }
 
         // When $mCalendars is an empty array with condition "if ($mCalendars)" $mResult will be false
