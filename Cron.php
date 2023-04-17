@@ -325,7 +325,6 @@ class Reminder
         $aEvents = array();
 
         if ($aReminders && is_array($aReminders) && count($aReminders) > 0) {
-            $aCacheEvents = array();
             foreach ($aReminders as $aReminder) {
                 $oUser = $this->getUser($aReminder['user']);
 
@@ -334,39 +333,40 @@ class Reminder
                 $iStartTime = $aReminder['starttime'];
                 $iReminderTime = $aReminder['time'];
 
-                if (!isset($aCacheEvents[$sEventId]) && $oUser) {
-                    $aCacheEvents[$sEventId]['data'] = $this->oCalendarManager->getEvent($oUser->PublicId, $sCalendarUri, $sEventId);
+                $aEventData = [];
+                if ($oUser) {
+                    $aEventData['data'] = $this->oCalendarManager->getEvent($oUser->PublicId, $sCalendarUri, $sEventId);
 
                     $dt = new \DateTime();
                     $dt->setTimestamp($iStartTime);
                     $oDefaultTimeZone = new \DateTimeZone($oUser->DefaultTimeZone ?: 'UTC');
                     $dt->setTimezone($oDefaultTimeZone);
 
-                    $aEventClear = [];
-                    if (is_array($aCacheEvents[$sEventId]['data'])) {
+                    if (is_array($aEventData['data'])) {
                         $CurrentEvent = null;
-                        foreach ($aCacheEvents[$sEventId]['data'] as $key =>$aEvent) {
+                        foreach ($aEventData['data'] as $key =>$aEvent) {
                             if (is_int($key)) {
                                 if (empty($CurrentEvent)) {
                                     $CurrentEvent = $aEvent;
                                 } elseif (isset($aEvent['excluded']) && $this->EventHasReminder($aEvent, $iReminderTime)) {
                                     $CurrentEvent = $aEvent;
                                 }
-                                unset($aCacheEvents[$sEventId]['data'][$key]);
+                                unset($aEventData['data'][$key]);
                             }
                         }
                         if (!empty($CurrentEvent)) {
-                            $aCacheEvents[$sEventId]['data'][0] = $CurrentEvent;
+                            $aEventData['data'][0] = $CurrentEvent;
                         }
                     }
-                    $aCacheEvents[$sEventId]['time'] = $dt->format($this->getDateTimeFormat($oUser));
+                    $aEventData['time'] = $dt->format($this->getDateTimeFormat($oUser));
                 }
 
-                if (isset($aCacheEvents[$sEventId])) {
-                    $aEvents[$aReminder['user']][$sCalendarUri][$sEventId] = $aCacheEvents[$sEventId];
+                if (count($aEventData) > 0) {
+                    $aEvents[$aReminder['user']][$sCalendarUri][$sEventId] = $aEventData;
                 }
             }
         }
+
         return $aEvents;
     }
 
