@@ -474,13 +474,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     /**
      * Set/unset calendar as public.
      *
-     * @param string $sUserPublicId Account object
      * @param string $sCalendarId Calendar ID
      * @param bool $bIsPublic If set to **true**, calendar is made public; if **false**, setting as public gets cancelled
-     *
+     * @param \Aurora\Modules\Core\Models\User $oUser
      * @return bool
      */
-    public function publicCalendar($sUserPublicId, $sCalendarId, $bIsPublic = false, $oUser = null)
+    public function publicCalendar($sCalendarId, $bIsPublic = false, $oUser = null)
     {
         $oResult = null;
         try {
