@@ -113,6 +113,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'AllowPrivateEvents' => $this->getConfig('AllowPrivateEvents', true),
             'AllowDefaultReminders' => $this->getConfig('AllowDefaultReminders', true),
             'DefaultReminders' => $this->getConfig('DefaultReminders', []),
+            'CalendarColors' => $this->getConfig('CalendarColors', []),
         );
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();

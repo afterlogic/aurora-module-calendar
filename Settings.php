@@ -23,6 +23,7 @@ use Aurora\System\SettingsProperty;
  * @property bool $AllowPrivateEvents
  * @property bool $AllowDefaultReminders
  * @property bool $AllowSubscribedCalendars
+ * @property array $CalendarColors
  */
 
 class Settings extends \Aurora\System\Module\Settings
@@ -107,6 +108,26 @@ class Settings extends \Aurora\System\Module\Settings
                 "bool",
                 null,
                 "Setting to true enables external calendars features",
+            ),
+            "CalendarColors" => new SettingsProperty(
+                [
+                    '#f09650',
+                    '#f68987',
+                    '#6fd0ce',
+                    '#8fbce2',
+                    '#b9a4f5',
+                    '#f68dcf',
+                    '#d88adc',
+                    '#4afdb4',
+                    '#9da1ff',
+                    '#5cc9c9',
+                    '#77ca71',
+                    '#aec9c9',
+                    '#000'
+                ],
+                "array",
+                null,
+                "",
             ),
         ];
     }
