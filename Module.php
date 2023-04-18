@@ -31,6 +31,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
     /**
      *
+     * @return Settings
+     */
+    protected function GetModuleSettings()
+    {
+        return $this->oModuleSettings;
+    }
+
+    /**
+     *
      * @return Module
      */
     public static function getInstance()
