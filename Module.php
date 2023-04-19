@@ -98,22 +98,23 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function GetSettings()
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
+        $oSettings = $this->getModuleSettings();
 
         $aSettings = array(
-            'AddDescriptionToTitle' => $this->getConfig('AddDescriptionToTitle', false),
-            'AllowTasks' => $this->getConfig('AllowTasks', true),
-            'DefaultTab' => $this->getConfig('DefaultTab', 3),
-            'HighlightWorkingDays' => $this->getConfig('HighlightWorkingDays', true),
-            'HighlightWorkingHours' => $this->getConfig('HighlightWorkingHours', true),
+            'AddDescriptionToTitle' => $oSettings->AddDescriptionToTitle,
+            'AllowTasks' => $oSettings->AllowTasks,
+            'DefaultTab' => $oSettings->DefaultTab,
+            'HighlightWorkingDays' => $oSettings->HighlightWorkingDays,
+            'HighlightWorkingHours' => $oSettings->HighlightWorkingHours,
             'PublicCalendarId' => $this->oHttp->GetQuery('calendar-pub', ''),
-            'WeekStartsOn' => $this->getConfig('WeekStartsOn', 0),
-            'WorkdayEnds' => $this->getConfig('WorkdayEnds', 18),
-            'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
-            'AllowSubscribedCalendars' => $this->getConfig('AllowSubscribedCalendars', false),
-            'AllowPrivateEvents' => $this->getConfig('AllowPrivateEvents', true),
-            'AllowDefaultReminders' => $this->getConfig('AllowDefaultReminders', true),
-            'DefaultReminders' => $this->getConfig('DefaultReminders', []),
-            'CalendarColors' => $this->getConfig('CalendarColors', []),
+            'WeekStartsOn' => $oSettings->WeekStartsOn,
+            'WorkdayEnds' => $oSettings->WorkdayEnds,
+            'WorkdayStarts' => $oSettings->WorkdayStarts,
+            'AllowSubscribedCalendars' => $oSettings->AllowSubscribedCalendars,
+            'AllowPrivateEvents' => $oSettings->AllowPrivateEvents,
+            'AllowDefaultReminders' => $oSettings->AllowDefaultReminders,
+            'DefaultReminders' => [],
+            'CalendarColors' => $oSettings->CalendarColors,
         );
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
@@ -518,7 +519,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function GetTasks($UserId, $CalendarIds, $Completed = true, $Search = '', $Start = null, $End = null, $Expand = true)
     {
         $mResult = [];
-        if ($this->getConfig('AllowTasks', true)) {
+        if ($this->getModuleSettings()->AllowTasks) {
             \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
@@ -711,7 +712,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function CreateTask($UserId, $CalendarId, $Subject)
     {
         $mResult = false;
-        if ($this->getConfig('AllowTasks', true)) {
+        if ($this->getModuleSettings()->AllowTasks) {
             \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
@@ -743,7 +744,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status, $WithDate = false)
     {
         $bResult = false;
-        if ($this->getConfig('AllowTasks', true)) {
+        if ($this->getModuleSettings()->AllowTasks) {
             \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
