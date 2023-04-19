@@ -189,7 +189,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         /** @var \Aurora\Modules\Calendar\Module @oCalendarModule */
         $oCalendarModule = Api::GetModule('Calendar');
 
-        if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription && !$oCalendarModule->getModuleSettings()->AllowSubscribedCalendars) {
+        if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription && !$oCalendarModule->oModuleSettings->AllowSubscribedCalendars) {
             return false;
         }
 

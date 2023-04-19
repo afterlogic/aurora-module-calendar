@@ -12,6 +12,8 @@ use Aurora\System\Exceptions\ApiException;
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2023, Afterlogic Corp.
  *
+ * @property Settings $oModuleSettings
+ *
  * @package Modules
  */
 class Module extends \Aurora\System\Module\AbstractLicensedModule
@@ -98,23 +100,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function GetSettings()
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-        $oSettings = $this->getModuleSettings();
 
         $aSettings = array(
-            'AddDescriptionToTitle' => $oSettings->AddDescriptionToTitle,
-            'AllowTasks' => $oSettings->AllowTasks,
-            'DefaultTab' => $oSettings->DefaultTab,
-            'HighlightWorkingDays' => $oSettings->HighlightWorkingDays,
-            'HighlightWorkingHours' => $oSettings->HighlightWorkingHours,
+            'AddDescriptionToTitle' => $this->oModuleSettings->AddDescriptionToTitle,
+            'AllowTasks' => $this->oModuleSettings->AllowTasks,
+            'DefaultTab' => $this->oModuleSettings->DefaultTab,
+            'HighlightWorkingDays' => $this->oModuleSettings->HighlightWorkingDays,
+            'HighlightWorkingHours' => $this->oModuleSettings->HighlightWorkingHours,
             'PublicCalendarId' => $this->oHttp->GetQuery('calendar-pub', ''),
-            'WeekStartsOn' => $oSettings->WeekStartsOn,
-            'WorkdayEnds' => $oSettings->WorkdayEnds,
-            'WorkdayStarts' => $oSettings->WorkdayStarts,
-            'AllowSubscribedCalendars' => $oSettings->AllowSubscribedCalendars,
-            'AllowPrivateEvents' => $oSettings->AllowPrivateEvents,
-            'AllowDefaultReminders' => $oSettings->AllowDefaultReminders,
+            'WeekStartsOn' => $this->oModuleSettings->WeekStartsOn,
+            'WorkdayEnds' => $this->oModuleSettings->WorkdayEnds,
+            'WorkdayStarts' => $this->oModuleSettings->WorkdayStarts,
+            'AllowSubscribedCalendars' => $this->oModuleSettings->AllowSubscribedCalendars,
+            'AllowPrivateEvents' => $this->oModuleSettings->AllowPrivateEvents,
+            'AllowDefaultReminders' => $this->oModuleSettings->AllowDefaultReminders,
             'DefaultReminders' => [],
-            'CalendarColors' => $oSettings->CalendarColors,
+            'CalendarColors' => $this->oModuleSettings->CalendarColors,
         );
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
@@ -519,7 +520,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function GetTasks($UserId, $CalendarIds, $Completed = true, $Search = '', $Start = null, $End = null, $Expand = true)
     {
         $mResult = [];
-        if ($this->getModuleSettings()->AllowTasks) {
+        if ($this->oModuleSettings->AllowTasks) {
             \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
@@ -712,7 +713,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function CreateTask($UserId, $CalendarId, $Subject)
     {
         $mResult = false;
-        if ($this->getModuleSettings()->AllowTasks) {
+        if ($this->oModuleSettings->AllowTasks) {
             \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
@@ -744,7 +745,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function UpdateTask($UserId, $CalendarId, $TaskId, $Subject, $Status, $WithDate = false)
     {
         $bResult = false;
-        if ($this->getModuleSettings()->AllowTasks) {
+        if ($this->oModuleSettings->AllowTasks) {
             \Aurora\System\Api::CheckAccess($UserId);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
