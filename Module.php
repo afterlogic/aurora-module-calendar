@@ -23,7 +23,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     protected $oUserForDelete = null;
 
     /**
-     *
+     * @return Module
+     */
+    public static function getInstance()
+    {
+        return parent::getInstance();
+    }
+
+    /**
      * @return Module
      */
     public static function Decorator()
@@ -32,21 +39,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     }
 
     /**
-     *
      * @return Settings
      */
     public function getModuleSettings()
     {
         return $this->oModuleSettings;
-    }
-
-    /**
-     *
-     * @return Module
-     */
-    public static function getInstance()
-    {
-        return \Aurora\System\Api::GetModule(self::GetName());
     }
 
     /**

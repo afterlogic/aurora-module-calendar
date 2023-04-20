@@ -17,6 +17,8 @@ use Sabre\VObject\ParseException;
  *
  * @package Calendar
  * @subpackage Managers
+ *
+ * @property Module $oModule
  */
 class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
