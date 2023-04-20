@@ -187,7 +187,7 @@ class Reminder
         $oMessage = \MailSo\Mime\Message::NewInstance();
         $oMessage->RegenerateMessageId();
 
-        //		$sXMailer = \Aurora\System\Api::GetConf('webmail.xmailer-value', '');
+        //		$sXMailer = \Aurora\System\Api::GetValue('webmail.xmailer-value', '');
         //		if (0 < strlen($sXMailer))
         //		{
         //			$oMessage->SetXMailer($sXMailer);
