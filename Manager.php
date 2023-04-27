@@ -1077,10 +1077,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
                 $iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVComponentIndex($oVCal->{$sComponent});
                 if ($iIndex !== false) {
-                    $oVCal->{$sComponent}[$iIndex]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
+                    /** @var \Sabre\VObject\Component $oVComponent */
+                    $oVComponent =& $oVCal->{$sComponent}[$iIndex];
+                    $oVComponent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
                     $oDTExdate = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
-                    $oDTStart = $oVCal->{$sComponent}[$iIndex]->DTSTART->getDatetime();
+                    /** @var \Sabre\VObject\Property\ICalendar\DateTime */
+                    $DTSTART = $oVComponent->DTSTART;
+                    $oDTStart = $DTSTART->getDatetime();
 
                     $mIndex = \Aurora\Modules\Calendar\Classes\Helper::isRecurrenceExists($oVCal->{$sComponent}, $sRecurrenceId);
                     if ($bDelete) {
@@ -1092,22 +1096,21 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
                             if ($it->valid()) {
                                 $oEventObj = $it->getEventObject();
-                                $oVCal->{$sComponent}[$iIndex]->DTSTART = $oEventObj->DTSTART;
-                                $oVCal->{$sComponent}[$iIndex]->DTEND = $oEventObj->DTEND;
+                                $oVComponent->DTSTART = $oEventObj->DTSTART;
+                                $oVComponent->DTEND = $oEventObj->DTEND;
                             }
                         }
 
-                        if (isset($oVCal->{$sComponent}[$iIndex]->EXDATE)) {
-                            $oEXDATE = clone $oVCal->{$sComponent}[$iIndex]->EXDATE;
-                            unset($oVCal->{$sComponent}[$iIndex]->EXDATE);
+                        if (isset($oVComponent->EXDATE)) {
+                            $oEXDATE = clone $oVComponent->EXDATE;
+                            unset($oVComponent->EXDATE);
                             foreach ($oEXDATE as $oExDate) {
                                 if ($oExDate->getDateTime() !== $oDTExdate) {
-                                    /* @phpstan-ignore-next-line */
-                                    $oVCal->{$sComponent}[$iIndex]->add('EXDATE', $oExDate->getDateTime());
+                                    $oVComponent->add('EXDATE', $oExDate->getDateTime());
                                 }
                             }
                         }
-                        $oVCal->{$sComponent}[$iIndex]->add('EXDATE', $oDTExdate);
+                        $oVComponent->add('EXDATE', $oDTExdate);
 
                         if (false !== $mIndex) {
                             $aVEvents = $oVCal->{$sComponent};
@@ -1131,8 +1134,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                 'TRANSP' => 'OPAQUE',
                                 'RECURRENCE-ID' => $oDTExdate
                             ));
-                        } elseif (isset($oVCal->{$sComponent}[$mIndex])) {
-                            $oVEventRecur = $oVCal->{$sComponent}[$mIndex];
+                        } elseif ($oVComponent) {
+                            $oVEventRecur = $oVComponent;
                         }
                         if ($oVEventRecur) {
                             $oEvent->RRule = null;

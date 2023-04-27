@@ -56,11 +56,12 @@ class Parser
         }
 
         if (isset($oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Models\User || $oCalendar->IsPublic)) {
+            /** @var \Sabre\VObject\Component $oVComponent */
             foreach ($oExpandedVCal->{$sComponent} as $oVComponent) {
-                $sOwnerEmail = $oCalendar->Owner;
+             $sOwnerEmail = $oCalendar->Owner;
                 $aEvent = array();
 
-                if (isset($oVComponent, $oVComponent->UID)) {
+                if (isset($oVComponent->UID)) {
                     $sUid = (string)$oVComponent->UID;
                     $sRecurrenceId = \Aurora\Modules\Calendar\Classes\Helper::getRecurrenceId($oVComponent);
 
@@ -68,6 +69,7 @@ class Parser
                     $aEvent['type'] = $sType;
 
                     if (array_key_exists($sId, $aExcludedRecurrences) && isset($oVComponent->{'RECURRENCE-ID'})) {
+                        /** @var \Sabre\VObject\Component $oVComponent */
                         $oVComponent = $aExcludedRecurrences[$sId];
                         $aEvent['excluded'] = true;
                     }
@@ -85,28 +87,33 @@ class Parser
                     $sOwnerEmail = $aArgs['sOwnerEmail'];
                     $oOwner = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sOwnerEmail);
                     $sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Models\User) ? $oOwner->Name : '';
-                    $bAllDay = (isset($oVComponent->DTSTART) && !$oVComponent->DTSTART->hasTime());
+                    /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTSTART */
+                    $oDTSTART = $oVComponent->DTSTART;
+                    $bAllDay = $oDTSTART && !$oDTSTART->hasTime();
                     $sCurrentTimeZone = ($bAllDay) ? 'UTC' : $sTimeZone;
                     $aEvent['alarms'] = self::parseAlarms($oVComponent);
 
+                    /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTEND */
                     $oDTEND = null;
                     if ($sComponent === 'VTODO') {
                         if (isset($oVComponent->DUE)) {
+                            /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTEND */
                             $oDTEND = $oVComponent->DUE;
                         }
                     } elseif (isset($oVComponent->DTEND)) {
+                        /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTEND */
                         $oDTEND = $oVComponent->DTEND;
                     }
 
-                    if (isset($oDTEND)) {
-                        if (!isset($oVComponent->DTSTART)) {
-                            $oVComponent->DTSTART = $oDTEND->getDateTime();
+                    if ($oDTEND) {
+                        if (!$oDTSTART) {
+                            $oDTSTART = $oDTEND->getDateTime();
                         }
                     } else {
-                        if (isset($oVComponent->DTSTART)) {
-                            $dtStart = $oVComponent->DTSTART->getDateTime();
+                        if ($oDTSTART) {
+                            /** @var \DateTimeImmutable $dtStart */
+                            $dtStart = $oDTSTART->getDateTime();
                             if ($dtStart) {
-                                /* @phpstan-ignore-next-line */
                                 $oVComponent->DTEND = $dtStart->add(new \DateInterval('PT1H'));
                                 $oDTEND = $oVComponent->DTEND;
                             }
@@ -137,7 +144,7 @@ class Parser
                         $bStatus = strtolower($sStatus) === 'completed' ? true : false;
                     }
                     $aEvent['status'] = $bStatus;
-                    $aEvent['withDate'] = isset($oVComponent->DTSTART) && isset($oDTEND);
+                    $aEvent['withDate'] = isset($oVComponent->DTSTART) && $oDTEND;
                     $aEvent['isPrivate'] = isset($oVComponent->CLASS) && (string) $oVComponent->CLASS === 'PRIVATE';
                     $oAuthenticatedUser = \Aurora\Api::getAuthenticatedUser();
                     if ($aEvent['isPrivate'] && $sOwnerEmail !== $oAuthenticatedUser->PublicId) {

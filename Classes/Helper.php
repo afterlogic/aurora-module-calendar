@@ -249,8 +249,7 @@ class Helper
 
             $oVEvent->DTSTART = $oDTStart;
             if ($oEvent->AllDay) {
-                /* @phpstan-ignore-next-line */
-                $oVEvent->DTSTART->offsetSet('VALUE', 'DATE');
+                $oVEvent->DTSTART['VALUE'] = 'DATE';
             }
 
             $oDTEnd = self::prepareDateTime($oEvent->End, $oUser->DefaultTimeZone);
@@ -258,14 +257,12 @@ class Helper
             if ($oEvent->Type === 'VTODO') {
                 $oVEvent->DUE = $oDTEnd;
                 if ($oEvent->AllDay) {
-                    /* @phpstan-ignore-next-line */
-                    $oVEvent->DUE->offsetSet('VALUE', 'DATE');
+                    $oVEvent->DUE['VALUE'] = 'DATE';
                 }
             } else {
                 $oVEvent->DTEND = $oDTEnd;
                 if ($oEvent->AllDay) {
-                    /* @phpstan-ignore-next-line */
-                    $oVEvent->DTEND->offsetSet('VALUE', 'DATE');
+                    $oVEvent->DTEND['VALUE'] = 'DATE';
                 }
             }
         } else {
@@ -325,15 +322,15 @@ class Helper
      * @param mixed $mDateTime
      * @param string $sTimeZone
      *
-     * @return \DateTime
+     * @return \DateTimeImmutable
      */
     public static function prepareDateTime($mDateTime, $sTimeZone)
     {
-        $oDateTime = new \DateTime();
+        $oDateTime = new \DateTimeImmutable();
         if (is_numeric($mDateTime) && strlen($mDateTime) !== 8) {
-            $oDateTime->setTimestamp($mDateTime);
+            $oDateTime = $oDateTime->setTimestamp($mDateTime);
             if (!empty($sTimeZone)) {
-                $oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
+                $oDateTime = $oDateTime->setTimezone(new \DateTimeZone($sTimeZone));
             }
         } else {
             $oDateTime = \Sabre\VObject\DateTimeParser::parse($mDateTime, new \DateTimeZone($sTimeZone));
