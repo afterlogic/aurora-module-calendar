@@ -1420,7 +1420,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
             }
 
             //TODO get fetchers list
-    //
+            //
             //		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
             //		if (is_array($aFetchers) && 0 < count($aFetchers)) {
             //			foreach ($aFetchers as /* @var $oFetcher \Aurora\Modules\Mail\Models\Fetcher */ $oFetcher) {
@@ -1463,21 +1463,18 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                 }
 
                 if (isset($oVEvent)) {
-                    $sCalendarId = '';
                     $oVEventResult = $oVEvent;
 
                     $sEventId = (string)$oVEventResult->UID;
 
                     $aCalendars = $this->oStorage->GetCalendarNames($sUserPublicId);
-                    $aCalendarIds = $this->oStorage->findEventInCalendars($sUserPublicId, $sEventId, $aCalendars);
-
-                    if (is_array($aCalendarIds) && isset($aCalendarIds[0])) {
-                        $sCalendarId = $aCalendarIds[0];
+                    $sCalendarId = $this->oStorage->findEventInCalendars($sUserPublicId, $sEventId);
+                    if ($sCalendarId) {
                         $aDataServer = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
                         if ($aDataServer !== false) {
                             $oVCalServer = $aDataServer['vcal'];
                             if (isset($oMethod)) {
-                                $oVCalServer->METHOD = $oMethod;
+                                //                                $oVCalServer->METHOD = $oMethod;
                             }
                             $aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
                             $oVEventServer = (isset($aVEventsServer) && count($aVEventsServer) > 0) ? $aVEventsServer[0] : null;
@@ -1610,6 +1607,18 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         }
 
         return $mResult;
+    }
+
+    /**
+     * @param string $sUserPublicId
+     * @param string $sEventId
+     *
+     * @return string|false
+     */
+
+    public function findEventInCalendars($sUserPublicId, $uid)
+    {
+        return $this->oStorage->findEventInCalendars($sUserPublicId, $uid);
     }
 
     /**

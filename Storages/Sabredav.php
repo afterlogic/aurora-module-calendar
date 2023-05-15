@@ -18,6 +18,8 @@ use Sabre\CalDAV\Subscriptions\Subscription;
 use Sabre\DAV\Xml\Property\Href;
 use Sabre\VObject\Component\VCalendar;
 
+use function Sabre\Uri\split;
+
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2023, Afterlogic Corp.
@@ -147,6 +149,28 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $iResult = $oCalendar->Shared ? $oCalendar->Access : \Aurora\Modules\Calendar\Enums\Permission::Write;
         }
         return $iResult;
+    }
+
+    /**
+     * @param string $sUserPublicId
+     * @param string $sEventId
+     *
+     * @return string|false
+     */
+
+    public function findEventInCalendars($sUserPublicId, $uid)
+    {
+        $result = false;
+
+        $this->init($sUserPublicId);
+        $oCalendarHome = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
+        $calendarPath = $oCalendarHome->getCalendarObjectByUID($uid);
+        if (!empty($calendarPath)) {
+            list($dirname, ) = split($calendarPath);
+            $result = $dirname;
+        }
+
+        return $result;
     }
 
     /**
@@ -705,7 +729,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
         $oCalendar = $this->getCalendar($sUserPublicId, $sCalendarId);
         if ($oCalendar) {
-//            $this->getBackend()->updateShares($oCalendar->IntId, array(), array($sUserPublicId));
+            //            $this->getBackend()->updateShares($oCalendar->IntId, array(), array($sUserPublicId));
         }
 
         return true;
@@ -807,7 +831,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                     $add[] = $aItem;
                 }
 
-//                $this->getBackend()->updateShares($oCalendar->IntId, $add, $remove);
+                //                $this->getBackend()->updateShares($oCalendar->IntId, $add, $remove);
             }
         }
 
@@ -1115,25 +1139,6 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         }
 
         return $mResult;
-    }
-
-    /**
-     * @param string $sUserPublicId
-     * @param string $sEventId
-     * @param array $aCalendars
-     *
-     * @return array
-     */
-    public function findEventInCalendars($sUserPublicId, $sEventId, $aCalendars)
-    {
-        $aEventCalendarIds = array();
-        foreach (array_keys($aCalendars) as $sKey) {
-            if ($this->eventExists($sUserPublicId, $sKey, $sEventId)) {
-                $aEventCalendarIds[] = $sKey;
-            }
-        }
-
-        return $aEventCalendarIds;
     }
 
     /**

@@ -58,7 +58,7 @@ class Parser
         if (isset($oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Models\User || $oCalendar->IsPublic)) {
             /** @var \Sabre\VObject\Component $oVComponent */
             foreach ($oExpandedVCal->{$sComponent} as $oVComponent) {
-             $sOwnerEmail = $oCalendar->Owner;
+                $sOwnerEmail = $oCalendar->Owner;
                 $aEvent = array();
 
                 if (isset($oVComponent->UID)) {

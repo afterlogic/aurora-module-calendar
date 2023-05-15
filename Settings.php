@@ -15,7 +15,7 @@ use Aurora\System\SettingsProperty;
  * @property bool $AllowTasks
  * @property bool $AllowShare
  * @property int $DefaultTab
- * @property bool $HighlightWorkingDays 
+ * @property bool $HighlightWorkingDays
  * @property bool $HighlightWorkingHours
  * @property int $WeekStartsOn
  * @property int $WorkdayEnds
