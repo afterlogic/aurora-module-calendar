@@ -96,7 +96,10 @@ class Parser
                     /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTEND */
                     $oDTEND = null;
                     if ($sComponent === 'VTODO') {
-                        if (isset($oVComponent->DUE)) {
+                        if (isset($oVComponent->DTEND)) {
+                            /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTEND */
+                            $oDTEND = $oVComponent->DTEND;
+                        } elseif (isset($oVComponent->DUE)) {
                             /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTEND */
                             $oDTEND = $oVComponent->DUE;
                         }
