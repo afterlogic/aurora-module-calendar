@@ -259,11 +259,10 @@ class Helper
                 if ($oEvent->AllDay) {
                     $oVEvent->DUE['VALUE'] = 'DATE';
                 }
-            } else {
-                $oVEvent->DTEND = $oDTEnd;
-                if ($oEvent->AllDay) {
-                    $oVEvent->DTEND['VALUE'] = 'DATE';
-                }
+            }
+            $oVEvent->DTEND = $oDTEnd;
+            if ($oEvent->AllDay) {
+                $oVEvent->DTEND['VALUE'] = 'DATE';
             }
         } else {
             unset($oVEvent->DTSTART);

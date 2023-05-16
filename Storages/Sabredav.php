@@ -981,9 +981,9 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $iCount = 0;
             while ($oVCalendar = $splitter->getNext()) {
                 if ($oVCalendar instanceof VCalendar) {
-                    $oVEvents = $oVCalendar->getBaseComponents('VEVENT');
+                    $oVEvents = $oVCalendar->VEVENT;
                     if (!$oVEvents || 0 === count($oVEvents)) {
-                        $oVEvents = $oVCalendar->getBaseComponents('VTODO');
+                        $oVEvents = $oVCalendar->VTODO;
                     }
                     if ($oVEvents && 0 < count($oVEvents) && isset($oVEvents[0])) {
                         $sUid = str_replace(array("/", "=", "+"), "", $oVEvents[0]->UID);
@@ -1081,15 +1081,15 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 $bIsTodo = true;
             }
 
-            $oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
-            if ($oBaseVEvent && isset($oBaseVEvent[0]->DTSTART)) {
-                $oExpandedVCal = $oVCal->expand(
-                    \Sabre\VObject\DateTimeParser::parse($dStart),
-                    \Sabre\VObject\DateTimeParser::parse($dEnd)
-                );
-            } else {
-                return [];
-            }
+            // $oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
+            // if ($oBaseVEvent && isset($oBaseVEvent[0]->DTSTART)) {
+            $oExpandedVCal = $oVCal->expand(
+                \Sabre\VObject\DateTimeParser::parse($dStart),
+                \Sabre\VObject\DateTimeParser::parse($dEnd)
+            );
+            // } else {
+            //     return [];
+            // }
 
             if ($bIsTodo) {
                 $oVCal = \Sabre\VObject\Reader::read(

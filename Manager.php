@@ -1455,7 +1455,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     return false;
                 }
 
-                $aVEvents = $oVCal->getBaseComponents('VEVENT');
+                $aVEvents = $oVCal->VEVENT;
                 $oVEvent = (count($aVEvents) > 0) ? $aVEvents[0] : null;
 
                 if (!isset($oVEvent)) {
