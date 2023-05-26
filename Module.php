@@ -117,26 +117,26 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
-            if (isset($oUser->{self::GetName().'::HighlightWorkingDays'})) {
-                $aSettings['HighlightWorkingDays'] = $oUser->{self::GetName().'::HighlightWorkingDays'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::HighlightWorkingDays')) {
+                $aSettings['HighlightWorkingDays'] = $oUser->getExtendedProp(self::GetName().'::HighlightWorkingDays');
             }
-            if (isset($oUser->{self::GetName().'::HighlightWorkingHours'})) {
-                $aSettings['HighlightWorkingHours'] = $oUser->{self::GetName().'::HighlightWorkingHours'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::HighlightWorkingHours')) {
+                $aSettings['HighlightWorkingHours'] = $oUser->getExtendedProp(self::GetName().'::HighlightWorkingHours');
             }
-            if (isset($oUser->{self::GetName().'::WorkdayStarts'})) {
-                $aSettings['WorkdayStarts'] = $oUser->{self::GetName().'::WorkdayStarts'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::WorkdayStarts')) {
+                $aSettings['WorkdayStarts'] = $oUser->getExtendedProp(self::GetName().'::WorkdayStarts');
             }
-            if (isset($oUser->{self::GetName().'::WorkdayEnds'})) {
-                $aSettings['WorkdayEnds'] = $oUser->{self::GetName().'::WorkdayEnds'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::WorkdayEnds')) {
+                $aSettings['WorkdayEnds'] = $oUser->getExtendedProp(self::GetName().'::WorkdayEnds');
             }
-            if (isset($oUser->{self::GetName().'::WeekStartsOn'})) {
-                $aSettings['WeekStartsOn'] = $oUser->{self::GetName().'::WeekStartsOn'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::WeekStartsOn')) {
+                $aSettings['WeekStartsOn'] = $oUser->getExtendedProp(self::GetName().'::WeekStartsOn');
             }
-            if (isset($oUser->{self::GetName().'::DefaultTab'})) {
-                $aSettings['DefaultTab'] = $oUser->{self::GetName().'::DefaultTab'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::DefaultTab')) {
+                $aSettings['DefaultTab'] = $oUser->getExtendedProp(self::GetName().'::DefaultTab');
             }
-            if (isset($oUser->{self::GetName().'::DefaultReminders'})) {
-                $aSettings['DefaultReminders'] = $oUser->{self::GetName().'::DefaultReminders'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::DefaultReminders')) {
+                $aSettings['DefaultReminders'] = $oUser->getExtendedProp(self::GetName().'::DefaultReminders');
             }
 
             $oUser->save();

@@ -188,6 +188,10 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             if (count($this->CalDAVCalendarsCache) > 0 && isset($this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId])) {
                 $oCalendar = $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId];
             } else {
+                // $oCalendar = \Afterlogic\DAV\Server::getNodeForPath('calendars/'.$sPath, $this->Principal['id']);
+                // if ($oCalendar) {
+                //     $this->CalDAVCalendarsCache[$sCalendarId][$this->UserPublicId] = $oCalendar;
+                // }
                 $oCalendars = new \Afterlogic\DAV\CalDAV\CalendarHome($this->getBackend(), $this->Principal);
                 if ($oCalendars && $oCalendars->childExists($sCalendarId)) {
                     $oCalendar = $oCalendars->getChild($sCalendarId);
@@ -1022,6 +1026,11 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId])) {
                 return $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId];
             } else {
+                // $oChild = \Afterlogic\DAV\Server::getNodeForPath('calendars/'.$oCalDAVCalendar->getName() .'/'.$sEventFileName, $this->Principal['id']);
+                // if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
+                //     $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sEventFileName][$this->UserPublicId] = $oChild;
+                //     return $oChild;
+                // }
                 if ($oCalDAVCalendar->childExists($sEventFileName)) {
                     $oChild = $oCalDAVCalendar->getChild($sEventFileName);
                     if ($oChild instanceof \Sabre\CalDAV\CalendarObject) {
