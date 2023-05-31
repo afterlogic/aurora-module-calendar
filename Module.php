@@ -60,6 +60,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 'WorkdayEnds'			=> array('int', $this->getConfig('WorkdayEnds', 18)),
                 'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', 0)),
                 'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
+                'DefaultCalendar'       => array('string', ''),
             ]
         );
 
@@ -174,6 +175,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     {
         $mResult = false;
         $mCalendars = false;
+        $oDefaultCalendar = null;
 
         if ($IsPublic) {
             \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
@@ -184,11 +186,17 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oUser = \Aurora\System\Api::getUserById($UserId);
             if ($oUser) {
                 $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
+                $oDefaultCalendar = $this->getManager()->getDefaultCalendar($oUser->PublicId);
             }
         }
 
         // When $mCalendars is an empty array with condition "if ($mCalendars)" $mResult will be false
         if (is_array($mCalendars)) {
+            
+            foreach($mCalendars as &$oCaledar){
+                $oCaledar->IsDefault = $oDefaultCalendar && $oDefaultCalendar->Id === $oCaledar->Id ? true : false;
+            }
+
             $mResult = array(
                 'Calendars' => $mCalendars
             );
@@ -396,6 +404,29 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         return $this->getManager()->deleteCalendar($sUserPublicId, $Id);
+    }
+
+    /**
+     *
+     * @param int $UserId
+     * @param string $Id
+     * @return boolean
+     */
+    public function SetDefaultCalendar($UserId, $Id)
+    {
+        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        
+        $bResult = false;
+        
+        $oUser = \Aurora\System\Api::getAuthenticatedUser();
+        
+        if ($oUser->EntityId === $UserId) {
+            $oUser->{'Calendar::DefaultCalendar'} = $Id;
+
+            $bResult = \Aurora\Modules\Core\Module::Decorator()->UpdateUserObject($oUser);
+
+        }
+        return $bResult;
     }
 
     /**

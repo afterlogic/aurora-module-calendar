@@ -1363,20 +1363,34 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     public function getDefaultCalendar($sUserPublicId)
     {
         $mResult = null;
+        $oFallbackCalendar = null;
         $aCalendars = $this->getCalendars($sUserPublicId);
+
+        $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
+        $sDefaultCalendarId = $oUser->{'Calendar::DefaultCalendar'};
+
         foreach ($aCalendars as $key => $val) {
-            if (strpos($key, \Afterlogic\DAV\Constants::CALENDAR_DEFAULT_UUID) !== false) {
+            if ($oFallbackCalendar === null) {
+                $oFallbackCalendar = $val;
+            }
+            
+            if ($key === $sDefaultCalendarId) {
                 $mResult = $val;
                 break;
             }
         }
+
+        if (!$mResult && $oFallbackCalendar) {
+            $mResult = $oFallbackCalendar;
+        }
+        
         return $mResult;
     }
 
     /**
      * @param string $sUserPublicId
      *
-     * @return bool
+     * @return array
      */
     public function getCalendars($sUserPublicId)
     {
@@ -1391,6 +1405,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         return $aCalendars;
     }
 
+    /**
+     * @param string $sUserPublicId
+     *
+     * @return array
+     */
     public function getSharedCalendars($sUserPublicId)
     {
         $aCalendars = [];
