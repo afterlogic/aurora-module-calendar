@@ -1083,6 +1083,9 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         if ($bExpand && $dStart !== null && $dEnd !== null) {
             $bIsTodo = false;
             if (isset($oVCal->VTODO)) {
+                if (!isset($oVCal->VTODO->DTEND) && isset($oVCal->VTODO->DUE)) {
+                    $oVCal->VTODO->add('DTEND', $oVCal->VTODO->DUE->getDateTime());
+                }
                 /** @var \Sabre\VObject\Component\VCalendar */
                 $oVCal = \Sabre\VObject\Reader::read(
                     str_replace('VTODO', 'VEVENT', $oVCal->serialize())
@@ -1090,17 +1093,17 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 $bIsTodo = true;
             }
 
-            // $oBaseVEvent = $oVCal->getBaseComponents('VEVENT');
-            // if ($oBaseVEvent && isset($oBaseVEvent[0]->DTSTART)) {
-            $oExpandedVCal = $oVCal->expand(
-                \Sabre\VObject\DateTimeParser::parse($dStart),
-                \Sabre\VObject\DateTimeParser::parse($dEnd)
-            );
-            // } else {
-            //     return [];
-            // }
+            $oExpandedVCal = null;
+            if (isset($oVCal->VEVENT->DTSTART)) {
+                $oExpandedVCal = $oVCal->expand(
+                    \Sabre\VObject\DateTimeParser::parse($dStart),
+                    \Sabre\VObject\DateTimeParser::parse($dEnd)
+                );
+            } else {
+                return [];
+            }
 
-            if ($bIsTodo) {
+            if ($bIsTodo && $oExpandedVCal) {
                 $oVCal = \Sabre\VObject\Reader::read(
                     str_replace('VEVENT', 'VTODO', $oVCal->serialize())
                 );
