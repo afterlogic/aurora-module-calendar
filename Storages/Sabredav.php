@@ -231,12 +231,24 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 foreach ($oCalDAVCalendar->getInvites() as $oSharee) {
                     if ($oSharee->principal !== $aTenantPrincipal['uri']) {
                         if ($oSharee instanceof \Sabre\DAV\Xml\Element\Sharee) {
+
+                            $shareEmail = $oSharee->href;
+                            if (!strpos($shareEmail, ':')) {
+                                $shareEmail = basename($shareEmail);
+                            } else {
+                                list($schema, $everythingElse) = explode(':', $shareEmail, 2);
+                                $schema = strtolower($schema);
+                                if ('mailto' === $schema) {
+                                    $shareEmail = strtolower($everythingElse);
+                                }    
+                            }
+
                             if ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER) {
-                                $oCalendar->Owner = basename($oSharee->href);
+                                $oCalendar->Owner = $shareEmail;
                             } elseif ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE || $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READ) {
                                 $oCalendar->Shares[] = [
-                                    'name' => basename($oSharee->href),
-                                    'email' => basename($oSharee->href),
+                                    'name' => $shareEmail,
+                                    'email' => $shareEmail,
                                     'access' => $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ?
                                         \Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read
                                 ];
