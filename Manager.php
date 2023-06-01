@@ -1358,14 +1358,14 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      *
      * @param string $sUserPublicId
      *
-     * @return \Aurora\Modules\Calendar\Classes\Calendar|false $oCalendar
+     * @return \Aurora\Modules\Calendar\Classes\Calendar|null $oCalendar
      */
     public function getDefaultCalendar($sUserPublicId)
     {
         $mResult = null;
-
+        
         $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-        $aCalendars = \Aurora\System\Api::GetModuleDecorator('Core')->GetCalendars($oUser->EntityId);
+        $aCalendars = \Aurora\System\Api::GetModuleDecorator('Calendar')->GetCalendars($oUser->EntityId);
         
         foreach ($aCalendars['Calendars'] as $key => $val) {
             if ($val->IsDefault) {
