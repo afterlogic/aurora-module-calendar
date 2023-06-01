@@ -270,8 +270,14 @@ class Sabredav extends Storage
                 $oCalendar->Source = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source']->getHref();
             }
         }
-        if (!$oCalendar->Subscribed) {
-            $oCalendar->IsDefault = (!$oCalendar->Shared && !($oCalDAVCalendar instanceof \Sabre\CalDAV\SharedCalendar) && $oCalDAVCalendar->isDefault());
+        // Any calendar including the a shared with me can be default one. The only condition is the calendar must be editable.
+        // Previously it was denied for subscribe calendars and shared ones.
+        if (
+            method_exists($oCalDAVCalendar, 'isDefault')
+            && !$oCalendar->Subscribed
+            && $oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Write
+        ) {
+            $oCalendar->IsDefault = $oCalDAVCalendar->isDefault();
         }
 
         return $oCalendar;

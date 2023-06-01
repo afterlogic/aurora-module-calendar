@@ -1363,27 +1363,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     public function getDefaultCalendar($sUserPublicId)
     {
         $mResult = null;
-        $oFallbackCalendar = null;
-        $aCalendars = $this->getCalendars($sUserPublicId);
 
         $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
-        $sDefaultCalendarId = $oUser->{'Calendar::DefaultCalendar'};
-
-        foreach ($aCalendars as $key => $val) {
-            if ($oFallbackCalendar === null) {
-                $oFallbackCalendar = $val;
-            }
-            
-            if ($key === $sDefaultCalendarId) {
+        $aCalendars = \Aurora\System\Api::GetModuleDecorator('Core')->GetCalendars($oUser->EntityId);
+        
+        foreach ($aCalendars['Calendars'] as $key => $val) {
+            if ($val->IsDefault) {
                 $mResult = $val;
                 break;
             }
         }
 
-        if (!$mResult && $oFallbackCalendar) {
-            $mResult = $oFallbackCalendar;
-        }
-        
         return $mResult;
     }
 

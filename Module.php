@@ -186,17 +186,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oUser = \Aurora\System\Api::getUserById($UserId);
             if ($oUser) {
                 $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
-                $oDefaultCalendar = $this->getManager()->getDefaultCalendar($oUser->PublicId);
+                // $oDefaultCalendar = $this->getManager()->getDefaultCalendar($oUser->PublicId);
             }
         }
 
         // When $mCalendars is an empty array with condition "if ($mCalendars)" $mResult will be false
         if (is_array($mCalendars)) {
-            
-            foreach($mCalendars as &$oCaledar){
-                $oCaledar->IsDefault = $oDefaultCalendar && $oDefaultCalendar->Id === $oCaledar->Id ? true : false;
-            }
-
             $mResult = array(
                 'Calendars' => $mCalendars
             );
