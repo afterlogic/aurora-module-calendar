@@ -1535,6 +1535,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     $sCalendarId = '';
                     $oVEventResult = $oVEvent;
 
+                    $sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
+
                     $sEventId = (string)$oVEventResult->UID;
 
                     $aCalendars = $this->oStorage->GetCalendarNames($sUserPublicId);
@@ -1550,7 +1552,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                             }
                             $aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
                             $oVEventServer = (isset($aVEventsServer) && count($aVEventsServer) > 0) ? $aVEventsServer[0] : null;
-                            if (!isset($oVEvent)) {
+                            if (!isset($oVEventServer)) {
                                 $oVEventServer = $oVCalServer->VEVENT[0];
                             }
 
@@ -1574,7 +1576,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                         }
                                     }
 
-                                    $sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
                                     $sequenceServer = isset($oVEventServer->{'SEQUENCE'}) && $oVEventServer->{'SEQUENCE'}->getValue() ? $oVEventServer->{'SEQUENCE'}->getValue() : 0; // accepted sequence value
 
                                     if ($sequenceServer >= $sequence) {
