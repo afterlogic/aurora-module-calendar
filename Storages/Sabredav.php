@@ -1779,4 +1779,9 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     {
         return \Afterlogic\DAV\Backend::Reminders()->deleteRemindersByUser($sUser);
     }
+
+    public function deleteOutdatedReminders($time)
+    {
+        return \Afterlogic\DAV\Backend::Reminders()->deleteOutdatedReminders($time);
+    }
 }

@@ -1264,6 +1264,24 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         return $oResult;
     }
 
+   /**
+     *
+     * @param int $time
+     *
+     * @return bool
+     */
+    public function deleteOutdatedReminders($time)
+    {
+        $oResult = false;
+        try {
+            $oResult = $this->oStorage->deleteOutdatedReminders($time);
+        } catch (\Exception $oException) {
+            $oResult = false;
+            $this->setLastException($oException);
+        }
+        return $oResult;
+    }
+
     /**
      *
      * @param string $sEmail
@@ -1474,7 +1492,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         if ($aDataServer !== false) {
                             $oVCalServer = $aDataServer['vcal'];
                             if (isset($oMethod)) {
-                                //                                $oVCalServer->METHOD = $oMethod;
+                            //    $oVCalServer->METHOD = $oMethod;
                             }
                             $aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
                             $oVEventServer = (isset($aVEventsServer) && count($aVEventsServer) > 0) ? $aVEventsServer[0] : null;
