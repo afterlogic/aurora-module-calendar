@@ -175,7 +175,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     {
         $mResult = false;
         $mCalendars = false;
-        $oDefaultCalendar = null;
 
         if ($IsPublic) {
             \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
@@ -186,7 +185,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oUser = \Aurora\System\Api::getUserById($UserId);
             if ($oUser) {
                 $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
-                // $oDefaultCalendar = $this->getManager()->getDefaultCalendar($oUser->PublicId);
+                if (!$oUser->{'Calendar::DefaultCalendar'} && is_array($mCalendars) && count($mCalendars) > 0) {
+                    $this->SetDefaultCalendar($UserId, array_keys($mCalendars)[0]);
+                    $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
+                }
             }
         }
 
@@ -419,7 +421,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oUser->{'Calendar::DefaultCalendar'} = $Id;
 
             $bResult = \Aurora\Modules\Core\Module::Decorator()->UpdateUserObject($oUser);
-
         }
         return $bResult;
     }

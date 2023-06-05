@@ -1367,7 +1367,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sUserPublicId);
         $aCalendars = \Aurora\System\Api::GetModuleDecorator('Calendar')->GetCalendars($oUser->EntityId);
         
-        foreach ($aCalendars['Calendars'] as $key => $val) {
+        foreach ($aCalendars['Calendars'] as $val) {
             if ($val->IsDefault) {
                 $mResult = $val;
                 break;
