@@ -461,7 +461,13 @@ class Reminder
                                         }
 
                                         foreach ($aUsers as $oUserItem) {
-                                            $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
+                                            $bIsMessageSent = false;
+                                            $oEvent = $this->oCalendarManager->getEvent($sEmail, $sCalendarUri, $sEventId);
+                                            if ($oEvent) {
+                                                $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
+                                            } else {
+                                                \Aurora\System\Api::Log('Event not found - User: ' . $sEmail . ', Calendar: ' . $sCalendarUri . ' , Event: ' . $sEventId, \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                            }
                                             if ($bIsMessageSent) {
                                                 $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
                                                 $this->oCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventUrl, $vCal->serialize());
