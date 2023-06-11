@@ -68,6 +68,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
         $this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
         $this->subscribeEvent('Core::DeleteUser::before', array($this, 'onBeforeDeleteUser'));
+        $this->subscribeEvent('Calendar::GetCalendars::after', array($this, 'onAfterGetCalendars'), 1000);
     }
 
     /**
@@ -182,13 +183,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $mCalendars = array($oCalendar);
         } else {
             \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-            $oUser = \Aurora\System\Api::getUserById($UserId);
+            $oUser = \Aurora\System\Api::getUserById($UserId);   
             if ($oUser) {
                 $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
-                if (!$oUser->{'Calendar::DefaultCalendar'} && is_array($mCalendars) && count($mCalendars) > 0) {
-                    $this->SetDefaultCalendar($UserId, array_keys($mCalendars)[0]);
-                    $mCalendars = $this->getManager()->getCalendars($oUser->PublicId);
-                }
             }
         }
 
@@ -1080,6 +1077,29 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $sUserPublicId = $oUser instanceof \Aurora\Modules\Core\Classes\User ? $oUser->PublicId : null;
         if ($sUserPublicId) {
             $this->getManager()->deletePrincipalCalendars($sUserPublicId);
+        }
+    }
+
+    public function onAfterGetCalendars($aArgs, &$mResult)
+    {
+        if (isset($mResult['Calendars']) && is_array($mResult['Calendars']) && count($mResult['Calendars']) > 0) {
+            $oDefaultCalendar = null;
+            
+            foreach ($mResult['Calendars'] as $oCalendar) {
+                if ($oCalendar->IsDefault) {
+                    $oDefaultCalendar = $oCalendar;
+                }
+            }
+            $oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
+            if ($oUser) {
+                if (!$oDefaultCalendar) {
+                    $sFallbackCalendarId = array_keys($mResult['Calendars'])[0];
+                    if ($sFallbackCalendarId) {
+                        $this->SetDefaultCalendar($oUser->EntityId, $sFallbackCalendarId);
+                        $mResult['Calendars'][$sFallbackCalendarId]->IsDefault = true;
+                    }
+                }
+            }
         }
     }
 
