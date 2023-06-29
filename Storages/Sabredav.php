@@ -1006,8 +1006,12 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                         if (!$oCalDAVCalendar->childExists($sUid . '.ics')) {
                             $oVEvents[0]->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
                             Server::getInstance()->httpRequest->setUrl($oCalendar->Url . '/' . $sUid . '.ics');
-                            Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
-                            $iCount++;
+                            try {
+                                Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
+                                $iCount++;
+                            } catch (\Sabre\VObject\Recur\NoInstancesException $oEx) {
+                                Api::Log($oEx->getMessage());
+                            }
                         }
                     }
                 }
