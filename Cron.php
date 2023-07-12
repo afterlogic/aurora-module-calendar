@@ -23,11 +23,6 @@ class Reminder
     private $aUsers;
 
     /**
-     * @var array
-     */
-    private $aCalendars;
-
-    /**
      * @var string
      */
     private $sCurRunFilePath;
@@ -35,7 +30,6 @@ class Reminder
     public function __construct()
     {
         $this->aUsers = array();
-        $this->aCalendars = array();
         $this->sCurRunFilePath = \Aurora\System\Api::DataPath().'/reminder-run';
 
         $oMailModule =  \Aurora\Modules\Mail\Module::getInstance();
