@@ -902,7 +902,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     public function getCalendarUsers($sUserPublicId, $oCalendar)
     {
         $aResult = array();
-        return $aResult;
+
         $this->init($sUserPublicId);
 
         if ($oCalendar != null) {

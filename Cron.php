@@ -89,28 +89,6 @@ class Reminder
 
     /**
      * @param \Aurora\Modules\Core\Models\User $oUser
-     * @param string $sUri
-     *
-     * @return Classes\Calendar|null
-     */
-    private function &getCalendar($oUser, $sUri)
-    {
-        $mResult = null;
-        if ($this->oCalendarManager) {
-            if (!isset($this->aCalendars[$sUri])) {
-                $this->aCalendars[$sUri] = $this->oCalendarManager->getCalendar($oUser->PublicId, $sUri);
-            }
-
-            if (isset($this->aCalendars[$sUri])) {
-                $mResult =& $this->aCalendars[$sUri];
-            }
-        }
-
-        return $mResult;
-    }
-
-    /**
-     * @param \Aurora\Modules\Core\Models\User $oUser
      * @param string $sEventName
      * @param string $sDateStr
      * @param string $sCalendarName
@@ -422,9 +400,10 @@ class Reminder
                             foreach ($aSubEvents as $mKey => $aEvent) {
                                 if ($mKey !== 'vcal') {
                                     $oUser = $this->getUser($sEmail);
-                                    $oCalendar = $this->getCalendar($oUser, $sCalendarUri);
+                                    $oCalendar = $this->oCalendarManager->getCalendar($oUser->PublicId, $sCalendarUri);
 
-                                    if ($oCalendar) {
+                                    if ($oCalendar && $oCalendar->Id === $aEvent['calendarId']) {
+                                        $sEventCalendarId = $aEvent['calendarId'];
                                         $sEventId = $aEvent['uid'];
                                         $sEventStart = $aEvent['start'];
                                         $iEventStartTS = $aEvent['startTS'];
@@ -451,38 +430,40 @@ class Reminder
 
                                         $sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay);
 
-                                        $aUsers = array(
+                                        $aUsers = [
                                             $oUser->Id => $oUser
-                                        );
+                                        ];
 
-                                        $aCalendarUsers = $this->oCalendarManager->getCalendarUsers($oUser, $oCalendar);
-                                        if (0 < count($aCalendarUsers)) {
-                                            foreach ($aCalendarUsers as $aCalendarUser) {
-                                                $oCalendarUser = $this->getUser($aCalendarUser['email']);
-                                                if ($oCalendarUser) {
-                                                    $aUsers[$oCalendarUser->Id] = $oCalendarUser;
-                                                }
-                                            }
-                                        }
+                                        // TODO: get users to whom the calendar is shared
+
+                                        // $aCalendarUsers = $this->oCalendarManager->getCalendarUsers($oUser->PublicId, $oCalendar);
+                                        // if (0 < count($aCalendarUsers)) {
+                                        //     foreach ($aCalendarUsers as $aCalendarUser) {
+                                        //         $oCalendarUser = $this->getUser($aCalendarUser['email']);
+                                        //         if ($oCalendarUser) {
+                                        //             $aUsers[$oCalendarUser->Id] = $oCalendarUser;
+                                        //         }
+                                        //     }
+                                        // }
 
                                         foreach ($aUsers as $oUserItem) {
                                             $bIsMessageSent = false;
-                                            $oEvent = $this->oCalendarManager->getEvent($sEmail, $sCalendarUri, $sEventId);
+                                            $oEvent = $this->oCalendarManager->getEvent($sEmail, $sEventCalendarId, $sEventId);
                                             if ($oEvent) {
+                                                \Aurora\System\Api::Log('Send reminder - calendar: \''.$sEventCalendarId.'\',  event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                                 $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
                                             } else {
                                                 \Aurora\System\Api::Log('Event not found - User: ' . $sEmail . ', Calendar: ' . $sCalendarUri . ' , Event: ' . $sEventId, \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             }
                                             if ($bIsMessageSent) {
                                                 $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
-                                                $this->oCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventUrl, $vCal->serialize());
-                                                \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                                $this->oCalendarManager->updateReminder($oUserItem->PublicId, $sEventCalendarId, $sEventUrl, $vCal->serialize());
                                             } else {
                                                 \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             }
                                         }
                                     } else {
-                                        \Aurora\System\Api::Log('Calendar '.$sCalendarUri.' not found!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                        \Aurora\System\Api::Log('Calendar '.$sCalendarUri.' not found for user \''.$oUser->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                     }
                                 }
                             }
@@ -492,7 +473,6 @@ class Reminder
             }
 
             $this->DeleteOutdatedReminders($iStartTS);
-
             file_put_contents($this->sCurRunFilePath, $iNowTS);
         }
 
