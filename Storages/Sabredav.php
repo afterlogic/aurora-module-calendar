@@ -991,7 +991,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
             // You can either pass a readable stream, or a string.
             $h = fopen($sTempFileName, 'r');
-            $splitter = new \Sabre\VObject\Splitter\ICalendar($h);
+            $splitter = new \Sabre\VObject\Splitter\ICalendar($h, \Sabre\VObject\Reader::OPTION_IGNORE_INVALID_LINES);
 
             $iCount = 0;
             while ($oVCalendar = $splitter->getNext()) {
@@ -1009,7 +1009,12 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                             try {
                                 Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
                                 $iCount++;
-                            } catch (\Sabre\VObject\Recur\NoInstancesException $oEx) {
+                            } catch (\Sabre\VObject\Recur\NoInstancesException $oEx) { 
+                                // If event is recurring, but it doesn't have a single
+                                // instance. We are skipping this event
+                                Api::Log($oEx->getMessage());
+                            } catch (\Sabre\VObject\ParseException $oEx) { 
+                                // Skipping event with invalid data
                                 Api::Log($oEx->getMessage());
                             }
                         }
