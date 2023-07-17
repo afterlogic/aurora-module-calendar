@@ -86,7 +86,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
         $this->subscribeEvent('Mail::ExtendMessageData', array($this, 'onExtendMessageData'));
         $this->subscribeEvent('Core::DeleteUser::before', array($this, 'onBeforeDeleteUser'));
-        $this->subscribeEvent('Core::DeleteUser::after', array($this, 'onAftereDeleteUser'));
+        $this->subscribeEvent('Core::DeleteUser::after', array($this, 'onAfterDeleteUser'));
     }
 
     /**
