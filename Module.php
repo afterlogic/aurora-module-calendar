@@ -414,7 +414,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         
-        if ($oUser->EntityId === $UserId) {
+        if ($oUser && $oUser->EntityId === $UserId) {
             $oUser->{'Calendar::DefaultCalendar'} = $Id;
 
             $bResult = \Aurora\Modules\Core\Module::Decorator()->UpdateUserObject($oUser);
