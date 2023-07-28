@@ -661,35 +661,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     $aResult = array_merge($aResult, $aTasks);
                 }
             }
-
-            // usort($aResult, function ($left, $right) {
-            // 	if (isset($left['startTS'], $right['startTS']))
-            // 	{
-            // 		if ($left['startTS'] == $right['startTS'] )
-            // 		{
-            // 			return 0;
-            // 		}
-            // 		return ($left['startTS'] > $right['startTS']) ? 1 : -1;
-            // 	}
-            // 	else
-            // 	{
-            // 		if (!isset($left['startTS']) && !isset($right['startTS']))
-            // 		{
-            // 			return 0;
-            // 		}
-            // 		else
-            // 		{
-            // 			if (!isset($left['startTS']))
-            // 			{
-            // 				return 1;
-            // 			}
-            // 			if (!isset($right['startTS']))
-            // 			{
-            // 				return -1;
-            // 			}
-            // 		}
-            // 	}
-            // });
         } catch (\Exception $oException) {
             $aResult = false;
             $this->setLastException($oException);
@@ -1134,8 +1105,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                 'TRANSP' => 'OPAQUE',
                                 'RECURRENCE-ID' => $oDTExdate
                             ));
-                        } elseif ($oVComponent) {
-                            $oVEventRecur = $oVComponent;
+                        } else {
+                            $oVEventRecur =& $oVCal->{$sComponent}[$mIndex];
                         }
                         if ($oVEventRecur) {
                             $oEvent->RRule = null;

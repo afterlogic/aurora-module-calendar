@@ -1100,19 +1100,19 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
      */
     public function getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart = null, $dEnd = null, $bExpand = true, $sDefaultTimeZone = null)
     {
-        if ($bExpand && $dStart !== null && $dEnd !== null) {
-            $bIsTodo = false;
-            if (isset($oVCal->VTODO)) {
-                if (!isset($oVCal->VTODO->DTEND) && isset($oVCal->VTODO->DUE)) {
-                    $oVCal->VTODO->add('DTEND', $oVCal->VTODO->DUE->getDateTime());
-                }
-                /** @var \Sabre\VObject\Component\VCalendar */
-                $oVCal = \Sabre\VObject\Reader::read(
-                    str_replace('VTODO', 'VEVENT', $oVCal->serialize())
-                );
-                $bIsTodo = true;
+        $bIsTodo = false;
+        if (isset($oVCal->VTODO)) {
+            if (isset($oVCal->VTODO->DUE)) {
+                $oVCal->VTODO->DTEND = $oVCal->VTODO->DUE->getDateTime();
             }
-
+            /** @var \Sabre\VObject\Component\VCalendar */
+            $oVCal = \Sabre\VObject\Reader::read(
+                str_replace('VTODO', 'VEVENT', $oVCal->serialize())
+            );
+            $bIsTodo = true;
+        }
+        
+        if ($bExpand && $dStart !== null && $dEnd !== null) {
             $oExpandedVCal = null;
             if (isset($oVCal->VEVENT->DTSTART)) {
                 $oExpandedVCal = $oVCal->expand(
@@ -1131,7 +1131,6 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 $oExpandedVCal = \Sabre\VObject\Reader::read(
                     str_replace('VEVENT', 'VTODO', $oExpandedVCal->serialize())
                 );
-                $bIsTodo = false;
             }
         } else {
             $oExpandedVCal = clone $oVCal;
