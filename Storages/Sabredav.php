@@ -1111,7 +1111,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             );
             $bIsTodo = true;
         }
-        
+
         if ($bExpand && $dStart !== null && $dEnd !== null) {
             $oExpandedVCal = null;
             if (isset($oVCal->VEVENT->DTSTART)) {
@@ -1133,7 +1133,13 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 );
             }
         } else {
+            if ($bIsTodo) {
+                $oVCal = \Sabre\VObject\Reader::read(
+                    str_replace('VEVENT', 'VTODO', $oVCal->serialize())
+                );
+            }
             $oExpandedVCal = clone $oVCal;
+
         }
 
         return \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal, $sDefaultTimeZone);
