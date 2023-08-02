@@ -1545,6 +1545,12 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 $aUrls = $this->getTasksUrls($oCalDAVCalendar, $bCompeted, $sSearch);
                 $mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
             }
+
+            if (is_array($mResult) && !$bCompeted) {
+                $mResult = array_filter($mResult, function ($task) {
+                    return $task['status'] === false;
+                });
+            }
         }
 
         return $mResult;
