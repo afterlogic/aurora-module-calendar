@@ -1009,11 +1009,11 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                             try {
                                 Server::getInstance()->createFile($oCalendar->Url . '/' . $sUid . '.ics', $oVCalendar->serialize());
                                 $iCount++;
-                            } catch (\Sabre\VObject\Recur\NoInstancesException $oEx) { 
+                            } catch (\Sabre\VObject\Recur\NoInstancesException $oEx) {
                                 // If event is recurring, but it doesn't have a single
                                 // instance. We are skipping this event
                                 Api::Log($oEx->getMessage());
-                            } catch (\Sabre\VObject\ParseException $oEx) { 
+                            } catch (\Sabre\VObject\ParseException $oEx) {
                                 // Skipping event with invalid data
                                 Api::Log($oEx->getMessage());
                             }
@@ -1139,7 +1139,6 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 );
             }
             $oExpandedVCal = clone $oVCal;
-
         }
 
         return \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal, $sDefaultTimeZone);
