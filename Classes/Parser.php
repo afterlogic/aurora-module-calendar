@@ -138,6 +138,7 @@ class Parser
                     $aEvent['ownerName'] = $sOwnerName;
                     $aEvent['modified'] = false;
                     $aEvent['recurrenceId'] = $sRecurrenceId;
+                    $aEvent['lastModified'] =  \Aurora\Modules\Calendar\Classes\Helper::getTimestamp($oVComponent->{'LAST-MODIFIED'}, $sCurrentTimeZone);
                     if (isset($aRules[$sUid]) && $aRules[$sUid] instanceof RRule) {
                         $aEvent['rrule'] = $aRules[$sUid]->toArray();
                     }

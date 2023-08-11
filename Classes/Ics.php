@@ -146,7 +146,7 @@ class Ics
             // Description should be converted to HTML for displaying links.
             // If only links will be converted description will become half-plain and half-HTML,
             // so client-side can't display it properly.
-            'Description' => $bHtmlDescription ? $sDescription : \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription),
+            'Description' => $bHtmlDescription ? $sDescription : \MailSo\Base\HtmlUtils::CreateClickableLinksFromPlane($sDescription),
             'Summary' => $this->Summary,
             'When' => $this->When,
             'CalendarId' => $this->CalendarId,

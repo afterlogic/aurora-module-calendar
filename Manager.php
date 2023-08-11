@@ -650,6 +650,15 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     {
         $aResult = array();
         try {
+            if ($dStart === null) {
+                $now = new \DateTime('now');
+                $now->setTime(0, 0);
+                $dStart = $now->getTimestamp();
+            }
+            if ($dFinish === null) {
+                $dFinish = intval($dStart) + 86400 * 30;
+            }
+
             $dStart = ($dStart != null) ? date('Ymd\T000000\Z', intval($dStart)  - 86400) : null;
             $dFinish = ($dFinish != null) ? date('Ymd\T235959\Z', intval($dFinish)) : null;
             $mCalendarId = !is_array($mCalendarId) ? array($mCalendarId) : $mCalendarId;
@@ -1235,12 +1244,12 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         return $oResult;
     }
 
-   /**
-     *
-     * @param int $time
-     *
-     * @return bool
-     */
+    /**
+      *
+      * @param int $time
+      *
+      * @return bool
+      */
     public function deleteOutdatedReminders($time)
     {
         $oResult = false;
@@ -1463,7 +1472,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         if ($aDataServer !== false) {
                             $oVCalServer = $aDataServer['vcal'];
                             if (isset($oMethod)) {
-                            //    $oVCalServer->METHOD = $oMethod;
+                                //    $oVCalServer->METHOD = $oMethod;
                             }
                             $aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
                             $oVEventServer = (isset($aVEventsServer) && count($aVEventsServer) > 0) ? $aVEventsServer[0] : null;

@@ -1112,7 +1112,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $bIsTodo = true;
         }
 
-        if ($bExpand && $dStart !== null && $dEnd !== null) {
+        if ($bExpand && $oVCal->VEVENT->RRULE) {
             $oExpandedVCal = null;
             if (isset($oVCal->VEVENT->DTSTART)) {
                 $oExpandedVCal = $oVCal->expand(

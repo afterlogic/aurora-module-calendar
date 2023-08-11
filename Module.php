@@ -490,7 +490,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 if ($bHtmlDescription) {
                     $event['description'] = $this->clearHtml($sDescription);
                 } else {
-                    $event['description'] = \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sDescription);
+                    $event['description'] = \MailSo\Base\HtmlUtils::CreateClickableLinksFromPlane($sDescription);
                 }
 
                 $sLocation = $event['location'];
@@ -824,6 +824,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $this->_checkUserCalendar($sUserPublicId, $calendarId);
         if ($calendarId !== $newCalendarId) {
             $this->_checkUserCalendar($sUserPublicId, $newCalendarId);
+        }
+
+        if ($selectStart === null) {
+            $now = new \DateTime('now');
+            $now->setTime(0, 0);
+            $selectStart = $now->getTimestamp();
+        }
+        if ($selectEnd === null) {
+            $selectEnd = intval($selectStart) + 86400 * 30;
         }
 
         $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
