@@ -1114,11 +1114,22 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
         if ($bExpand && $oVCal->VEVENT->RRULE) {
             $oExpandedVCal = null;
+
+            foreach ($oVCal->VEVENT as $vEvent) {
+                if (!isset($vEvent->DTSTART)) {
+                    return []; // skip invalid repeat rrule instance without DTSTART
+                }
+            }
+
             if (isset($oVCal->VEVENT->DTSTART)) {
-                $oExpandedVCal = $oVCal->expand(
-                    \Sabre\VObject\DateTimeParser::parse($dStart),
-                    \Sabre\VObject\DateTimeParser::parse($dEnd)
-                );
+                try {
+                    $oExpandedVCal = $oVCal->expand(
+                        \Sabre\VObject\DateTimeParser::parse($dStart),
+                        \Sabre\VObject\DateTimeParser::parse($dEnd)
+                    );
+                } catch (\Exception $oEx) {
+                    return [];
+                }
             } else {
                 return [];
             }
