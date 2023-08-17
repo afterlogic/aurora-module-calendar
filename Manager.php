@@ -650,13 +650,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     {
         $aResult = array();
         try {
+            $now = new \DateTime('now');
+            $now->setTime(0, 0);
             if ($dStart === null) {
-                $now = new \DateTime('now');
-                $now->setTime(0, 0);
-                $dStart = $now->getTimestamp();
+                $dStart = $now->getTimestamp() - 86400 * 30;
             }
             if ($dFinish === null) {
-                $dFinish = intval($dStart) + 86400 * 30;
+                $dFinish = $now->getTimestamp() + 86400 * 30;
             }
 
             $dStart = ($dStart != null) ? date('Ymd\T000000\Z', intval($dStart)  - 86400) : null;
