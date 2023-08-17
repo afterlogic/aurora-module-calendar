@@ -826,13 +826,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $this->_checkUserCalendar($sUserPublicId, $newCalendarId);
         }
 
+        $now = new \DateTime('now');
+        $now->setTime(0, 0);
         if ($selectStart === null) {
-            $now = new \DateTime('now');
-            $now->setTime(0, 0);
-            $selectStart = $now->getTimestamp();
+            $selectStart = $now->getTimestamp() - 86400 * 30;
         }
         if ($selectEnd === null) {
-            $selectEnd = intval($selectStart) + 86400 * 30;
+            $selectEnd = $now->getTimestamp() + 86400 * 30;
         }
 
         $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
