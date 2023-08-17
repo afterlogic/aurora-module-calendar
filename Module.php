@@ -22,6 +22,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public $oFilecacheManager = null;
     protected $oUserForDelete = null;
 
+    const DEFAULT_PERIOD_IN_DAYS = 30;
+
     /**
      * @return Module
      */
@@ -184,7 +186,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param int $UserId
      * @param string $CalendarId Calendar ID
      *
-     * @return \Aurora\Modules\Calendar\Classes\Calendar|false $oCalendar
+     * @return Classes\Calendar|false $oCalendar
      */
     public function GetCalendar($UserId, $CalendarId)
     {
@@ -288,7 +290,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $mCalendarId = $this->getManager()->createCalendar($sUserPublicId, $Name, $Description, 1, $Color, $UUID);
         if ($mCalendarId) {
             $oCalendar = $this->getManager()->getCalendar($sUserPublicId, $mCalendarId);
-            if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
+            if ($oCalendar instanceof Classes\Calendar) {
                 $mResult = $oCalendar->toResponseArray($sUserPublicId);
             }
         }
@@ -309,7 +311,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $mCalendarId = $this->getManager()->createSubscribedCalendar($sUserPublicId, $Name, $Source, 1, $Color, $UUID);
         if ($mCalendarId) {
             $oCalendar = $this->getManager()->getCalendar($sUserPublicId, $mCalendarId);
-            if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
+            if ($oCalendar instanceof Classes\Calendar) {
                 $mResult = $oCalendar->toResponseArray($sUserPublicId);
             }
         }
@@ -378,7 +380,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param int $ShareToAllAccess
      * @return array|boolean
      */
-    public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = \Aurora\Modules\Calendar\Enums\Permission::Read)
+    public function UpdateCalendarShare($UserId, $Id, $IsPublic, $Shares, $ShareToAll = false, $ShareToAllAccess = Enums\Permission::Read)
     {
         \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
@@ -396,7 +398,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         }
         //Calendar can be shared by owner or user with write access except SharedWithAll calendars
         if ($oCalendar->Owner !== $sUserPublicId
-            && $oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Write) {
+            && $oCalendar->Access !== Enums\Permission::Write) {
             return false;
         }
         // Share calendar to all users
@@ -408,7 +410,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         } else {
             $aShares[] = array(
                 'email' => $this->getManager()->getTenantUser($oUser),
-                'access' => \Aurora\Modules\Calendar\Enums\Permission::RemovePermission
+                'access' => Enums\Permission::RemovePermission
             );
         }
 
@@ -531,9 +533,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     {
         $oCalendar = $this->getManager()->getCalendar($sUserPublicId, $sCalendarId);
         if (!$oCalendar) {
-            throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
-        } elseif ($oCalendar->Access === \Aurora\Modules\Calendar\Enums\Permission::Read) {
-            throw new \Aurora\Modules\Calendar\Exceptions\Exception(Enums\ErrorCodes::NoWriteAccessForCalendar);
+            throw new Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
+        } elseif ($oCalendar->Access === Enums\Permission::Read) {
+            throw new Exceptions\Exception(Enums\ErrorCodes::NoWriteAccessForCalendar);
         }
     }
 
@@ -632,7 +634,16 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
         $this->_checkUserCalendar($sUserPublicId, $newCalendarId);
 
-        $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+        $now = new \DateTime('now');
+        $now->setTime(0, 0);
+        if ($selectStart === null) {
+            $selectStart = $now->getTimestamp() - 86400 * self::DEFAULT_PERIOD_IN_DAYS;
+        }
+        if ($selectEnd === null) {
+            $selectEnd = $now->getTimestamp() + 86400 * self::DEFAULT_PERIOD_IN_DAYS;
+        }
+
+        $oEvent = new Classes\Event();
         $oEvent->IdCalendar = $newCalendarId;
         $oEvent->Name = $subject;
         $oEvent->Description = $this->clearHtml($description);
@@ -646,7 +657,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $aRRule = !empty($rrule) ? @json_decode($rrule, true) : false;
             if ($aRRule) {
                 $oUser = \Aurora\System\Api::getAuthenticatedUser();
-                $oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser->DefaultTimeZone);
+                $oRRule = new Classes\RRule($oUser->DefaultTimeZone);
                 $oRRule->Populate($aRRule);
                 $oEvent->RRule = $oRRule;
             }
@@ -716,7 +727,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
             $this->_checkUserCalendar($sUserPublicId, $CalendarId);
 
-            $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+            $oEvent = new Classes\Event();
             $oEvent->IdCalendar = $CalendarId;
             $oEvent->Name = $Subject;
             $oEvent->Start = \time();
@@ -748,7 +759,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
             $this->_checkUserCalendar($sUserPublicId, $CalendarId);
 
-            $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+            $oEvent = new Classes\Event();
             $oEvent->IdCalendar = $CalendarId;
             $oEvent->Id = $TaskId;
             $oEvent->Name = $Subject;
@@ -829,13 +840,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $now = new \DateTime('now');
         $now->setTime(0, 0);
         if ($selectStart === null) {
-            $selectStart = $now->getTimestamp() - 86400 * 30;
+            $selectStart = $now->getTimestamp() - 86400 * self::DEFAULT_PERIOD_IN_DAYS;
         }
         if ($selectEnd === null) {
-            $selectEnd = $now->getTimestamp() + 86400 * 30;
+            $selectEnd = $now->getTimestamp() + 86400 * self::DEFAULT_PERIOD_IN_DAYS;
         }
 
-        $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+        $oEvent = new Classes\Event();
         $oEvent->IdCalendar = $calendarId;
         $oEvent->Id = $uid;
         $oEvent->Name = $subject;
@@ -850,7 +861,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $aRRule = @json_decode($rrule, true);
             if ($aRRule) {
                 $oUser = \Aurora\System\Api::getAuthenticatedUser();
-                $oRRule = new \Aurora\Modules\Calendar\Classes\RRule($oUser->DefaultTimeZone);
+                $oRRule = new Classes\RRule($oUser->DefaultTimeZone);
                 $oRRule->Populate($aRRule);
                 $oEvent->RRule = $oRRule;
             }
@@ -914,7 +925,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $mResult = false;
         if ($sUserPublicId) {
             if ($allEvents === 1) {
-                $oEvent = new \Aurora\Modules\Calendar\Classes\Event();
+                $oEvent = new Classes\Event();
                 $oEvent->IdCalendar = $calendarId;
                 $oEvent->Id = $uid;
                 $mResult = $this->getManager()->updateExclusion($sUserPublicId, $oEvent, $recurrenceId, true);
@@ -1112,7 +1123,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                     if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body'])) {
                         $sTemptFile = md5($sFromEmail . $sData).'.ics';
                         if ($this->getFilecacheManager()->put($sUserPublicId, $sTemptFile, $sData, '', self::GetName())) {
-                            $oIcs = \Aurora\Modules\Calendar\Classes\Ics::createInstance();
+                            $oIcs = Classes\Ics::createInstance();
 
                             $oIcs->Uid = $mResult['UID'];
                             $oIcs->Sequence = $mResult['Sequence'];
@@ -1152,7 +1163,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
         if (isset($aCalendars['Calendars']) && is_array($aCalendars['Calendars']) && 0 < count($aCalendars['Calendars'])) {
             foreach ($aCalendars['Calendars'] as $oCalendar) {
-                if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
+                if ($oCalendar instanceof Classes\Calendar) {
                     $mResult['Dav']['Calendars'][] = array(
                         'Name' => $oCalendar->DisplayName,
                         'Url' => rtrim($oDavModule->GetServerUrl().$oCalendar->Url, "/")."/"
