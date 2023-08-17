@@ -489,8 +489,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 $bHtmlDescription = $sDescription != strip_tags($sDescription);
                 if ($bHtmlDescription) {
                     $event['description'] = $this->clearHtml($sDescription);
-                } else {
-                    $event['description'] = \MailSo\Base\HtmlUtils::CreateClickableLinksFromPlane($sDescription);
                 }
 
                 $sLocation = $event['location'];

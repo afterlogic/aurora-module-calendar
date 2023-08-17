@@ -134,8 +134,6 @@ class Ics
 
     public function toResponseArray()
     {
-        $sDescription = $this->Description;
-        $bHtmlDescription = $sDescription != strip_tags($sDescription);
         return array(
             'Uid' => $this->Uid,
             'Sequence' => $this->Sequence,
@@ -143,10 +141,7 @@ class Ics
             'File' => $this->File,
             'Type' => $this->Type,
             'Location' => $this->Location,
-            // Description should be converted to HTML for displaying links.
-            // If only links will be converted description will become half-plain and half-HTML,
-            // so client-side can't display it properly.
-            'Description' => $bHtmlDescription ? $sDescription : \MailSo\Base\HtmlUtils::CreateClickableLinksFromPlane($sDescription),
+            'Description' => $this->Description,
             'Summary' => $this->Summary,
             'When' => $this->When,
             'CalendarId' => $this->CalendarId,
