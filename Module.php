@@ -22,7 +22,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public $oFilecacheManager = null;
     protected $oUserForDelete = null;
 
-    const DEFAULT_PERIOD_IN_DAYS = 30;
+    public const DEFAULT_PERIOD_IN_DAYS = 30;
 
     /**
      * @return Module
@@ -487,16 +487,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $aResult = [];
         if (is_array($mResult)) {
             foreach ($mResult as $event) {
-                $sDescription = $event['description'];
-                $bHtmlDescription = $sDescription != strip_tags($sDescription);
-                if ($bHtmlDescription) {
-                    $event['description'] = $this->clearHtml($sDescription);
+                if (TextUtils::isHtml($event['description'])) {
+                    $event['description'] = TextUtils::clearHtml($event['description']);
                 }
 
-                $sLocation = $event['location'];
-                $bHtmlLocation = $sLocation != strip_tags($sLocation);
-                if ($bHtmlLocation) {
-                    $event['location'] = $this->clearHtml($sLocation);
+                if (TextUtils::isHtml($event['location'])) {
+                    $event['location'] = TextUtils::clearHtml($event['location']);
                 }
                 $aResult[] = $event;
             }
@@ -535,59 +531,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         } elseif ($oCalendar->Access === Enums\Permission::Read) {
             throw new Exceptions\Exception(Enums\ErrorCodes::NoWriteAccessForCalendar);
         }
-    }
-
-    private function clearHtml($sText)
-    {
-        $oDom = \MailSo\Base\HtmlUtils::GetDomFromText($sText);
-        $aNodes = $oDom->getElementsByTagName('*');
-
-        $bHasExternals = false;
-        $aFoundCIDs = [];
-        $aContentLocationUrls = [];
-        $aFoundedContentLocationUrls = [];
-
-        foreach ($aNodes as /* @var $oElement \DOMElement */ $oElement) {
-            $sTagNameLower = \strtolower($oElement->tagName);
-            if ('img' === $sTagNameLower) {
-                $oElement->parentNode->removeChild($oElement);
-            }
-
-            $sBackground = $oElement->hasAttribute('background') ? \trim($oElement->getAttribute('background')) : '';
-            $sBackgroundColor = $oElement->hasAttribute('bgcolor') ? \trim($oElement->getAttribute('bgcolor')) : '';
-
-            if (!empty($sBackground) || !empty($sBackgroundColor)) {
-                if (!empty($sBackground)) {
-                    $oElement->removeAttribute('background');
-                }
-
-                if (!empty($sBackgroundColor)) {
-                    $oElement->removeAttribute('bgcolor');
-                }
-            }
-
-            if ($oElement->hasAttribute('style')) {
-                $oElement->setAttribute(
-                    'style',
-                    \MailSo\Base\HtmlUtils::ClearStyle(
-                        $oElement->getAttribute('style'),
-                        $oElement,
-                        $bHasExternals,
-                        $aFoundCIDs,
-                        $aContentLocationUrls,
-                        $aFoundedContentLocationUrls
-                    )
-                );
-            }
-        }
-        $sText = $oDom->saveHTML();
-        unset($oDom);
-
-        $sText = \MailSo\Base\HtmlUtils::ClearTags($sText);
-        $sText = \MailSo\Base\HtmlUtils::ClearBodyAndHtmlTag($sText);
-        $sText = \MailSo\Base\HtmlUtils::ClearOn($sText);
-
-        return $sText;
     }
 
     /**
@@ -644,8 +587,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oEvent = new Classes\Event();
         $oEvent->IdCalendar = $newCalendarId;
         $oEvent->Name = $subject;
-        $oEvent->Description = $this->clearHtml($description);
-        $oEvent->Location = $this->clearHtml($location);
+        $oEvent->Description = TextUtils::isHtml($description) ? TextUtils::clearHtml($description) : $description;
+        $oEvent->Location = TextUtils::isHtml($location) ? TextUtils::clearHtml($location) : $location;
         $oEvent->IsPrivate = $isPrivate;
         if ($withDate) {
             $oEvent->Start = $startTS;
@@ -848,8 +791,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oEvent->IdCalendar = $calendarId;
         $oEvent->Id = $uid;
         $oEvent->Name = $subject;
-        $oEvent->Description = $this->clearHtml($description);
-        $oEvent->Location = $this->clearHtml($location);
+        $oEvent->Description = TextUtils::isHtml($description) ? TextUtils::clearHtml($description) : $description;
+        $oEvent->Location = TextUtils::isHtml($location) ? TextUtils::clearHtml($location) : $location;
         $oEvent->IsPrivate = $isPrivate;
         if ($withDate) {
             $oEvent->Start = $startTS;
@@ -1123,13 +1066,19 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                         if ($this->getFilecacheManager()->put($sUserPublicId, $sTemptFile, $sData, '', self::GetName())) {
                             $oIcs = Classes\Ics::createInstance();
 
+                            $mResult['Description'] = !empty($mResult['Description']) ? $mResult['Description'] : '';
+                            $mResult['Location'] = !empty($mResult['Location']) ? $mResult['Location'] : '';
+
+                            $mResult['Description'] = TextUtils::isHtml($mResult['Description']) ? TextUtils::clearHtml($mResult['Description']) : $mResult['Description'];
+                            $mResult['Location'] = TextUtils::isHtml($mResult['Location']) ? TextUtils::clearHtml($mResult['Location']) : $mResult['Location'];
+
                             $oIcs->Uid = $mResult['UID'];
                             $oIcs->Sequence = $mResult['Sequence'];
                             $oIcs->File = $sTemptFile;
                             $oIcs->Type = 'SAVE';
                             $oIcs->Attendee = null;
-                            $oIcs->Location = !empty($mResult['Location']) ? $mResult['Location'] : '';
-                            $oIcs->Description = !empty($mResult['Description']) ? $mResult['Description'] : '';
+                            $oIcs->Location = $mResult['Location'];
+                            $oIcs->Description = $mResult['Description'];
                             $oIcs->Summary = !empty($mResult['Summary']) ? $mResult['Summary'] : '';
                             $oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
                             $oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
