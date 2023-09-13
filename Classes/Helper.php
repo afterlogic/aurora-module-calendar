@@ -360,9 +360,9 @@ class Helper
         $result = null;
         $oDateTime = self::getDateTime($dt, $sTimeZone);
         if ($oDateTime) {
-            if (!$dt->hasTime()) {
-                $format = 'Y-m-d';
-            }
+            // if (!$dt->hasTime()) {
+            //     $format = 'Y-m-d';
+            // }
             $result = $oDateTime->format($format);
         }
         return $result;

@@ -1552,11 +1552,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     if (!$bUpdateAttendeeStatus) {
                         $sWhen = '';
                         if (isset($oVEventResult->DTSTART)) {
-                            if (!$oVEventResult->DTSTART->hasTime()) {
-                                $oDateTime = \Aurora\Modules\Calendar\Classes\Helper::getDateTime($oVEventResult->DTSTART, $oUser->DefaultTimeZone);
-                                $sWhen = $oDateTime->format('D, M d, Y');
-                            } else {
-                                $sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'D, M d, Y, H:i');
+                            $sWhenDateFormat = $oVEventResult->DTSTART->hasTime() ? 'D, M d, Y, H:i' : 'D, M d, Y';
+
+                            $sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, $sWhenDateFormat);
+
+                            if ($this->oModule->oModuleSettings->ShowWeekNumbers) {
+                                $sWeek = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'W');
+                                $sWhen .= ' ('.$this->oModule->i18n('LABEL_WEEK_SHORT').$sWeek.')';
                             }
                         }
 

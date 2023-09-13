@@ -106,6 +106,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'DefaultTab' => $this->oModuleSettings->DefaultTab,
             'HighlightWorkingDays' => $this->oModuleSettings->HighlightWorkingDays,
             'HighlightWorkingHours' => $this->oModuleSettings->HighlightWorkingHours,
+            'ShowWeekNumbers' => $this->oModuleSettings->ShowWeekNumbers,
             'PublicCalendarId' => $this->oHttp->GetQuery('calendar-pub', ''),
             'WeekStartsOn' => $this->oModuleSettings->WeekStartsOn,
             'WorkdayEnds' => $this->oModuleSettings->WorkdayEnds,
@@ -124,6 +125,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             }
             if (null !== $oUser->getExtendedProp(self::GetName().'::HighlightWorkingHours')) {
                 $aSettings['HighlightWorkingHours'] = $oUser->getExtendedProp(self::GetName().'::HighlightWorkingHours');
+            }
+            if (null !== $oUser->getExtendedProp(self::GetName().'::ShowWeekNumbers')) {
+                $aSettings['ShowWeekNumbers'] = $oUser->getExtendedProp(self::GetName().'::ShowWeekNumbers');
             }
             if (null !== $oUser->getExtendedProp(self::GetName().'::WorkdayStarts')) {
                 $aSettings['WorkdayStarts'] = $oUser->getExtendedProp(self::GetName().'::WorkdayStarts');
@@ -147,7 +151,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         return $aSettings;
     }
 
-    public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab, $DefaultReminders)
+    public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab, $DefaultReminders, $ShowWeekNumbers)
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -158,6 +162,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 $oUser->setExtendedProps([
                     self::GetName().'::HighlightWorkingDays' => $HighlightWorkingDays,
                     self::GetName().'::HighlightWorkingHours' => $HighlightWorkingHours,
+                    self::GetName().'::ShowWeekNumbers' => $ShowWeekNumbers,
                     self::GetName().'::WorkdayStarts' => $WorkdayStarts,
                     self::GetName().'::WorkdayEnds' => $WorkdayEnds,
                     self::GetName().'::WeekStartsOn' => $WeekStartsOn,
@@ -169,6 +174,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin) {
                 $this->setConfig('HighlightWorkingDays', $HighlightWorkingDays);
                 $this->setConfig('HighlightWorkingHours', $HighlightWorkingHours);
+                $this->setConfig('ShowWeekNumbers', $ShowWeekNumbers);
                 $this->setConfig('WorkdayStarts', $WorkdayStarts);
                 $this->setConfig('WorkdayEnds', $WorkdayEnds);
                 $this->setConfig('WeekStartsOn', $WeekStartsOn);

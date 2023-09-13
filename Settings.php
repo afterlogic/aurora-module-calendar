@@ -24,6 +24,7 @@ use Aurora\System\SettingsProperty;
  * @property bool $AllowDefaultReminders
  * @property bool $AllowSubscribedCalendars
  * @property array $CalendarColors
+ * @property bool $ShowWeekNumbers
  */
 
 class Settings extends \Aurora\System\Module\Settings
@@ -128,6 +129,12 @@ class Settings extends \Aurora\System\Module\Settings
                 "array",
                 null,
                 "",
+            ),
+            "ShowWeekNumbers" => new SettingsProperty(
+                false,
+                "bool",
+                null,
+                "Setting to true will make the system display week numbers in calendar-related dates",
             ),
         ];
     }
