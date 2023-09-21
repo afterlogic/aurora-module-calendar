@@ -330,6 +330,10 @@ class Reminder
 
                 $sCalendarUri = $aReminder['calendaruri'];
                 $sEventId = $aReminder['eventid'];
+                $pathInfo = pathinfo($aReminder['uid']);
+                if (isset($pathInfo['extension']) && strtolower($pathInfo['extension']) === 'ics') {
+                    $sEventId = $pathInfo['filename'];
+                }
                 $iStartTime = $aReminder['starttime'];
                 $iReminderTime = $aReminder['time'];
 
@@ -460,7 +464,7 @@ class Reminder
                                         foreach ($aUsers as $oUserItem) {
                                             $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
                                             if ($bIsMessageSent) {
-                                                $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId, $vCal->serialize());
+                                                $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
                                                 \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             } else {
                                                 \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');

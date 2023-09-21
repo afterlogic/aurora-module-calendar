@@ -1698,14 +1698,9 @@ class Sabredav extends Storage
         return \Afterlogic\DAV\Backend::Reminders()->getReminders($start, $end);
     }
 
-    public function AddReminder($sEmail, $sCalendarUri, $sEventId, $time = null, $starttime = null)
+    public function updateReminder($sEmail, $sCalendarUri, $sEventUri, $sData)
     {
-        return \Afterlogic\DAV\Backend::Reminders()->addReminders($sEmail, $sCalendarUri, $sEventId, $time, $starttime);
-    }
-
-    public function updateReminder($sEmail, $sCalendarUri, $sEventId, $sData)
-    {
-        \Afterlogic\DAV\Backend::Reminders()->updateReminder(trim($sCalendarUri, '/') . '/' . $sEventId . '.ics', $sData, $sEmail);
+        \Afterlogic\DAV\Backend::Reminders()->updateReminder(trim($sCalendarUri, '/') . '/' . $sEventUri, $sData, $sEmail);
     }
 
     public function deleteReminder($sEventId)
