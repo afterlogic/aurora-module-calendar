@@ -1024,6 +1024,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     $iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVComponentIndex($oVCal->{$sComponent});
                     if ($iIndex !== false) {
                         \Aurora\Modules\Calendar\Classes\Helper::populateVCalendar($sUserPublicId, $oEvent, $oVCal->{$sComponent}[$iIndex]);
+                        $organizer = isset($oVCal->{$sComponent}->ORGANIZER) ? str_ireplace('mailto:', '', (string) $oVCal->{$sComponent}->ORGANIZER) : '';
+                        if (strtolower($organizer) === strtolower($sUserPublicId)) {
+                            $oVCal->{$sComponent}->SEQUENCE = (int) $oVCal->{$sComponent}->SEQUENCE->getValue() + 1;
+                        }
                         $aArgs = [
                             'UserPublicId' => $sUserPublicId,
                             'Event' => $oEvent,
@@ -1044,7 +1048,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         unset($oVCalResult->{$sComponent});
                         if (isset($oVCal->{$sComponent})) {
                             foreach ($oVCal->{$sComponent} as $oVComponent) {
-                                $oVComponent->SEQUENCE = (int) $oVComponent->SEQUENCE->getValue() + 1;
                                 if (!isset($oVComponent->{'RECURRENCE-ID'})) {
                                     $oVCalResult->add($oVComponent);
                                 }
@@ -1196,7 +1199,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         $oVEventRecur = null;
                         if ($mIndex === false) {
                             $oVEventRecur = $oVCal->add($sComponent, array(
-                                'SEQUENCE' => 1,
+                                'SEQUENCE' => 0,
                                 'TRANSP' => 'OPAQUE',
                                 'RECURRENCE-ID' => $oDTExdate
                             ));
@@ -1219,6 +1222,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                 $oVEventRecur
                             );
                         }
+                    }
+                    $organizer = isset($oVCal->{$sComponent}->ORGANIZER) ? str_ireplace('mailto:', '', (string) $oVCal->{$sComponent}->ORGANIZER) : '';
+                    if (strtolower($organizer) === strtolower($sUserPublicId)) {
+                        $oVCal->{$sComponent}->SEQUENCE = (int) $oVCal->{$sComponent}->SEQUENCE->getValue() + 1;
                     }
                     $this->oStorage->updateEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id, $oVCal);
                     return true;

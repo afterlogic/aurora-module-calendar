@@ -221,7 +221,6 @@ class Helper
     public static function populateVCalendar($sUserPublicId, $oEvent, &$oVEvent)
     {
         $oVEvent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
-        $oVEvent->{'SEQUENCE'} = isset($oVEvent->{'SEQUENCE'}) ? $oVEvent->{'SEQUENCE'}->getValue() + 1 : 1;
 
         if ($oEvent->Type === 'VTODO') {
             if ($oEvent->Status) {
