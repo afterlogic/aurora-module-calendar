@@ -191,7 +191,7 @@ class Helper
     {
         $iMinutes = 0;
         try {
-            $iMinutes = $oInterval->i + $oInterval->h*60 + $oInterval->d*24*60;
+            $iMinutes = $oInterval->i + $oInterval->h * 60 + $oInterval->d * 24 * 60;
         } catch (\Exception $ex) {
             $iMinutes = 15;
         }

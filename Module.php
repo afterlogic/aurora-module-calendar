@@ -804,8 +804,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oEvent->Start = $startTS;
             $oEvent->End = $endTS;
             $oEvent->AllDay = $allDay;
-            $oEvent->Alarms = @json_decode($alarms, true);
-            $aRRule = @json_decode($rrule, true);
+            if (isset($alarms)) {
+                $oEvent->Alarms = @json_decode($alarms, true);
+            }
+            if (isset($rrule)) {
+                $aRRule = @json_decode($rrule, true);
+            }
             if ($aRRule) {
                 $oUser = \Aurora\System\Api::getAuthenticatedUser();
                 $oRRule = new Classes\RRule($oUser->DefaultTimeZone);
@@ -925,7 +929,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 @\header('Last-Modified: '.\gmdate('D, d M Y H:i:s').' GMT');
             }
 
-            $oSettings =& \Aurora\System\Api::GetSettings();
+            $oSettings = & \Aurora\System\Api::GetSettings();
             if (($oSettings->CacheCtrl && isset($_COOKIE['aft-cache-ctrl']))) {
                 @\setcookie(
                     'aft-cache-ctrl',
@@ -1053,7 +1057,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $sFromEmail = '';
         $oFromCollection = $oMessage->getFrom();
         if ($oFromCollection && 0 < $oFromCollection->Count()) {
-            $oFrom =& $oFromCollection->GetByIndex(0);
+            $oFrom = & $oFromCollection->GetByIndex(0);
             if ($oFrom) {
                 $sFromEmail = trim($oFrom->GetEmail());
             }

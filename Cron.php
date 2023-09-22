@@ -77,7 +77,7 @@ class Reminder
             $this->aUsers[$sLogin] = $this->oUsersManager->getUserByPublicId($sLogin);
         }
 
-        $mResult =& $this->aUsers[$sLogin];
+        $mResult = & $this->aUsers[$sLogin];
 
         if (is_array($this->aUsers[$sLogin]) && 30 < count($this->aUsers[$sLogin])) {
             $this->aUsers = array_slice($this->aUsers, -30);
@@ -321,7 +321,7 @@ class Reminder
 
                     if (is_array($aEventData['data'])) {
                         $CurrentEvent = null;
-                        foreach ($aEventData['data'] as $key =>$aEvent) {
+                        foreach ($aEventData['data'] as $key => $aEvent) {
                             if (is_int($key)) {
                                 if (empty($CurrentEvent)) {
                                     $CurrentEvent = $aEvent;

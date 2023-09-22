@@ -105,7 +105,7 @@ class Calendar
         return array(
             'Id' => $this->Id,
             'Url' => $this->Url,
-            'ExportHash' =>\Aurora\System\Api::EncodeKeyValues(array('CalendarId' => $this->Id)),
+            'ExportHash' => \Aurora\System\Api::EncodeKeyValues(array('CalendarId' => $this->Id)),
             'Color' => $this->Color,
             'Description' => $this->Description,
             'Name' => $this->DisplayName,
