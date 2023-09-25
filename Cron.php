@@ -35,7 +35,7 @@ class Reminder
     public function __construct()
     {
         $this->aUsers = array();
-        $this->sCurRunFilePath = \Aurora\System\Api::DataPath().'/reminder-run';
+        $this->sCurRunFilePath = \Aurora\System\Api::DataPath() . '/reminder-run';
 
         $oMailModule =  \Aurora\Modules\Mail\Module::getInstance();
         $this->oCalendarModule = \Aurora\Modules\Calendar\Module::getInstance();
@@ -77,7 +77,7 @@ class Reminder
             $this->aUsers[$sLogin] = $this->oUsersManager->getUserByPublicId($sLogin);
         }
 
-        $mResult = & $this->aUsers[$sLogin];
+        $mResult = &$this->aUsers[$sLogin];
 
         if (is_array($this->aUsers[$sLogin]) && 30 < count($this->aUsers[$sLogin])) {
             $this->aUsers = array_slice($this->aUsers, -30);
@@ -119,7 +119,7 @@ class Reminder
             $sCalendarName,
             $sEventText,
             $this->i18n('EMAIL_EXPLANATION', $oUser, array(
-                'EMAIL' => '<a href="mailto:'.$oUser->PublicId.'">'.$oUser->PublicId.'</a>',
+                'EMAIL' => '<a href="mailto:' . $oUser->PublicId . '">' . $oUser->PublicId . '</a>',
                 'CALENDAR_NAME' => $sCalendarName
             ))
         );
@@ -145,7 +145,7 @@ class Reminder
             $sCalendarName,
             $sEventText,
             $this->i18n('EMAIL_EXPLANATION', $oUser, array(
-                'EMAIL' => '<a href="mailto:'.$oUser->PublicId.'">'.$oUser->PublicId.'</a>',
+                'EMAIL' => '<a href="mailto:' . $oUser->PublicId . '">' . $oUser->PublicId . '</a>',
                 'CALENDAR_NAME' => $sCalendarName
             ))
         );
@@ -293,7 +293,7 @@ class Reminder
             $sTimeFormat = 'H:i';
         }
 
-        return $sDateFormat.' '.$sTimeFormat;
+        return $sDateFormat . ' ' . $sTimeFormat;
     }
 
     public function GetReminders($iStart, $iEnd)
@@ -384,8 +384,8 @@ class Reminder
         $iStartTS = $oStartDT_UTC->getTimestamp();
 
         if ($iNowTS >= $iStartTS) {
-            \Aurora\System\Api::Log('Start time: '.$oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
-            \Aurora\System\Api::Log('End time: '.$oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+            \Aurora\System\Api::Log('Start time: ' . $oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+            \Aurora\System\Api::Log('End time: ' . $oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
             $aEvents = $this->GetReminders($iStartTS, $iNowTS);
 
@@ -449,7 +449,7 @@ class Reminder
                                             $bIsMessageSent = false;
                                             $oEvent = $this->oCalendarManager->getEvent($sEmail, $sEventCalendarId, $sEventId);
                                             if ($oEvent) {
-                                                \Aurora\System\Api::Log('Send reminder - calendar: \''.$sEventCalendarId.'\',  event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                                \Aurora\System\Api::Log('Send reminder - calendar: \'' . $sEventCalendarId . '\',  event: \'' . $sEventName . '\' started on \'' . $sDate . '\' to \'' . $oUserItem->PublicId . '\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                                 $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
                                             } else {
                                                 \Aurora\System\Api::Log('Event not found - User: ' . $sEmail . ', Calendar: ' . $sCalendarUri . ' , Event: ' . $sEventId, \Aurora\System\Enums\LogLevel::Full, 'cron-');
@@ -462,7 +462,7 @@ class Reminder
                                             }
                                         }
                                     } else {
-                                        \Aurora\System\Api::Log('Calendar '.$sCalendarUri.' not found for user \''.$oUser->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                        \Aurora\System\Api::Log('Calendar ' . $sCalendarUri . ' not found for user \'' . $oUser->PublicId . '\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                     }
                                 }
                             }
@@ -483,4 +483,4 @@ $iTimer = microtime(true);
 
 Reminder::NewInstance()->Execute();
 
-\Aurora\System\Api::Log('Cron execution time: '.(microtime(true) - $iTimer).' sec.', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+\Aurora\System\Api::Log('Cron execution time: ' . (microtime(true) - $iTimer) . ' sec.', \Aurora\System\Enums\LogLevel::Full, 'cron-');

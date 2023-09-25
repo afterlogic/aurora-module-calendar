@@ -120,29 +120,29 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
-            if (null !== $oUser->getExtendedProp(self::GetName().'::HighlightWorkingDays')) {
-                $aSettings['HighlightWorkingDays'] = $oUser->getExtendedProp(self::GetName().'::HighlightWorkingDays');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::HighlightWorkingDays')) {
+                $aSettings['HighlightWorkingDays'] = $oUser->getExtendedProp(self::GetName() . '::HighlightWorkingDays');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::HighlightWorkingHours')) {
-                $aSettings['HighlightWorkingHours'] = $oUser->getExtendedProp(self::GetName().'::HighlightWorkingHours');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::HighlightWorkingHours')) {
+                $aSettings['HighlightWorkingHours'] = $oUser->getExtendedProp(self::GetName() . '::HighlightWorkingHours');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::ShowWeekNumbers')) {
-                $aSettings['ShowWeekNumbers'] = $oUser->getExtendedProp(self::GetName().'::ShowWeekNumbers');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::ShowWeekNumbers')) {
+                $aSettings['ShowWeekNumbers'] = $oUser->getExtendedProp(self::GetName() . '::ShowWeekNumbers');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::WorkdayStarts')) {
-                $aSettings['WorkdayStarts'] = $oUser->getExtendedProp(self::GetName().'::WorkdayStarts');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::WorkdayStarts')) {
+                $aSettings['WorkdayStarts'] = $oUser->getExtendedProp(self::GetName() . '::WorkdayStarts');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::WorkdayEnds')) {
-                $aSettings['WorkdayEnds'] = $oUser->getExtendedProp(self::GetName().'::WorkdayEnds');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::WorkdayEnds')) {
+                $aSettings['WorkdayEnds'] = $oUser->getExtendedProp(self::GetName() . '::WorkdayEnds');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::WeekStartsOn')) {
-                $aSettings['WeekStartsOn'] = $oUser->getExtendedProp(self::GetName().'::WeekStartsOn');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::WeekStartsOn')) {
+                $aSettings['WeekStartsOn'] = $oUser->getExtendedProp(self::GetName() . '::WeekStartsOn');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::DefaultTab')) {
-                $aSettings['DefaultTab'] = $oUser->getExtendedProp(self::GetName().'::DefaultTab');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::DefaultTab')) {
+                $aSettings['DefaultTab'] = $oUser->getExtendedProp(self::GetName() . '::DefaultTab');
             }
-            if (null !== $oUser->getExtendedProp(self::GetName().'::DefaultReminders')) {
-                $aSettings['DefaultReminders'] = $oUser->getExtendedProp(self::GetName().'::DefaultReminders');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::DefaultReminders')) {
+                $aSettings['DefaultReminders'] = $oUser->getExtendedProp(self::GetName() . '::DefaultReminders');
             }
 
             $oUser->save();
@@ -160,14 +160,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             if ($oUser->isNormalOrTenant()) {
                 $oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
                 $oUser->setExtendedProps([
-                    self::GetName().'::HighlightWorkingDays' => $HighlightWorkingDays,
-                    self::GetName().'::HighlightWorkingHours' => $HighlightWorkingHours,
-                    self::GetName().'::ShowWeekNumbers' => $ShowWeekNumbers,
-                    self::GetName().'::WorkdayStarts' => $WorkdayStarts,
-                    self::GetName().'::WorkdayEnds' => $WorkdayEnds,
-                    self::GetName().'::WeekStartsOn' => $WeekStartsOn,
-                    self::GetName().'::DefaultTab' => $DefaultTab,
-                    self::GetName().'::DefaultReminders' => $DefaultReminders,
+                    self::GetName() . '::HighlightWorkingDays' => $HighlightWorkingDays,
+                    self::GetName() . '::HighlightWorkingHours' => $HighlightWorkingHours,
+                    self::GetName() . '::ShowWeekNumbers' => $ShowWeekNumbers,
+                    self::GetName() . '::WorkdayStarts' => $WorkdayStarts,
+                    self::GetName() . '::WorkdayEnds' => $WorkdayEnds,
+                    self::GetName() . '::WeekStartsOn' => $WeekStartsOn,
+                    self::GetName() . '::DefaultTab' => $DefaultTab,
+                    self::GetName() . '::DefaultReminders' => $DefaultReminders,
                 ]);
                 return $oCoreDecorator->UpdateUserObject($oUser);
             }
@@ -926,10 +926,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             \Aurora\Modules\CoreWebclient\Module::Decorator()->SetHtmlOutputHeaders();
 
             if (!strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'firefox')) {
-                @\header('Last-Modified: '.\gmdate('D, d M Y H:i:s').' GMT');
+                @\header('Last-Modified: ' . \gmdate('D, d M Y H:i:s') . ' GMT');
             }
 
-            $oSettings = & \Aurora\System\Api::GetSettings();
+            $oSettings = &\Aurora\System\Api::GetSettings();
             if (($oSettings->CacheCtrl && isset($_COOKIE['aft-cache-ctrl']))) {
                 @\setcookie(
                     'aft-cache-ctrl',
@@ -944,11 +944,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             }
             $oCoreClientModule = \Aurora\System\Api::GetModule('CoreWebclient');
             if ($oCoreClientModule instanceof \Aurora\System\Module\AbstractModule) {
-                $sResult = file_get_contents($oCoreClientModule->GetPath().'/templates/Index.html');
+                $sResult = file_get_contents($oCoreClientModule->GetPath() . '/templates/Index.html');
                 if (is_string($sResult)) {
                     $sFrameOptions = $oSettings->XFrameOptions;
                     if (0 < \strlen($sFrameOptions)) {
-                        @\header('X-Frame-Options: '.$sFrameOptions);
+                        @\header('X-Frame-Options: ' . $sFrameOptions);
                     }
 
                     $sAuthToken = isset($_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY] : '';
@@ -1057,7 +1057,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $sFromEmail = '';
         $oFromCollection = $oMessage->getFrom();
         if ($oFromCollection && 0 < $oFromCollection->Count()) {
-            $oFrom = & $oFromCollection->GetByIndex(0);
+            $oFrom = &$oFromCollection->GetByIndex(0);
             if ($oFrom) {
                 $sFromEmail = trim($oFrom->GetEmail());
             }
@@ -1072,7 +1072,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                         $mResult = false;
                     }
                     if (is_array($mResult) && !empty($mResult['Action']) && !empty($mResult['Body'])) {
-                        $sTemptFile = md5($sFromEmail . $sData).'.ics';
+                        $sTemptFile = md5($sFromEmail . $sData) . '.ics';
                         if ($this->getFilecacheManager()->put($sUserPublicId, $sTemptFile, $sData, '', self::GetName())) {
                             $oIcs = Classes\Ics::createInstance();
 
@@ -1103,7 +1103,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
                             $oMessage->addExtend('ICAL', $oIcs);
                         } else {
-                            \Aurora\System\Api::Log('Can\'t save temp file "'.$sTemptFile.'"', \Aurora\System\Enums\LogLevel::Error);
+                            \Aurora\System\Api::Log('Can\'t save temp file "' . $sTemptFile . '"', \Aurora\System\Enums\LogLevel::Error);
                         }
                     }
                 }
@@ -1123,7 +1123,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 if ($oCalendar instanceof Classes\Calendar) {
                     $mResult['Dav']['Calendars'][] = array(
                         'Name' => $oCalendar->DisplayName,
-                        'Url' => rtrim($oDavModule->GetServerUrl().$oCalendar->Url, "/")."/"
+                        'Url' => rtrim($oDavModule->GetServerUrl() . $oCalendar->Url, "/") . "/"
                     );
                 }
             }

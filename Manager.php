@@ -1058,7 +1058,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                 $iIndex = \Aurora\Modules\Calendar\Classes\Helper::getBaseVComponentIndex($oVCal->{$sComponent});
                 if ($iIndex !== false) {
                     /** @var \Sabre\VObject\Component $oVComponent */
-                    $oVComponent = & $oVCal->{$sComponent}[$iIndex];
+                    $oVComponent = &$oVCal->{$sComponent}[$iIndex];
                     $oVComponent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
                     $oDTExdate = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
@@ -1115,7 +1115,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                 'RECURRENCE-ID' => $oDTExdate
                             ));
                         } else {
-                            $oVEventRecur = & $oVCal->{$sComponent}[$mIndex];
+                            $oVEventRecur = &$oVCal->{$sComponent}[$mIndex];
                         }
                         if ($oVEventRecur) {
                             $oEvent->RRule = null;
@@ -1558,7 +1558,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
                             if ($this->oModule->oModuleSettings->ShowWeekNumbers) {
                                 $sWeek = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'W');
-                                $sWhen .= ' ('.$this->oModule->i18n('LABEL_WEEK_SHORT').$sWeek.')';
+                                $sWhen .= ' (' . $this->oModule->i18n('LABEL_WEEK_SHORT') . $sWeek . ')';
                             }
                         }
 

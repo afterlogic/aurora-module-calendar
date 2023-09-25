@@ -272,25 +272,25 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
         $aProps = $oCalDAVCalendar->getProperties([
             'id',
-            '{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description',
+            '{' . \Sabre\CalDAV\Plugin::NS_CALDAV . '}calendar-description',
             '{DAV:}displayname',
-            '{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag',
+            '{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}getctag',
             '{http://apple.com/ns/ical/}calendar-color',
             '{http://apple.com/ns/ical/}calendar-order',
             '{http://sabredav.org/ns}owner-principal',
-            '{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source'
+            '{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}source'
         ]);
         if (isset($aProps['id']) && isset($aProps['id'][0])) {
             $oCalendar->IntId = $aProps['id'][0];
         }
-        if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'])) {
-            $oCalendar->Description = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'];
+        if (isset($aProps['{' . \Sabre\CalDAV\Plugin::NS_CALDAV . '}calendar-description'])) {
+            $oCalendar->Description = $aProps['{' . \Sabre\CalDAV\Plugin::NS_CALDAV . '}calendar-description'];
         }
         if (isset($aProps['{DAV:}displayname'])) {
             $oCalendar->DisplayName = $aProps['{DAV:}displayname'];
         }
-        if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag'])) {
-            $oCalendar->CTag = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag'];
+        if (isset($aProps['{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}getctag'])) {
+            $oCalendar->CTag = $aProps['{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}getctag'];
         }
         if (isset($aProps['{http://apple.com/ns/ical/}calendar-color'])) {
             $oCalendar->Color = $aProps['{http://apple.com/ns/ical/}calendar-color'];
@@ -304,8 +304,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $oCalendar->Principals = [$oCalDAVCalendar->getOwner()];
         }
 
-        $oCalendar->Url = 'calendars/'.$oCalDAVCalendar->getName();
-        $oCalendar->RealUrl = 'calendars/'.$oCalDAVCalendar->getName();
+        $oCalendar->Url = 'calendars/' . $oCalDAVCalendar->getName();
+        $oCalendar->RealUrl = 'calendars/' . $oCalDAVCalendar->getName();
         $oCalendar->SyncToken = $oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar ? (string) $oCalDAVCalendar->getSyncToken() : '';
 
         $sPrincipalUri = '';
@@ -319,8 +319,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
         if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription) {
             $oCalendar->Subscribed = true;
-            if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source'])) {
-                $oCalendar->Source = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source']->getHref();
+            if (isset($aProps['{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}source'])) {
+                $oCalendar->Source = $aProps['{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}source']->getHref();
             }
         }
         if (!$oCalendar->Subscribed) {
@@ -515,8 +515,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 ],
                 [
                     '{DAV:}displayname' => $sName,
-                    '{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}getctag' => 1,
-                    '{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description' => $sDescription,
+                    '{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}getctag' => 1,
+                    '{' . \Sabre\CalDAV\Plugin::NS_CALDAV . '}calendar-description' => $sDescription,
                     '{http://apple.com/ns/ical/}calendar-color' => $sColor,
                     '{http://apple.com/ns/ical/}calendar-order' => $iOrder
                 ]
@@ -573,7 +573,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         if ($oUserCalendars->childExists($sCalendarId)) {
             $oCalDAVCalendar = $oUserCalendars->getChild($sCalendarId);
             if ($oCalDAVCalendar) {
-                Server::checkPrivileges('calendars/'.$oCalDAVCalendar->getName(), '{DAV:}write-properties');
+                Server::checkPrivileges('calendars/' . $oCalDAVCalendar->getName(), '{DAV:}write-properties');
 
                 $aUpdateProperties = array();
                 $bOnlyColor = ($sName === null && $sDescription === null && $iOrder === null);
@@ -584,7 +584,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 } else {
                     $aUpdateProperties = array(
                         '{DAV:}displayname' => $sName,
-                        '{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description' => $sDescription,
+                        '{' . \Sabre\CalDAV\Plugin::NS_CALDAV . '}calendar-description' => $sDescription,
                         '{http://apple.com/ns/ical/}calendar-color' => $sColor,
                         '{http://apple.com/ns/ical/}calendar-order' => $iOrder
                     );
@@ -627,7 +627,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 } else {
                     $aUpdateProperties = array(
                         '{DAV:}displayname' => $sName,
-                        '{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source' => new Href($sSource),
+                        '{' . \Sabre\CalDAV\Plugin::NS_CALENDARSERVER . '}source' => new Href($sSource),
                         '{http://apple.com/ns/ical/}calendar-color' => $sColor,
                         '{http://apple.com/ns/ical/}calendar-order' => $iOrder
                     );
