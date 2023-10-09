@@ -38,6 +38,16 @@ class TextUtils
                 }
             }
 
+            foreach (array(
+                'load', 'blur', 'error', 'focus', 'formchange', 'change', 'start',
+                'copy', 'contextmenu', 'drag', 'cut', 'paste',
+                'click', 'dblclick', 'keydown', 'keypress', 'keyup',
+                'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup',
+                'move', 'resize', 'resizeend', 'resizestart', 'scroll', 'select', 'submit', 'upload'
+            ) as $sAttr) {
+                @$oElement->removeAttribute('on' . $sAttr);
+            }
+
             if ($oElement->hasAttribute('style')) {
                 $oElement->setAttribute(
                     'style',
@@ -57,7 +67,6 @@ class TextUtils
 
         $sText = \MailSo\Base\HtmlUtils::ClearTags($sText);
         $sText = \MailSo\Base\HtmlUtils::ClearBodyAndHtmlTag($sText);
-        $sText = \MailSo\Base\HtmlUtils::ClearOn($sText);
 
         return $sText;
     }
