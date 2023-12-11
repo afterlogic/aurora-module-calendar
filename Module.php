@@ -807,9 +807,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             if (isset($alarms)) {
                 $oEvent->Alarms = @json_decode($alarms, true);
             }
-            if (isset($rrule)) {
-                $aRRule = @json_decode($rrule, true);
-            }
+
+            $aRRule = isset($rrule) ? @json_decode($rrule, true) : false;
             if ($aRRule) {
                 $oUser = \Aurora\System\Api::getAuthenticatedUser();
                 $oRRule = new Classes\RRule($oUser->DefaultTimeZone);
