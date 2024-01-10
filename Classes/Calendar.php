@@ -92,7 +92,8 @@ class Calendar
     }
 
     /**
-     * @param \Aurora\Modules\StandardAuth\Models\Account $oAccount
+     * @deprecated since version 9.7.6
+     * @param mixed $oAccount
      * @return bool
      */
     public function IsCalendarOwner($oAccount)

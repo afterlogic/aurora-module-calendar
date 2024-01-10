@@ -153,7 +153,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
     /**
      * @param string $sUserPublicId
-     * @param string $sEventId
+     * @param string $uid
      *
      * @return string|false
      */

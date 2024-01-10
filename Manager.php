@@ -179,7 +179,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
     /**
      *
-     * @return \Aurora\Modules\StandardAuth\Models\Account|false $oAccount
+     * @return mixed $oAccount
      */
     public function getPublicAccount()
     {
@@ -1610,7 +1610,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
     /**
      * @param string $sUserPublicId
-     * @param string $sEventId
+     * @param string $uid
      *
      * @return string|false
      */

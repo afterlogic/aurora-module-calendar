@@ -742,9 +742,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param int $startTS
      * @param int $endTS
      * @param boolean $allDay
-     * @param string $alarms
+     * @param string|null $alarms
      * @param string $attendees
-     * @param string $rrule
+     * @param string|null $rrule
      * @param int $allEvents
      * @param string $recurrenceId
      * @param int $selectStart
