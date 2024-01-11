@@ -1582,13 +1582,13 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                             'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
                             'Summary' => isset($oVEventResult->SUMMARY) ? (string)$oVEventResult->SUMMARY : '',
                             'When' => $sWhen,
-                            'Sequence' => isset($sequence) ? $sequence : 1,
+                            'Sequence' => $sequence,
                             'Organizer' => $organizer,
                             'AttendeeList' => $ateendeeList,
                         ];
 
                         $aAccountEmails = ($sMethod === 'REPLY') ? [$mFromEmail] : $aAccountEmails;
-                        if (isset($sequenceServer) && isset($sequence) && $sequenceServer >= $sequence) {
+                        if (isset($sequenceServer) && $sequenceServer >= $sequence) {
                             $aArgs = [
                                 'oVEventResult'		=> $sMethod === 'REPLY' ? $oVEvent : $oVEventResult,
                                 'sMethod'			=> $sMethod,
