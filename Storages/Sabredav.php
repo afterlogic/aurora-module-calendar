@@ -906,13 +906,19 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         $this->init($sUserPublicId);
 
         if ($oCalendar != null) {
-            $aShares = $this->getBackend()->getShares($oCalendar->IntId);
+            $aShares = $this->getBackend()->getInvites($oCalendar->IntId);
 
-            foreach ($aShares as $aShare) {
+            foreach ($aShares as $oShare) {
+                $access = \Aurora\Modules\Calendar\Enums\Permission::Read;
+                if ($oShare->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READ) {
+                    $access = \Aurora\Modules\Calendar\Enums\Permission::Read;
+                } elseif ($oShare->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE) {
+                    $access = \Aurora\Modules\Calendar\Enums\Permission::Write;
+                }
                 $aResult[] = array(
-                    'name' => basename($aShare['href']),
-                    'email' => basename($aShare['href']),
-                    'access' => $aShare['readOnly'] ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::Write
+                    'name' => basename($oShare->href),
+                    'email' => basename($oShare->href),
+                    'access' => $access
                 );
             }
         }
