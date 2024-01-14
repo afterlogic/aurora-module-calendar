@@ -189,6 +189,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             }
         }
 
+        // sorting $mCalendars alphabetically
+        if (is_array($mCalendars)) {
+            usort($mCalendars, function ($a, $b) {
+                return strcmp($a->DisplayName, $b->DisplayName);
+            });
+        }
+
         // When $mCalendars is an empty array with condition "if ($mCalendars)" $mResult will be false
         if (is_array($mCalendars)) {
             $mResult = array(
