@@ -330,7 +330,7 @@ class Reminder
 
                 $sCalendarUri = $aReminder['calendaruri'];
                 $sEventId = $aReminder['eventid'];
-                $pathInfo = pathinfo($aReminder['uid']);
+                $pathInfo = pathinfo($sEventId);
                 if (isset($pathInfo['extension']) && strtolower($pathInfo['extension']) === 'ics') {
                     $sEventId = $pathInfo['filename'];
                 }
@@ -431,8 +431,16 @@ class Reminder
                                         $bAllDay = $aEvent['allDay'];
                                         $sDate = $aUserEvent['time'];
 
+                                        $attendees = [];
+
+                                        $aBaseEvents = $vCal->getBaseComponents('VEVENT');
+                                        if (isset($aBaseEvents[0]) && isset($aBaseEvents[0]->ATTENDEE)) {
+                                            foreach ($aBaseEvents[0]->ATTENDEE as $attendee) {
+                                                $attendees[] = str_replace('mailto:', '', strtolower((string)$attendee));
+                                            }
+                                        }
+
                                         if (isset($vCal->getBaseComponent('VEVENT')->RRULE) && $iEventStartTS < $iNowTS) { // the correct date for repeatable events
-                                            $aBaseEvents = $vCal->getBaseComponents('VEVENT');
                                             if (isset($aBaseEvents[0])) {
                                                 $oEventStartDT = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oNowDT_UTC, $aBaseEvents[0]);
                                                 $sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
@@ -448,26 +456,30 @@ class Reminder
                                         $sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay);
 
                                         $aUsers = array(
-                                            $oUser->IdUser => $oUser
+                                            // $oUser->EntityId => $oUser
                                         );
 
-                                        $aCalendarUsers = $this->oApiCalendarManager->getCalendarUsers($oUser, $oCalendar);
+                                        $aCalendarUsers = $this->oApiCalendarManager->getCalendarUsers($oUser->PublicId, $oCalendar);
                                         if (0 < count($aCalendarUsers)) {
                                             foreach ($aCalendarUsers as $aCalendarUser) {
                                                 $oCalendarUser = $this->getUser($aCalendarUser['email']);
                                                 if ($oCalendarUser) {
-                                                    $aUsers[$oCalendarUser->IdUser] = $oCalendarUser;
+                                                    $aUsers[$oCalendarUser->EntityId] = $oCalendarUser;
                                                 }
                                             }
                                         }
 
+                                        $bSendRemindersOnlyToAttendees = $this->oCalendarModule->getConfig('SendRemindersOnlyToAttendees', false);
                                         foreach ($aUsers as $oUserItem) {
-                                            $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
-                                            if ($bIsMessageSent) {
-                                                $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
-                                                \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
-                                            } else {
-                                                \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                            if (in_array(strtolower($oUserItem->PublicId), $attendees) || $oUserItem->PublicId === $oUser->PublicId || !$bSendRemindersOnlyToAttendees)
+                                            {
+                                                $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
+                                                if ($bIsMessageSent) {
+                                                    $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
+                                                    \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                                } else {
+                                                    \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                                }
                                             }
                                         }
                                     } else {

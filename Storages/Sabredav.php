@@ -427,6 +427,10 @@ class Sabredav extends Storage
         $aCalendarNames = array();
         $aCalendars = $this->getCalendars($sUserPublicId);
         if (is_array($aCalendars)) {
+            $sharedCalendars = $this->getSharedCalendars($sUserPublicId);
+            if (is_array($sharedCalendars)) {
+                $aCalendars = array_merge($aCalendars, $sharedCalendars);
+            }
             /* @var $oCalendar \Aurora\Modules\Calendar\Classes\Calendar */
             foreach ($aCalendars as $oCalendar) {
                 if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
@@ -843,17 +847,18 @@ class Sabredav extends Storage
     public function getCalendarUsers($sUserPublicId, $oCalendar)
     {
         $aResult = array();
-        return $aResult;
+
         $this->init($sUserPublicId);
 
         if ($oCalendar != null) {
-            $aShares = $this->getBackend()->getShares($oCalendar->IntId);
+            $calDavCalendar = $this->getCalDAVCalendar($oCalendar->RealUrl);
+            $aShares = $calDavCalendar->getInvites();
 
-            foreach ($aShares as $aShare) {
+            foreach ($aShares as $share) {
                 $aResult[] = array(
-                    'name' => basename($aShare['href']),
-                    'email' => basename($aShare['href']),
-                    'access' => $aShare['readOnly'] ? \Aurora\Modules\Calendar\Enums\Permission::Read : \Aurora\Modules\Calendar\Enums\Permission::Write
+                    'name' => basename(str_replace('mailto:', '', $share->href)),
+                    'email' => basename(str_replace('mailto:', '', $share->href)),
+                    'access' => $share->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ? \Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read
                 );
             }
         }
