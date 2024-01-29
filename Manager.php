@@ -1562,13 +1562,25 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                             }
                         }
 
-                        $organizer = isset($oVEventResult->ORGANIZER) ? str_ireplace('mailto:', '', (string) $oVEventResult->ORGANIZER) : '';
+                        $organizerEmail = '';
+                        $organizer = [];
+                        if (isset($oVEventResult->ORGANIZER)) {
+                            $organizerEmail = str_ireplace('mailto:', '', (string) $oVEventResult->ORGANIZER);
+                            $organizer = [
+                                'DisplayName' =>  (isset($oVEventResult->ORGANIZER['CN'])) ? $oVEventResult->ORGANIZER['CN'] : '',
+                                'Email' => $organizerEmail
+                            ];
+                        }
+
                         $ateendeeList = [];
                         if (isset($oVEventResult->ATTENDEE)) {
                             foreach ($oVEventResult->ATTENDEE as $oAttendee) {
                                 $ateendee = str_ireplace('mailto:', '', (string) $oAttendee);
-                                if (strtolower($ateendee) !== strtolower($organizer)) {
-                                    $ateendeeList[] = $ateendee;
+                                if (strtolower($ateendee) !== strtolower($organizerEmail)) {
+                                    $ateendeeList[] = [
+                                        'DisplayName' => (isset($oAttendee['CN'])) ? $oAttendee['CN'] : '',
+                                        'Email' => $ateendee
+                                    ];
                                 }
                             }
                         }
