@@ -400,11 +400,22 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param string $Id
      * @return array|boolean
      */
+
     public function DeleteCalendar($UserId, $Id)
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-        $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-        return $this->getManager()->deleteCalendar($sUserPublicId, $Id);
+
+        $bResult = false;
+        $oUser = \Aurora\System\Api::getAuthenticatedUser();
+
+        if ($oUser && $oUser->EntityId === $UserId) {
+            if ($oUser->{'Calendar::DefaultCalendar'} !== $Id) {
+                $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+                $bResult = $this->getManager()->deleteCalendar($sUserPublicId, $Id);
+            }
+        }
+
+        return $bResult;
     }
 
     /**
