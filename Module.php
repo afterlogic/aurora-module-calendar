@@ -91,6 +91,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'WorkdayEnds' => $this->getConfig('WorkdayEnds', 18),
             'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
             'AllowSubscribedCalendars' => $this->getConfig('AllowSubscribedCalendars', false),
+            'CalendarColors' => $this->getConfig('CalendarColors', []),
         );
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
