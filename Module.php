@@ -291,6 +291,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+
+        $oUser = \Aurora\System\Api::getUserById($UserId);
+        $bIsDefaultCalendar = ($oUser && $oUser->{'Calendar::DefaultCalendar'} === $Id);
+        $oAuthUser = \Aurora\System\Api::getAuthenticatedUser();
+        if ($bIsDefaultCalendar && ($oAuthUser->Role === \Aurora\System\Enums\UserRole::NormalUser || 
+            ($oAuthUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oAuthUser->IdTenant !== $oUser->IdTenant))) {
+            return false;
+        }
+        
         return $this->getManager()->updateCalendar($sUserPublicId, $Id, $Name, $Description, 0, $Color);
     }
 
@@ -325,6 +334,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function UpdateCalendarColor($UserId, $Id, $Color)
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+        $oUser = \Aurora\System\Api::getUserById($UserId);
+        $bIsDefaultCalendar = ($oUser && $oUser->{'Calendar::DefaultCalendar'} === $Id);
+        $oAuthUser = \Aurora\System\Api::getAuthenticatedUser();
+        if ($bIsDefaultCalendar && ($oAuthUser->Role === \Aurora\System\Enums\UserRole::NormalUser || 
+            ($oAuthUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oAuthUser->IdTenant !== $oUser->IdTenant))) {
+            return false;
+        }
+
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
         return $this->getManager()->updateCalendarColor($sUserPublicId, $Id, $Color);
     }
