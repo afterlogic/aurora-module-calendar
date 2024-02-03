@@ -38,6 +38,7 @@ class Calendar
     public $SyncToken;
     public $Subscribed;
     public $Source;
+    public $IsReminderMuted;
 
     /**
      * @param string $sId
@@ -76,6 +77,7 @@ class Calendar
         $this->SyncToken = null;
         $this->Subscribed = false;
         $this->Source = '';
+        $this->IsReminderMuted = false;
     }
 
     /**
@@ -123,7 +125,8 @@ class Calendar
             'Etag' => $this->ETag,
             'SyncToken' => $this->SyncToken,
             'Subscribed' => $this->Subscribed,
-            'Source' => $this->Source
+            'Source' => $this->Source,
+            'IsReminderMuted' => $this->IsReminderMuted
         );
     }
 }

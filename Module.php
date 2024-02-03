@@ -354,7 +354,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
      * @param int $UserId
      * @param string $Id
      * @param boolean $IsPublic
-     * @param array $Shares
+     * @param string $Shares
      * @param boolean $ShareToAll
      * @param int $ShareToAllAccess
      * @return array|boolean
@@ -457,6 +457,43 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
             $bResult = \Aurora\Modules\Core\Module::Decorator()->UpdateUserObject($oUser);
         }
+        return $bResult;
+    }
+
+    /**
+     *
+     * @param int $UserId
+     * @param string $Id
+     * @return boolean
+     */
+    public function SetCalendarMuteStatus($UserId, $CalendarId, $MuteStatus)
+    {
+        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+        
+        $bResult = false;
+        
+        $oUser = \Aurora\System\Api::getAuthenticatedUser();
+
+        if ($oUser && $oUser->EntityId === $UserId) {
+            $aMutedCalendarIds = json_decode($oUser->{'Calendar::MutedCalendarIds'});
+
+            if (!is_array($aMutedCalendarIds) && $MuteStatus) {
+                $aMutedCalendarIds = [];
+            }
+            
+            $currentIdIndex = array_search($CalendarId, $aMutedCalendarIds);
+            
+            if (!$MuteStatus && is_numeric($currentIdIndex) && $currentIdIndex >= 0) {
+                unset($aMutedCalendarIds[$currentIdIndex]);
+            } else if ($MuteStatus && is_numeric($currentIdIndex) === false) {
+                $aMutedCalendarIds[] = $CalendarId;
+            }
+
+            $oUser->{'Calendar::MutedCalendarIds'} = json_encode(array_values($aMutedCalendarIds));
+
+            $bResult = \Aurora\Modules\Core\Module::Decorator()->UpdateUserObject($oUser);
+        }
+
         return $bResult;
     }
 
@@ -1126,21 +1163,30 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
             $oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
 
-            // overriding default calendar in case admin request calendar list. In this case we cant rely on Dav flag.
-            if ($oUser && $oUser->{'Calendar::DefaultCalendar'}) {
-                if (
-                    $oUser->EntityId !== $oAuthenticatedUser->EntityId
-                    && ( 
-                        $oAuthenticatedUser->Role === UserRole::SuperAdmin
-                        || ($oAuthenticatedUser->Role === UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
-                    )
-                ) {
-                    foreach ($mResult['Calendars'] as $oCalendar) {
-                        if ($oCalendar->Id === $oUser->{'Calendar::DefaultCalendar'}) {
-                            $oCalendar->IsDefault = true;
-                            $bDefaultCalendarExists = true;
+            if ($oUser) {
+                // overriding default calendar in case admin request calendar list. In this case we cant rely on Dav flag.
+                if ($oUser->{'Calendar::DefaultCalendar'}) {
+                    if (
+                        $oUser->EntityId !== $oAuthenticatedUser->EntityId
+                        && ( 
+                            $oAuthenticatedUser->Role === UserRole::SuperAdmin
+                            || ($oAuthenticatedUser->Role === UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+                        )
+                    ) {
+                        foreach ($mResult['Calendars'] as $oCalendar) {
+                            if ($oCalendar->Id === $oUser->{'Calendar::DefaultCalendar'}) {
+                                $oCalendar->IsDefault = true;
+                                $bDefaultCalendarExists = true;
+                            }
                         }
                     }
+                }
+
+                // adding IsReminderMuted flad to every calendar on the list
+                $aMutedCalendarIds = json_decode($oUser->{'Calendar::MutedCalendarIds'});
+
+                foreach ($mResult['Calendars'] as $oCalendar) {
+                    $oCalendar->IsReminderMuted = is_array($aMutedCalendarIds) && in_array($oCalendar->Id, $aMutedCalendarIds);
                 }
             }
 

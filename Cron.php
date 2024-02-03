@@ -469,7 +469,14 @@ class Reminder
                                             }
                                         }
 
-                                        $bSendRemindersOnlyToAttendees = $this->oCalendarModule->getConfig('SendRemindersOnlyToAttendees', false);
+                                        // checking if current calendar is muted
+                                        $bSendRemindersOnlyToAttendees = false;
+
+                                        $aMutedCalendars = $oUser->{'Calendar::MutedCalendarIds'};
+                                        if (is_array($aMutedCalendars)) {
+                                            $bSendRemindersOnlyToAttendees = in_array($oCalendar->Id, $aMutedCalendars);
+                                        }
+
                                         foreach ($aUsers as $oUserItem) {
                                             if (in_array(strtolower($oUserItem->PublicId), $attendees) || $oUserItem->PublicId === $oUser->PublicId || !$bSendRemindersOnlyToAttendees)
                                             {
