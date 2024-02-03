@@ -7,6 +7,7 @@
 namespace Aurora\Modules\Calendar;
 
 use Aurora\System\Exceptions\ApiException;
+use Aurora\System\Enums\UserRole;
 
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
@@ -160,9 +161,9 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function GetCalendar($UserId, $CalendarId)
     {
         $oCalendar = $this->getManager()->getCalendar($UserId, $CalendarId);
-        if ($oCalendar) {
-            //			$oCalendar = $this->getManager()->populateCalendarShares($UserId, $oCalendar);
-        }
+        // if ($oCalendar) {
+        //     $oCalendar = $this->getManager()->populateCalendarShares($UserId, $oCalendar);
+        // }
         return $oCalendar;
     }
 
@@ -1120,16 +1121,39 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function onAfterGetCalendars($aArgs, &$mResult)
     {
         if (isset($mResult['Calendars']) && is_array($mResult['Calendars']) && count($mResult['Calendars']) > 0) {
-            $oDefaultCalendar = null;
-            
-            foreach ($mResult['Calendars'] as $oCalendar) {
-                if ($oCalendar->IsDefault) {
-                    $oDefaultCalendar = $oCalendar;
+            $bDefaultCalendarExists = false;
+
+            $oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
+            $oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
+
+            // overriding default calendar in case admin request calendar list. In this case we cant rely on Dav flag.
+            if ($oUser && $oUser->{'Calendar::DefaultCalendar'}) {
+                if (
+                    $oUser->EntityId !== $oAuthenticatedUser->EntityId
+                    && ( 
+                        $oAuthenticatedUser->Role === UserRole::SuperAdmin
+                        || ($oAuthenticatedUser->Role === UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
+                    )
+                ) {
+                    foreach ($mResult['Calendars'] as $oCalendar) {
+                        if ($oCalendar->Id === $oUser->{'Calendar::DefaultCalendar'}) {
+                            $oCalendar->IsDefault = true;
+                            $bDefaultCalendarExists = true;
+                        }
+                    }
                 }
             }
-            $oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
+
+            if (!$bDefaultCalendarExists) {
+                foreach ($mResult['Calendars'] as $oCalendar) {
+                    if ($oCalendar->IsDefault) {
+                        $bDefaultCalendarExists = true;
+                    }
+                }
+            }
+
             if ($oUser) {
-                if (!$oDefaultCalendar) {
+                if (!$bDefaultCalendarExists) {
                     $sFallbackCalendarId = array_keys($mResult['Calendars'])[0];
                     if ($sFallbackCalendarId) {
                         $this->SetDefaultCalendar($oUser->EntityId, $sFallbackCalendarId);
