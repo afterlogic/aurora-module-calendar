@@ -1163,7 +1163,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
             $oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
 
-            if ($oUser) {
+            if ($oUser && $oUser->EntityId !== $oAuthenticatedUser->EntityId) {
                 // overriding default calendar in case admin request calendar list. In this case we cant rely on Dav flag.
                 if ($oUser->{'Calendar::DefaultCalendar'}) {
                     if (
@@ -1200,10 +1200,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
             if ($oUser) {
                 if (!$bDefaultCalendarExists) {
-                    $sFallbackCalendarId = array_keys($mResult['Calendars'])[0];
-                    if ($sFallbackCalendarId) {
-                        $this->SetDefaultCalendar($oUser->EntityId, $sFallbackCalendarId);
-                        $mResult['Calendars'][$sFallbackCalendarId]->IsDefault = true;
+                    foreach ($mResult['Calendars'] as $oCalendar) {
+                        $this->SetDefaultCalendar($oUser->EntityId, $oCalendar->Id);
+                        $oCalendar->IsDefault = true;
+                        break;
                     }
                 }
             }
