@@ -295,7 +295,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
         $oUser = \Aurora\System\Api::getUserById($UserId);
-        $bIsDefaultCalendar = ($oUser && $oUser->{'Calendar::DefaultCalendar'} === $Id);
+        $bIsDefaultCalendar = $this->getManager()->isMainCalendarId($Id);
         $oAuthUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($bIsDefaultCalendar && ($oAuthUser->Role === \Aurora\System\Enums\UserRole::NormalUser || 
             ($oAuthUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oAuthUser->IdTenant !== $oUser->IdTenant))) {
@@ -338,7 +338,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
         $oUser = \Aurora\System\Api::getUserById($UserId);
-        $bIsDefaultCalendar = ($oUser && $oUser->{'Calendar::DefaultCalendar'} === $Id);
+        $bIsDefaultCalendar = $this->getManager()->isMainCalendarId($Id);
         $oAuthUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($bIsDefaultCalendar && ($oAuthUser->Role === \Aurora\System\Enums\UserRole::NormalUser || 
             ($oAuthUser->Role === \Aurora\System\Enums\UserRole::TenantAdmin && $oAuthUser->IdTenant !== $oUser->IdTenant))) {
@@ -429,10 +429,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
 
         if ($oUser && $oUser->EntityId === $UserId) {
-            if ($oUser->{'Calendar::DefaultCalendar'} !== $Id) {
-                $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-                $bResult = $this->getManager()->deleteCalendar($sUserPublicId, $Id);
-            }
+            $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+            $bResult = $this->getManager()->deleteCalendar($sUserPublicId, $Id);
         }
 
         return $bResult;
@@ -1161,28 +1159,14 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $bDefaultCalendarExists = false;
 
             $oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
-            $oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
 
-            if ($oUser && $oUser->EntityId !== $oAuthenticatedUser->EntityId) {
-                // overriding default calendar in case admin request calendar list. In this case we cant rely on Dav flag.
-                if ($oUser->{'Calendar::DefaultCalendar'}) {
-                    if (
-                        $oUser->EntityId !== $oAuthenticatedUser->EntityId
-                        && ( 
-                            $oAuthenticatedUser->Role === UserRole::SuperAdmin
-                            || ($oAuthenticatedUser->Role === UserRole::TenantAdmin && $oUser->IdTenant === $oAuthenticatedUser->IdTenant)
-                        )
-                    ) {
-                        foreach ($mResult['Calendars'] as $oCalendar) {
-                            if ($oCalendar->Id === $oUser->{'Calendar::DefaultCalendar'}) {
-                                $oCalendar->IsDefault = true;
-                                $bDefaultCalendarExists = true;
-                            }
-                        }
-                    }
-                }
-
-                // adding IsReminderMuted flad to every calendar on the list
+            // marking main calendars
+            foreach ($mResult['Calendars'] as $oCalendar) {
+                $oCalendar->IsMain = $this->getManager()->isMainCalendar($oCalendar);
+            }
+            
+            // adding IsReminderMuted flad to every calendar on the list
+            if ($oUser && $oUser->{'Calendar::MutedCalendarIds'}) {
                 $aMutedCalendarIds = json_decode($oUser->{'Calendar::MutedCalendarIds'});
 
                 foreach ($mResult['Calendars'] as $oCalendar) {

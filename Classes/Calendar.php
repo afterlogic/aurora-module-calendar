@@ -39,6 +39,7 @@ class Calendar
     public $Subscribed;
     public $Source;
     public $IsReminderMuted;
+    public $IsMain;
 
     /**
      * @param string $sId
@@ -78,6 +79,7 @@ class Calendar
         $this->Subscribed = false;
         $this->Source = '';
         $this->IsReminderMuted = false;
+        $this->IsMain = false;
     }
 
     /**
@@ -126,7 +128,8 @@ class Calendar
             'SyncToken' => $this->SyncToken,
             'Subscribed' => $this->Subscribed,
             'Source' => $this->Source,
-            'IsReminderMuted' => $this->IsReminderMuted
+            'IsReminderMuted' => $this->IsReminderMuted,
+            'IsMain' => $this->IsMain,
         );
     }
 }

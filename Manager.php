@@ -1748,4 +1748,30 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
         return $bResult;
     }
+    
+    /**
+     * Checks if provide calendar is a main calendar.
+     * Technically, it is a calendar with Id starting with "MyCalendar".
+     * 
+     * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
+     *
+     * @return bool
+     */
+    public function isMainCalendar($oCalendar)
+    {
+        return strpos($oCalendar->Id, 'MyCalendar') !== false;
+    }
+
+    /**
+     * Checks if provide calendar id related to main calendar.
+     * Technically, it is a calendar with Id starting with "MyCalendar".
+     * 
+     * @param string $sCalendarId
+     *
+     * @return bool
+     */
+    public function isMainCalendarId($sCalendarId)
+    {
+        return strpos($sCalendarId, 'MyCalendar') !== false;
+    }
 }
