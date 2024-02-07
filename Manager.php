@@ -6,6 +6,7 @@
 
 namespace Aurora\Modules\Calendar;
 
+use Afterlogic\DAV\Backend;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use Sabre\VObject\ParseException;
@@ -1759,7 +1760,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      */
     public function isMainCalendar($oCalendar)
     {
-        return strpos($oCalendar->Id, 'MyCalendar') !== false || strpos($oCalendar->Description, '#main') !== false;
+        return $this->isMainCalendarId($oCalendar->Id);
     }
 
     /**
@@ -1772,6 +1773,15 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      */
     public function isMainCalendarId($sCalendarId)
     {
-        return strpos($sCalendarId, 'MyCalendar') !== false;
+        $result = strpos($sCalendarId, 'MyCalendar') !== false;
+
+        if (!$result) {
+            $calendar = Backend::CalDAV()->getParentCalendarByUri($sCalendarId);
+            if ($calendar) {
+                $result = strpos($calendar['uri'], 'MyCalendar') !== false;
+            }
+        }
+
+        return $result;
     }
 }
