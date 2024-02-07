@@ -1759,7 +1759,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      */
     public function isMainCalendar($oCalendar)
     {
-        return strpos($oCalendar->Id, 'MyCalendar') !== false;
+        return strpos($oCalendar->Id, 'MyCalendar') !== false || strpos($oCalendar->Description, '#main') !== false;
     }
 
     /**
