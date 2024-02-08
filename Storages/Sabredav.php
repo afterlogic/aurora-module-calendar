@@ -190,11 +190,11 @@ class Sabredav extends Storage
                     if ($oSharee->principal !== $aTenantPrincipal['uri']) {
                         if ($oSharee instanceof \Sabre\DAV\Xml\Element\Sharee) {
                             if ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_SHAREDOWNER) {
-                                $oCalendar->Owner = basename($oSharee->href);
+                                $oCalendar->Owner = basename($oSharee->principal);
                             } elseif ($oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE || $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READ) {
                                 $oCalendar->Shares[] = [
-                                    'name' => basename($oSharee->href),
-                                    'email' => basename($oSharee->href),
+                                    'name' => basename($oSharee->principal),
+                                    'email' => basename($oSharee->principal),
                                     'access' => $oSharee->access === \Sabre\DAV\Sharing\Plugin::ACCESS_READWRITE ?
                                         \Aurora\Modules\Calendar\Enums\Permission::Write : \Aurora\Modules\Calendar\Enums\Permission::Read
                                 ];
