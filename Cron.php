@@ -412,7 +412,7 @@ class Reminder
 
             foreach ($aEvents as $sEmail => $aUserCalendars) {
                 foreach ($aUserCalendars as $sCalendarUri => $aUserEvents) {
-                    foreach ($aUserEvents as $aUserEvent) {
+                    foreach ($aUserEvents as $sEventUri => $aUserEvent) {
                         $aSubEvents = $aUserEvent['data'];
 
                         if (isset($aSubEvents, $aSubEvents['vcal'])) {
@@ -494,6 +494,8 @@ class Reminder
                                     }
                                 }
                             }
+                        } else {
+                            \Aurora\System\Api::Log('Event data not found for reminder: ' . $sEventUri . ' ( ' . $aSubEvents . ' )' , \Aurora\System\Enums\LogLevel::Full, 'cron-');
                         }
                     }
                 }
