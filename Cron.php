@@ -1,6 +1,7 @@
 <?php
-
 namespace Aurora\Modules\Calendar;
+
+use Afterlogic\DAV\Backend;
 
 require_once dirname(__file__)."/../../system/autoload.php";
 \Aurora\System\Api::Init();
@@ -41,7 +42,7 @@ class Reminder
         $oMailModule =  \Aurora\System\Api::GetModule('Mail');
         $this->oCalendarModule = \Aurora\System\Api::GetModule('Calendar');
 
-        $this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->getUsersManager() ;
+        $this->oApiUsersManager = \Aurora\System\Api::GetModule('Core')->getUsersManager();
         $this->oApiCalendarManager = $this->oCalendarModule->getManager();
         $this->oApiMailManager = $oMailModule->getMailManager();
         $this->oApiAccountsManager = $oMailModule->getAccountsManager();
@@ -106,6 +107,49 @@ class Reminder
         }
 
         return $mResult;
+    }
+
+    /**
+     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param string $sCalendarUri
+     *
+     * @return CalendarInfo|null
+     */
+    private function getUserCalendarInstance($oUser, $sCalendarUri)
+    {
+        $mResult = null;
+        $sMainCalendarId = Backend::CalDAV()->getCalendarIdByUri($sCalendarUri);
+        if ($this->oApiCalendarManager) {
+            $userCalendars = $this->oApiCalendarManager->getSharedCalendars($oUser->PublicId);
+            
+            foreach ($userCalendars as $oCalendar) {
+                $sCalendarId = Backend::CalDAV()->getCalendarIdByUri($oCalendar->Id);
+                if ($sCalendarId === $sMainCalendarId) {
+                    $mResult = $oCalendar;
+                    break;
+                }
+            }
+        }
+
+        return $mResult;
+    }
+
+    /**
+     * @param Aurora\Modules\Core\Classes\User $oUser
+     * @param string $sCalendarUri
+     *
+     * @return CalendarInfo|null
+     */
+    private function isCalendarMutedForUser($oUser, $sCalendarUri)
+    {
+        $bCaledarMuted = false;
+        $aMutedCalendars = json_decode($oUser->{'Calendar::MutedCalendarIds'});
+        if (is_array($aMutedCalendars)) {
+            $oUserCalendarInstance = $this->getUserCalendarInstance($oUser, $sCalendarUri);
+            $bCaledarMuted = in_array($oUserCalendarInstance->Id, $aMutedCalendars);
+        }
+
+        return $bCaledarMuted;
     }
 
     /**
@@ -323,9 +367,12 @@ class Reminder
         $aReminders = $this->oApiCalendarManager->getReminders($iStart, $iEnd);
         $aEvents = array();
 
+        \Aurora\System\Api::Log('Reminder entries found: ' . count($aReminders), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+        
         if ($aReminders && is_array($aReminders) && count($aReminders) > 0) {
             $aCacheEvents = array();
             foreach ($aReminders as $aReminder) {
+                \Aurora\System\Api::Log('Reminder details: '. $aReminder['time'] . '|' . $aReminder['user'] . '|' . $aReminder['calendaruri'] . '|' . $aReminder['eventid'], \Aurora\System\Enums\LogLevel::Full, 'cron-');
                 $oUser = $this->getUser($aReminder['user']);
 
                 $sCalendarUri = $aReminder['calendaruri'];
@@ -405,14 +452,17 @@ class Reminder
         $iStartTS = $oStartDT_UTC->getTimestamp();
 
         if ($iNowTS >= $iStartTS) {
-            \Aurora\System\Api::Log('Start time: '.$oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
-            \Aurora\System\Api::Log('End time: '.$oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+            \Aurora\System\Api::Log('Start time: ' . $iStartTS . ' ' . $oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+            \Aurora\System\Api::Log('End time:   ' . $iNowTS . ' ' . $oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
             $aEvents = $this->GetReminders($iStartTS, $iNowTS);
+            
+            \Aurora\System\Api::Log('Events found: ' . count($aEvents), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+            \Aurora\System\Api::Log('Recipients: ' . implode(',', array_keys($aEvents)), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
             foreach ($aEvents as $sEmail => $aUserCalendars) {
                 foreach ($aUserCalendars as $sCalendarUri => $aUserEvents) {
-                    foreach ($aUserEvents as $sEventUri => $aUserEvent) {
+                    foreach ($aUserEvents as $aUserEvent) {
                         $aSubEvents = $aUserEvent['data'];
 
                         if (isset($aSubEvents, $aSubEvents['vcal'])) {
@@ -431,12 +481,13 @@ class Reminder
                                         $bAllDay = $aEvent['allDay'];
                                         $sDate = $aUserEvent['time'];
 
-                                        $attendees = [];
+                                        // attendees list is needed later to check if particular user is an attendee
+                                        $aAttendees = [];
 
                                         $aBaseEvents = $vCal->getBaseComponents('VEVENT');
                                         if (isset($aBaseEvents[0]) && isset($aBaseEvents[0]->ATTENDEE)) {
                                             foreach ($aBaseEvents[0]->ATTENDEE as $attendee) {
-                                                $attendees[] = str_replace('mailto:', '', strtolower((string)$attendee));
+                                                $aAttendees[] = str_replace('mailto:', '', strtolower((string)$attendee));
                                             }
                                         }
 
@@ -455,38 +506,34 @@ class Reminder
 
                                         $sSubject = $this->getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay);
 
-                                        $aUsers = array(
-                                            // $oUser->EntityId => $oUser
-                                        );
+                                        $aUsers = array();
 
+                                        // getting users for sending message to
                                         $aCalendarUsers = $this->oApiCalendarManager->getCalendarUsers($oUser->PublicId, $oCalendar);
+
+                                        // filtering out user who muted 
                                         if (0 < count($aCalendarUsers)) {
                                             foreach ($aCalendarUsers as $aCalendarUser) {
                                                 $oCalendarUser = $this->getUser($aCalendarUser['email']);
                                                 if ($oCalendarUser) {
-                                                    $aUsers[$oCalendarUser->EntityId] = $oCalendarUser;
+                                                    // check if calendar is muted for the user
+                                                    $bCaledarMuted = $this->isCalendarMutedForUser($oCalendarUser, $oCalendar->Id);
+
+                                                    // add user to the list if calendar isn't muted or user is on the list of attendees
+                                                    if ( !$bCaledarMuted || in_array(strtolower($oCalendarUser->PublicId), $aAttendees) ) {
+                                                        $aUsers[$oCalendarUser->EntityId] = $oCalendarUser;
+                                                    }
                                                 }
                                             }
                                         }
 
-                                        // checking if current calendar is muted
-                                        $bSendRemindersOnlyToAttendees = false;
-
-                                        $aMutedCalendars = $oUser->{'Calendar::MutedCalendarIds'};
-                                        if (is_array($aMutedCalendars)) {
-                                            $bSendRemindersOnlyToAttendees = in_array($oCalendar->Id, $aMutedCalendars);
-                                        }
-
                                         foreach ($aUsers as $oUserItem) {
-                                            if (in_array(strtolower($oUserItem->PublicId), $attendees) || $oUserItem->PublicId === $oUser->PublicId || !$bSendRemindersOnlyToAttendees)
-                                            {
-                                                $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
-                                                if ($bIsMessageSent) {
-                                                    $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
-                                                    \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
-                                                } else {
-                                                    \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
-                                                }
+                                            $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
+                                            if ($bIsMessageSent) {
+                                                $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
+                                                \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                            } else {
+                                                \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             }
                                         }
                                     } else {
@@ -494,8 +541,6 @@ class Reminder
                                     }
                                 }
                             }
-                        } else {
-                            \Aurora\System\Api::Log('Event data not found for reminder: ' . $sEventUri . ' ( ' . $aSubEvents . ' )' , \Aurora\System\Enums\LogLevel::Full, 'cron-');
                         }
                     }
                 }
