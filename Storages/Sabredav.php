@@ -6,6 +6,7 @@
 
 namespace Aurora\Modules\Calendar\Storages;
 
+use Afterlogic\DAV\Backend;
 use Afterlogic\DAV\CalDAV\Shared\Calendar;
 use Afterlogic\DAV\CalDAV\SharedWithAll\Calendar as SharedWithAllCalendar;
 use Aurora\System\Api;
@@ -1517,7 +1518,8 @@ class Sabredav extends Storage
                 $sData = $oVCal->serialize();
                 $oCalDAVCalendar->createFile($sEventUrl, $sData);
 
-                $this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+                $calendarUri = $this->getParentCalendarUri($oCalendar);
+                $this->updateReminder($oCalendar->Owner, $calendarUri, $sEventId, $sData);
 
                 return $sEventId;
             }
@@ -1550,19 +1552,34 @@ class Sabredav extends Storage
                     $oChild = $oCalDAVCalendar->getChild($oCalDAVCalendarObject->getName());
                     if ($oChild) {
                         $oChild->put($sData);
-                        $this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+                        $calendarUri = $this->getParentCalendarUri($oCalendar);
+                        $this->updateReminder($oCalendar->Owner, $calendarUri, $sEventId, $sData);
                         unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
                         return true;
                     }
                 } else {
                     $oCalDAVCalendar->createFile($sEventUrl, $sData);
-                    $this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+                    $calendarUri = $this->getParentCalendarUri($oCalendar);
+                    $this->updateReminder($oCalendar->Owner, $calendarUri, $sEventId, $sData);
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    protected function getParentCalendarUri($oCalendar) 
+    {
+        $calendarUri = $oCalendar->RealUrl;
+        if ($oCalendar->Shared) {
+            $perentCalendar = Backend::CalDAV()->getParentCalendarByUri($oCalendar->Id);
+            if ($perentCalendar) {
+                $calendarUri = \Sabre\CalDAV\Plugin::CALENDAR_ROOT . '/' . $perentCalendar['uri'];
+            }
+        }
+
+        return $calendarUri;
     }
 
     /**
@@ -1595,7 +1612,8 @@ class Sabredav extends Storage
 
                 $oChild->put($sData);
 
-                $this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+                $calendarUri = $this->getParentCalendarUri($oCalendar);
+                $this->updateReminder($oCalendar->Owner, $calendarUri, $sEventId, $sData);
                 unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
                 return true;
             }
@@ -1631,7 +1649,8 @@ class Sabredav extends Storage
                     $oChild->delete();
 
                     $this->deleteReminder($sEventId);
-                    $this->updateReminder($oCalendar->Owner, $oCalendar->RealUrl, $sEventId, $sData);
+                    $calendarUri = $this->getParentCalendarUri($oCalendar);
+                    $this->updateReminder($oCalendar->Owner, $calendarUri, $sEventId, $sData);
                     unset($this->CalDAVCalendarObjectsCache[$sCalendarId][$sEventUrl]);
                     return true;
                 }
