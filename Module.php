@@ -62,7 +62,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 'WeekStartsOn'			=> array('int', $this->getConfig('WeekStartsOn', 0)),
                 'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
                 'DefaultCalendar'       => array('string', ''),
-                'MutedCalendarIds'      => array('string', ''),
+                'MutedCalendarIds'      => array('text', ''),
             ]
         );
 
