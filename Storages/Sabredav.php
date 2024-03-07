@@ -1506,7 +1506,8 @@ class Sabredav extends Storage
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
         if ($oCalDAVCalendar) {
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-            if (($oCalendar->Shared || $oCalendar->SharedToAll) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
+            // Shared flag is true only if calendar shared to me, including SharedToAll case. SharedToAll means 'shared by me' and can't be used here.
+            if ($oCalendar->Shared && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
                 return false;
             }
             if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
@@ -1594,7 +1595,8 @@ class Sabredav extends Storage
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
         if ($oCalDAVCalendar) {
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-            if (($oCalendar->Shared || $oCalendar->SharedToAll) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
+            // Shared flag is true only if calendar shared to me, including SharedToAll case. SharedToAll means 'shared by me' and can't be used here.
+            if ($oCalendar->Shared && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
                 return false;
             }
             if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
