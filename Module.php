@@ -461,11 +461,11 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
     /**
      *
-     * @param int $UserId
-     * @param string $Id
+     * @param string $CalendarId
+     * @param boolean $MuteStatus
      * @return boolean
      */
-    public function SetCalendarMuteStatus($UserId, $CalendarId, $MuteStatus)
+    public function SetCalendarMuteStatus($CalendarId, $MuteStatus)
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
         
@@ -473,7 +473,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
 
-        if ($oUser && $oUser->EntityId === $UserId) {
+        if ($oUser) {
             $aMutedCalendarIds = json_decode($oUser->{'Calendar::MutedCalendarIds'});
 
             if (!is_array($aMutedCalendarIds) && $MuteStatus) {
