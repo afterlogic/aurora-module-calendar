@@ -976,6 +976,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                 'VCal' => $oVCal,
                 'ComponentName' => $sComponentName,
                 'ComponentIndex' => 0,
+                'isEventUpdate' => false,
                 'appointmentMailBody' => $appointmentMailBody
             ];
             $this->GetModule()->broadcastEvent(
@@ -1035,6 +1036,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                             'VCal' => $oVCal,
                             'ComponentName' => $sComponent,
                             'ComponentIndex' => $iIndex,
+                            'isEventUpdate' => true,
                             'appointmentMailBody' => $appointmentMailBody
                         ];
                         $this->GetModule()->broadcastEvent(
