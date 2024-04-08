@@ -6,9 +6,11 @@
 
 namespace Aurora\Modules\Calendar;
 
+use Afterlogic\DAV\Server;
 use Aurora\System\Api;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use Sabre\VObject\ITip\Broker as ITipBroker;
 use Sabre\VObject\ParseException;
 
 /**
@@ -1401,218 +1403,152 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     public function processICS($sUserPublicId, $sData, $mFromEmail, $bUpdateAttendeeStatus = false)
     {
         $mResult = false;
-        $oAuthenticatedUser = \Aurora\System\Api::getAuthenticatedUser();
-        $aAccountEmails = [$oAuthenticatedUser->PublicId];
+        $oAuthenticatedUser = Api::getAuthenticatedUser();
+        $aAccountEmails = ['mailto:' . $oAuthenticatedUser->PublicId];
 
         $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
         if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
             /** @var \Aurora\Modules\Mail\Module */
-            $oMailModuleDecorator = \Aurora\System\Api::GetModuleDecorator('Mail');
+            $oMailModuleDecorator = Api::GetModuleDecorator('Mail');
             if ($oMailModuleDecorator) {
                 $aUserAccounts = $oMailModuleDecorator->GetAccounts($oUser->Id);
                 foreach ($aUserAccounts as $oMailAccount) {
                     if ($oMailAccount instanceof \Aurora\Modules\Mail\Models\MailAccount) {
-                        $aAccountEmails[] = $oMailAccount->Email;
+                        $aAccountEmails[] = 'mailto:' . $oMailAccount->Email;
                     }
                 }
             }
 
-            //TODO get fetchers list
-            //
-            //		$aFetchers = \Aurora\System\Api::ExecuteMethod('Mail::GetFetchers', array('Account' => $oDefaultAccount));
-            //		if (is_array($aFetchers) && 0 < count($aFetchers)) {
-            //			foreach ($aFetchers as /* @var $oFetcher \Aurora\Modules\Mail\Models\Fetcher */ $oFetcher) {
-            //				if ($oFetcher) {
-            //					$aAccountEmails[] = !empty($oFetcher->Email) ? $oFetcher->Email : $oFetcher->IncomingLogin;
-            //				}
-            //			}
-            //		}
-
-            //			$aIdentities = \Aurora\System\Api::GetModuleDecorator('Mail')->GetIdentities($oUser->Id);
-            //			if (is_array($aIdentities) && 0 < count($aIdentities))
-            //			{
-            //				foreach ($aIdentities as $oIdentity)
-            //				{
-            //					if ($oIdentity instanceof \Aurora\Modules\Mail\Classes\Identity)
-            //					{
-            //						$aAccountEmails[] = $oIdentity->Email;
-            //					}
-            //				}
-            //			}
             $aAccountEmails = array_unique($aAccountEmails);
 
             /** @var \Sabre\VObject\Component\VCalendar */
-            $oVCal = \Sabre\VObject\Reader::read($sData);
-            if ($oVCal) {
-                $oVCalResult = $oVCal;
-
-                $oMethod = isset($oVCal->METHOD) ? $oVCal->METHOD : null;
-                $sMethod = isset($oMethod) ? (string) $oMethod : 'SAVE';
-
+            $newVCal = \Sabre\VObject\Reader::read($sData);
+            if ($newVCal) {
+                $newBaseVEvent = $newVCal->getBaseComponent('VEVENT');
+                $sMethod = isset($newVCal->METHOD) ? $newVCal->METHOD->getValue() : 'SAVE';
                 if (!in_array($sMethod, ['REQUEST', 'REPLY', 'CANCEL', 'PUBLISH', 'SAVE'])) {
                     return false;
                 }
 
-                $aVEvents = $oVCal->VEVENT;
-                $oVEvent = (count($aVEvents) > 0) ? $aVEvents[0] : null;
-
-                if (!isset($oVEvent)) {
-                    $oVEvent = $oVCal->VEVENT[0];
+                if ($newVCal->METHOD->getValue() === 'REPLY') {
+                    $aAccountEmails = ['mailto:' . $mFromEmail];
                 }
 
-                if (isset($oVEvent)) {
-                    $oVEventResult = $oVEvent;
-                    $sEventId = (string)$oVEventResult->UID;
-                    $sequence = isset($oVEvent->{'SEQUENCE'}) && $oVEvent->{'SEQUENCE'}->getValue() ? $oVEvent->{'SEQUENCE'}->getValue() : 0 ; // current sequence value
-
-                    $aCalendars = $this->oStorage->GetCalendarNames($sUserPublicId);
+                if ($newBaseVEvent) {
+                    $oldBaseVEvent = null;
+                    $sEventId = (string)$newBaseVEvent->UID;
+                    $oldSequence = 0;
+                    $newSequence = isset($newBaseVEvent->{'SEQUENCE'}) && $newBaseVEvent->{'SEQUENCE'}->getValue() ? $newBaseVEvent->{'SEQUENCE'}->getValue() : 0 ;
                     $sCalendarId = $this->oStorage->findEventInCalendars($sUserPublicId, $sEventId);
                     if ($sCalendarId) {
-                        $aDataServer = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
-                        if ($aDataServer !== false) {
-                            $oVCalServer = $aDataServer['vcal'];
-                            if (isset($oMethod)) {
-                                //    $oVCalServer->METHOD = $oMethod;
-                            }
-                            $aVEventsServer = $oVCalServer->getBaseComponents('VEVENT');
-                            $oVEventServer = (isset($aVEventsServer) && count($aVEventsServer) > 0) ? $aVEventsServer[0] : null;
-                            if (!($oVEventServer)) {
-                                $oVEventServer = $oVCalServer->VEVENT[0];
-                            }
+                        $oldEventData = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
+                        if ($oldEventData !== false) {
+                            $oldVCal = $oldEventData['vcal'];
 
-                            if (isset($oVEventServer)) {
-                                if (!isset($oVEvent->{'LAST-MODIFIED'}) && isset($oVEvent->{'DTSTAMP'})) {
-                                    $oVEvent->add('LAST-MODIFIED', $oVEvent->{'DTSTAMP'}->getDateTime());
-                                }
-
-                                if (isset($oVEvent->{'LAST-MODIFIED'}) &&
-                                    isset($oVEventServer->{'LAST-MODIFIED'})) {
-                                    $lastModified = $oVEvent->{'LAST-MODIFIED'}->getDateTime();
-                                    $lastModifiedServer = '';
-                                    //Checking if current user's appointment was parsed earlier
-                                    $aEventServerAttendees = !empty($oVEventServer->ATTENDEE) ? $oVEventServer->ATTENDEE : [];
-                                    foreach ($aEventServerAttendees as $oAttendee) {
-                                        if ($mFromEmail === str_replace('mailto:', '', strtolower((string) $oAttendee->getValue()))) {
-                                            if (isset($oAttendee['RESPONDED-AT'])) {
-                                                $lastModifiedServer = new \DateTime($oAttendee['RESPONDED-AT'], new \DateTimeZone('UTC'));
-                                            }
-                                            break;
-                                        }
-                                    }
-
-                                    $sequenceServer = isset($oVEventServer->{'SEQUENCE'}) && $oVEventServer->{'SEQUENCE'}->getValue() ? $oVEventServer->{'SEQUENCE'}->getValue() : 0; // accepted sequence value
-
-                                    if ($sequenceServer >= $sequence) {
-                                        $oVCalResult = $oVCalServer;
-                                        $oVEventResult = $oVEventServer;
-                                    }
-                                    if (!empty($sMethod) && !($lastModifiedServer >= $lastModified)) {
-                                        if ($sMethod === 'REPLY') {
-                                            $oVCalResult = $oVCalServer;
-                                            $oVEventResult = $oVEventServer;
-                                            if ($bUpdateAttendeeStatus) {
-                                                $aArgs = [
-                                                    'oVCalResult'			=> $oVCalResult,
-                                                    'oVEventResult'			=> $oVEventResult,
-                                                    'sUserPublicId'			=> $oUser->PublicId,
-                                                    'sCalendarId'			=> $sCalendarId,
-                                                    'sEventId'				=> $sEventId,
-                                                    'sMethod'				=> $sMethod,
-                                                    'sequence'				=> $sequence,
-                                                    'sequenceServer'		=> $sequenceServer,
-                                                    'oVEvent'				=> $oVEvent,
-                                                    'mFromEmail'			=> $mFromEmail
-                                                ];
-                                                $this->GetModule()->broadcastEvent(
-                                                    'processICS::UpdateEvent',
-                                                    $aArgs,
-                                                    $mResult
-                                                );
-                                            }
-                                        }
-                                    }
+                            if ($oldVCal) {
+                                $oldBaseVEvent = $oldVCal->getBaseComponent('VEVENT');
+                                if ($oldBaseVEvent) {
+                                    $oldSequence = isset($oldBaseVEvent->{'SEQUENCE'}) && $oldBaseVEvent->{'SEQUENCE'}->getValue() ? $oldBaseVEvent->{'SEQUENCE'}->getValue() : 0 ;
                                 }
                             }
-                        }
 
-                        if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus) {
-                            $aArgs = [
-                                'sUserPublicId'			=> $oUser->PublicId,
-                                'sCalendarId'			=> $sCalendarId,
-                                'sEventId'				=> $sEventId
-                            ];
-                            $this->GetModule()->broadcastEvent(
-                                'processICS::Cancel',
-                                $aArgs,
-                                $mResult
-                            );
+                            $broker = new ITipBroker();
+                            $messages = $broker->parseEvent($newVCal, $aAccountEmails, $oldVCal);
+
+                            $schedulePlugin = Server::getInstance()->getPlugin('caldav-schedule');
+                            if ($schedulePlugin instanceof \Afterlogic\DAV\CalDAV\Schedule\Plugin) {
+                                foreach ($messages as $message) {
+                                    $schedulePlugin->scheduleLocalDeliveryParent($message);
+                                }
+                            }
                         }
                     }
 
-                    if (!$bUpdateAttendeeStatus) {
-                        $sWhen = '';
-                        if (isset($oVEventResult->DTSTART)) {
-                            $sWhenDateFormat = $oVEventResult->DTSTART->hasTime() ? 'D, M d, Y, H:i' : 'D, M d, Y';
+                    //
+                    $sWhen = '';
+                    if (isset($newBaseVEvent->DTSTART)) {
+                        /** @var \Sabre\VObject\Property\ICalendar\DateTime */
+                        $newDTStart = $newBaseVEvent->DTSTART;
+                        $sWhenDateFormat = $newDTStart->hasTime() ? 'D, M d, Y, H:i' : 'D, M d, Y';
 
-                            $sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, $sWhenDateFormat);
+                        $sWhen = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($newDTStart, $oUser->DefaultTimeZone, $sWhenDateFormat);
 
-                            if ($this->oModule->oModuleSettings->ShowWeekNumbers) {
-                                $sWeek = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($oVEventResult->DTSTART, $oUser->DefaultTimeZone, 'W');
-                                $sWhen .= ' (' . $this->oModule->i18n('LABEL_WEEK_SHORT') . $sWeek . ')';
-                            }
+                        if ($this->oModule->oModuleSettings->ShowWeekNumbers) {
+                            $sWeek = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($newDTStart, $oUser->DefaultTimeZone, 'W');
+                            $sWhen .= ' (' . $this->oModule->i18n('LABEL_WEEK_SHORT') . $sWeek . ')';
                         }
+                    }
 
-                        $organizerEmail = '';
-                        $organizer = [];
-                        if (isset($oVEventResult->ORGANIZER)) {
-                            $organizerEmail = str_ireplace('mailto:', '', (string) $oVEventResult->ORGANIZER);
-                            $organizer = [
-                                'DisplayName' =>  (isset($oVEventResult->ORGANIZER['CN'])) ? $oVEventResult->ORGANIZER['CN'] : '',
-                                'Email' => $organizerEmail
-                            ];
+                    $organizerEmail = '';
+                    $organizer = [];
+                    if (isset($newBaseVEvent->ORGANIZER)) {
+                        $organizerEmail = str_ireplace('mailto:', '', (string) $newBaseVEvent->ORGANIZER);
+                        $displayName = '';
+                        if (isset($newBaseVEvent->ORGANIZER['CN'])) {
+                            /** @var \Sabre\VObject\Property\ICalendar\CalAddress */
+                            $cn = $newBaseVEvent->ORGANIZER['CN'];
+                            $displayName = $cn->getValue();
                         }
-
-                        $ateendeeList = [];
-                        if (isset($oVEventResult->ATTENDEE)) {
-                            foreach ($oVEventResult->ATTENDEE as $oAttendee) {
-                                $ateendee = str_ireplace('mailto:', '', (string) $oAttendee);
-                                if (strtolower($ateendee) !== strtolower($organizerEmail)) {
-                                    $ateendeeList[] = [
-                                        'DisplayName' => (isset($oAttendee['CN'])) ? $oAttendee['CN'] : '',
-                                        'Email' => $ateendee
-                                    ];
-                                }
-                            }
-                        }
-                        $mResult = [
-                            'Calendars' => $aCalendars,
-                            'CalendarId' => $sCalendarId,
-                            'UID' => $sEventId,
-                            'Body' => $oVCalResult->serialize(),
-                            'Action' => $sMethod,
-                            'Location' => isset($oVEventResult->LOCATION) ? (string)$oVEventResult->LOCATION : '',
-                            'Description' => isset($oVEventResult->DESCRIPTION) ? (string)$oVEventResult->DESCRIPTION : '',
-                            'Summary' => isset($oVEventResult->SUMMARY) ? (string)$oVEventResult->SUMMARY : '',
-                            'When' => $sWhen,
-                            'Sequence' => $sequence,
-                            'Organizer' => $organizer,
-                            'AttendeeList' => $ateendeeList,
+                        $organizer = [
+                            'DisplayName' =>  $displayName,
+                            'Email' => $organizerEmail
                         ];
+                    }
 
-                        $aAccountEmails = ($sMethod === 'REPLY') ? [$mFromEmail] : $aAccountEmails;
-                        if (isset($sequenceServer) && $sequenceServer >= $sequence) {
-                            $aArgs = [
-                                'oVEventResult'		=> $sMethod === 'REPLY' ? $oVEvent : $oVEventResult,
-                                'sMethod'			=> $sMethod,
-                                'aAccountEmails'	=> $aAccountEmails
-                            ];
-                            $this->GetModule()->broadcastEvent(
-                                'processICS::AddAttendeesToResult',
-                                $aArgs,
-                                $mResult
-                            );
+                    $ateendeeList = [];
+                    if (isset($newBaseVEvent->ATTENDEE)) {
+                        foreach ($newBaseVEvent->ATTENDEE as $oAttendee) {
+                            $ateendee = str_ireplace('mailto:', '', (string) $oAttendee);
+                            if (strtolower($ateendee) !== strtolower($organizerEmail)) {
+                                $ateendeeList[] = [
+                                    'DisplayName' => (isset($oAttendee['CN'])) ? $oAttendee['CN']->getValue() : '',
+                                    'Email' => $ateendee
+                                ];
+                            }
                         }
                     }
+
+                    if ($sMethod === 'CANCEL' && $bUpdateAttendeeStatus) {
+                        $aArgs = [
+                            'sUserPublicId'			=> $oUser->PublicId,
+                            'sCalendarId'			=> $sCalendarId,
+                            'sEventId'				=> $sEventId
+                        ];
+                        $this->GetModule()->broadcastEvent(
+                            'processICS::Cancel',
+                            $aArgs,
+                            $mResult
+                        );
+                    }
+
+                    $mResult = [
+                        'Calendars' => $this->oStorage->GetCalendarNames($sUserPublicId),
+                        'CalendarId' => $sCalendarId,
+                        'UID' => $sEventId,
+                        'Body' => $newVCal->serialize(),
+                        'Action' => $sMethod,
+                        'Location' => isset($newBaseVEvent->LOCATION) ? (string)$newBaseVEvent->LOCATION : '',
+                        'Description' => isset($newBaseVEvent->DESCRIPTION) ? (string)$newBaseVEvent->DESCRIPTION : '',
+                        'Summary' => isset($newBaseVEvent->SUMMARY) ? (string)$newBaseVEvent->SUMMARY : '',
+                        'When' => $sWhen,
+                        'Sequence' => $newSequence,
+                        'Organizer' => $organizer,
+                        'AttendeeList' => $ateendeeList,
+                    ];
+
+                    if ($oldSequence && $oldSequence >= $newSequence) {
+                        $aArgs = [
+                            'oVEventResult'		=> $sMethod === 'REPLY' ? $newBaseVEvent : $oldBaseVEvent,
+                            'sMethod'			=> $sMethod,
+                            'aAccountEmails'	=> $aAccountEmails
+                        ];
+                        $this->GetModule()->broadcastEvent(
+                            'processICS::AddAttendeesToResult',
+                            $aArgs,
+                            $mResult
+                        );
+                    }
+                    //
                 }
             }
         }
