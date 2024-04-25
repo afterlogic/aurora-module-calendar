@@ -1820,4 +1820,14 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     {
         return \Afterlogic\DAV\Backend::Reminders()->deleteOutdatedReminders($time);
     }
+
+    public function getChangesForCalendar($userPublicId, $calendarId, $syncToken, $limit = null)
+    {
+        $calendar = $this->getCalendar($userPublicId, $calendarId);
+        if ($calendar) {
+            $calendarId = [$calendar->IntId, 0];
+        }
+
+        return \Afterlogic\DAV\Backend::Caldav()->getChangesForCalendar($calendarId, $syncToken, 1, $limit);
+    }
 }

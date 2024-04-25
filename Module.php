@@ -1038,6 +1038,17 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         return $aResponse;
     }
 
+    public function GetChangesForCalendar($UserId, $CalendarId, $SyncToken, $Limit = null)
+    {
+        \Aurora\System\Api::CheckAccess($UserId);
+
+        $UserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+
+        $this->_checkUserCalendar($UserPublicId, $CalendarId);
+
+        return $this->getManager()->getChangesForCalendar($UserPublicId, $CalendarId, $SyncToken, $Limit);
+    }
+
     public function onGetBodyStructureParts($aParts, &$aResult)
     {
         foreach ($aParts as $oPart) {

@@ -1585,4 +1585,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
         return $bResult;
     }
+
+    public function getChangesForCalendar($userPublicId, $calendarId, $syncToken, $limit = null)
+    {
+        return $this->oStorage->getChangesForCalendar($userPublicId, $calendarId, $syncToken, $limit);
+    }
+
 }
