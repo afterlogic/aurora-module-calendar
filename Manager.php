@@ -613,6 +613,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         return $aResult;
     }
 
+    public function getEventsByUrls($sUserPublicId, $mCalendarId, $aUrls, $dStart, $dEnd, $bExpand)
+    {
+        $result = [];
+        $this->oStorage->init($sUserPublicId);
+        $oCalDAVCalendar = $this->oStorage->getCalDAVCalendar('calendar/' . $mCalendarId);
+        if ($oCalDAVCalendar) {
+            $result = $this->oStorage->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
+        }
+        return $result;
+    }
+
     /**
      * @param array | string $mCalendarId Calendar ID
      * @param string $dStart Date range start

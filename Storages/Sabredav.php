@@ -180,7 +180,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
      *
      * @return \Sabre\CalDAV\Calendar|bool
      */
-    protected function getCalDAVCalendar($sPath)
+    public function getCalDAVCalendar($sPath)
     {
         $oCalendar = false;
         if (!empty($sPath)) {

@@ -507,6 +507,29 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         return $aResult;
     }
 
+    public function GetEventsByUrls($UserId, $CalendarId, $EventUrls, $Start, $End)
+    {
+        \Aurora\System\Api::CheckAccess($UserId);
+        $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+        $mResult = $this->getManager()->getEventsByUrls($sUserPublicId, $CalendarId, $EventUrls, $Start, $End, true);
+
+        $aResult = [];
+        if (is_array($mResult)) {
+            foreach ($mResult as $event) {
+                if (TextUtils::isHtml($event['description'])) {
+                    $event['description'] = TextUtils::clearHtml($event['description']);
+                }
+
+                if (TextUtils::isHtml($event['location'])) {
+                    $event['location'] = TextUtils::clearHtml($event['location']);
+                }
+                $aResult[] = $event;
+            }
+        }
+
+        return $aResult;
+    }
+
     /**
      *
      * @param int $UserId
@@ -1044,7 +1067,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
         $UserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
 
-        $this->_checkUserCalendar($UserPublicId, $CalendarId);
+        $oCalendar = $this->getManager()->getCalendar($UserPublicId, $CalendarId);
+        if (!$oCalendar) {
+            throw new Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
+        }
 
         return $this->getManager()->getChangesForCalendar($UserPublicId, $CalendarId, $SyncToken, $Limit);
     }
