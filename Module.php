@@ -507,11 +507,27 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         return $aResult;
     }
 
-    public function GetEventsByUrls($UserId, $CalendarId, $EventUrls, $Start, $End)
+    /**
+     *
+     * @param int $UserId
+     * @param string $CalendarId
+     * @param array $EventUids
+     * @param int|null $Start
+     * @param int|null $End
+     * @param boolean $Expand
+     * @return array|boolean
+     */
+    public function GetEventsByUids($UserId, $CalendarId, $EventUids, $Start = null, $End = null, $Expand = false)
     {
         \Aurora\System\Api::CheckAccess($UserId);
         $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
-        $mResult = $this->getManager()->getEventsByUrls($sUserPublicId, $CalendarId, $EventUrls, $Start, $End, true);
+        $EventUrls = [];
+        if (is_array($EventUids)) {
+            $EventUrls = array_map(function ($EventUid) {
+                return $EventUid . '.ics';
+            }, $EventUids);
+        }
+        $mResult = $this->getManager()->getEventsByUrls($sUserPublicId, $CalendarId, $EventUrls, $Start, $End, $Expand);
 
         $aResult = [];
         if (is_array($mResult)) {
@@ -1061,6 +1077,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         return $aResponse;
     }
 
+    /**
+     *
+     * @param int $UserId
+     * @param string $CalendarId
+     * @param string $SyncToken
+     * @param int|null $Limit
+
+     * @return array|bool
+     */
     public function GetChangesForCalendar($UserId, $CalendarId, $SyncToken, $Limit = null)
     {
         \Aurora\System\Api::CheckAccess($UserId);
@@ -1072,7 +1097,23 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             throw new Exceptions\Exception(Enums\ErrorCodes::CannotFindCalendar);
         }
 
-        return $this->getManager()->getChangesForCalendar($UserPublicId, $CalendarId, $SyncToken, $Limit);
+        $changes = $this->getManager()->getChangesForCalendar($UserPublicId, $CalendarId, $SyncToken, $Limit);
+        if (is_array($changes)) {
+            foreach ($changes as $action => &$uris) {
+                if (is_array($uris) && $action !== 'syncToken') {
+                    $uris = array_map(function ($uri) {
+                        $pinfo = pathinfo($uri);
+                        if (isset($pinfo['filename'])) {
+                            return $pinfo['filename'];
+                        } else {
+                            return $uri;
+                        }
+                    }, $uris);
+                }
+            }
+        }
+
+        return $changes;
     }
 
     public function onGetBodyStructureParts($aParts, &$aResult)

@@ -1823,11 +1823,13 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
     public function getChangesForCalendar($userPublicId, $calendarId, $syncToken, $limit = null)
     {
+        $result = false;
         $calendar = $this->getCalendar($userPublicId, $calendarId);
         if ($calendar) {
             $calendarId = [$calendar->IntId, 0];
+            $result = \Afterlogic\DAV\Backend::Caldav()->getChangesForCalendar($calendarId, $syncToken, 1, $limit);
         }
 
-        return \Afterlogic\DAV\Backend::Caldav()->getChangesForCalendar($calendarId, $syncToken, 1, $limit);
+        return $result;
     }
 }
