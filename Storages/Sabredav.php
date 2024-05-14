@@ -1406,18 +1406,23 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         $oCalendar->IsPublic = ($sUserPublicId === \Afterlogic\DAV\Constants::DAV_PUBLIC_PRINCIPAL);
 
         foreach ($aUrls as $sUrl) {
+            $oCalDAVCalendarObject = null;
             if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId])) {
                 $oCalDAVCalendarObject = $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId];
             } else {
-                $oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
-                $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId] = $oCalDAVCalendarObject;
+                if ($oCalDAVCalendar->childExists($sUrl)) {
+                    $oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
+                    $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId] = $oCalDAVCalendarObject;
+                }
             }
-            $oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
-            $aEvents = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
-            foreach (array_keys($aEvents) as $key) {
-                $aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
+            if ($oCalDAVCalendarObject) {
+                $oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
+                $aEvents = $this->getEventsFromVCalendar($sUserPublicId, $oCalendar, $oVCal, $dStart, $dEnd, $bExpand);
+                foreach (array_keys($aEvents) as $key) {
+                    $aEvents[$key]['lastModified'] = $oCalDAVCalendarObject->getLastModified();
+                }
+                $mResult = array_merge($mResult, $aEvents);
             }
-            $mResult = array_merge($mResult, $aEvents);
         }
 
         return $mResult;
