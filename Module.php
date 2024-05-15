@@ -1102,6 +1102,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         }
 
         $changes = $this->getManager()->getChangesForCalendar($UserPublicId, $CalendarId, $SyncToken, $Limit);
+        $result = [];
         if (is_array($changes)) {
             foreach ($changes as $action => &$uris) {
                 if (is_array($uris) && $action !== 'syncToken') {
@@ -1114,10 +1115,12 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                         }
                     }, $uris);
                 }
+
+                $result[ucfirst($action)] = $uris;
             }
         }
 
-        return $changes;
+        return $result;
     }
 
     public function onGetBodyStructureParts($aParts, &$aResult)
