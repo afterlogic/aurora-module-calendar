@@ -527,6 +527,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 return $EventUid . '.ics';
             }, $EventUids);
         }
+
+        $Start = ($Start != null) ? date('Ymd\T000000\Z', intval($Start)  - 86400) : null;
+        $End = ($End != null) ? date('Ymd\T235959\Z', intval($End)) : null;
+
         $mResult = $this->getManager()->getEventsByUrls($sUserPublicId, $CalendarId, $EventUrls, $Start, $End, $Expand);
 
         $aResult = [];

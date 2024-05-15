@@ -57,9 +57,9 @@ class RRule
             'startBase' => $this->StartBase,
             'endBase' => $this->EndBase,
             'period' => $this->Period,
-            'interval' => $this->Interval,
+            'interval' => (int) $this->Interval,
             'end' => !isset($this->End) ? 0 : $this->End,
-            'until' => $this->Until,
+            'until' => (int) $this->Until,
             'weekNum' => $this->WeekNum,
             'count' => $this->Count,
             'byDays' => $this->ByDays
