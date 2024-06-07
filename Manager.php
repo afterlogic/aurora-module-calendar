@@ -1430,7 +1430,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     return false;
                 }
 
-                if ($newVCal->METHOD->getValue() === 'REPLY') {
+                if ($sMethod === 'REPLY') {
                     $aAccountEmails = ['mailto:' . $mFromEmail];
                 }
 
@@ -1548,7 +1548,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                             $mResult
                         );
                     }
-                    //
                 }
             }
         }
