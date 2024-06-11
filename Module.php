@@ -1106,14 +1106,16 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         if (is_array($changes)) {
             foreach ($changes as $action => &$uris) {
                 if (is_array($uris) && $action !== 'syncToken') {
-                    $uris = array_map(function ($uri) {
-                        $pinfo = pathinfo($uri);
-                        if (isset($pinfo['filename'])) {
-                            return $pinfo['filename'];
+                    foreach ($uris as $key => $uri) {
+                        if (empty(trim($uri))) {
+                            unset($uris[$key]);
                         } else {
-                            return $uri;
+                            $pinfo = pathinfo($uri);
+                            if (isset($pinfo['filename'])) {
+                                $uris[$key] = $pinfo['filename'];
+                            }
                         }
-                    }, $uris);
+                    }
                 }
 
                 $result[ucfirst($action)] = $uris;
