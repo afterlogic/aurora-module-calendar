@@ -197,6 +197,13 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             usort($mCalendars, function ($a, $b) {
                 return strcmp($a->DisplayName, $b->DisplayName);
             });
+
+            // restore calendar indexes
+            $mCalendarsTemp = array();
+            foreach($mCalendars as $oCalendar ) {
+                $mCalendarsTemp[$oCalendar->Id] = $oCalendar;
+            }
+            $mCalendars = $mCalendarsTemp;
         }
 
         // When $mCalendars is an empty array with condition "if ($mCalendars)" $mResult will be false
