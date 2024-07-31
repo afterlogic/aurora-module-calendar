@@ -1116,6 +1116,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                             }
                         }
                     }
+
+                    $uris = array_values($uris);
                 }
 
                 $result[ucfirst($action)] = $uris;
