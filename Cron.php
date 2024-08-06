@@ -451,6 +451,32 @@ class Reminder
                                             if ($oEvent) {
                                                 \Aurora\System\Api::Log('Send reminder - calendar: \'' . $sEventCalendarId . '\',  event: \'' . $sEventName . '\' started on \'' . $sDate . '\' to \'' . $oUserItem->PublicId . '\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                                 $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
+
+                                                $aArgs = array(
+                                                    array(
+                                                        "Email" => $sEmail,
+                                                        "Debug" => false,
+                                                        "Data" => array(
+                                                            array(
+                                                                "Type" => "calendar",
+                                                                "From" => "Alarm reminder",
+                                                                "To" => $sEmail,
+                                                                "Subject" => $sSubject,
+                                                                "EventId" => $sEventId,
+                                                                "CalendarId" => $sEventCalendarId
+                                                            )
+                                                        )
+                                                    )
+                                                );
+
+                                                $aResult = false;
+
+                                                $this->oCalendarModule->broadcastEvent(
+                                                    'SendNotification',
+                                                    $aArgs,
+                                                    $aResult
+                                                );
+                                                \Aurora\System\Api::LogObject($aArgs, \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             } else {
                                                 \Aurora\System\Api::Log('Event not found - User: ' . $sEmail . ', Calendar: ' . $sCalendarUri . ' , Event: ' . $sEventId, \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             }
