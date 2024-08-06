@@ -38,14 +38,22 @@ class TextUtils
                 }
             }
 
-            foreach (array(
-                'load', 'blur', 'error', 'focus', 'formchange', 'change', 'start',
-                'copy', 'contextmenu', 'drag', 'cut', 'paste',
-                'click', 'dblclick', 'keydown', 'keypress', 'keyup',
-                'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup',
-                'move', 'resize', 'resizeend', 'resizestart', 'scroll', 'select', 'submit', 'upload'
-            ) as $sAttr) {
-                @$oElement->removeAttribute('on' . $sAttr);
+            $aForbiddenAttributes = array(
+                'id', 'class', 'contenteditable', 'designmode', 'formaction', 'data-bind', 'xmlns', 'srcset'
+            );
+
+            foreach ($aForbiddenAttributes as $sAttributeName) {
+                @$oElement->removeAttribute($sAttributeName);
+            }
+
+            //clearing "on" attributes
+            if (isset($oElement->attributes)) {
+                foreach ($oElement->attributes as $sAttributeName => /* @var $oAttributeNode \DOMNode */ $oAttributeNode) {
+                    $sAttributeNameLower = \strtolower($sAttributeName);
+                    if (!!preg_match('/^\s*on.+$/m', $sAttributeNameLower)) {
+                        @$oElement->removeAttribute($sAttributeNameLower);
+                    }
+                }
             }
 
             if ($oElement->hasAttribute('style')) {
