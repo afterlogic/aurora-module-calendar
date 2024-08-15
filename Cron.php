@@ -458,8 +458,8 @@ class Reminder
                                                         "Debug" => false,
                                                         "Data" => array(
                                                             array(
-                                                                "Type" => "calendar",
-                                                                "From" => "Alarm reminder",
+                                                                "Type" => $aEvent['type'] === 'VTODO' ? 'task' : 'event',
+                                                                "From" => "",
                                                                 "To" => $sEmail,
                                                                 "Subject" => $sSubject,
                                                                 "EventId" => $sEventId,
@@ -469,14 +469,13 @@ class Reminder
                                                     )
                                                 );
 
-                                                $aResult = false;
+                                                $bResult = false;
 
                                                 $this->oCalendarModule->broadcastEvent(
                                                     'SendNotification',
                                                     $aArgs,
-                                                    $aResult
+                                                    $bResult
                                                 );
-                                                \Aurora\System\Api::LogObject($aArgs, \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             } else {
                                                 \Aurora\System\Api::Log('Event not found - User: ' . $sEmail . ', Calendar: ' . $sCalendarUri . ' , Event: ' . $sEventId, \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             }
