@@ -1587,7 +1587,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     {
         $bResult = false;
 
-        $oUser = Api::getUserById(Api::getUserIdByPublicId($sUserPublicId));
+        $oUser = Api::getUserByPublicId($sUserPublicId);
 
         if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
             $bResult = $this->oStorage->clearAllCalendars($sUserPublicId);
