@@ -416,6 +416,7 @@ class Reminder
                                             if (isset($aBaseEvents[0])) {
                                                 $oEventStartDT = \Aurora\Modules\Calendar\Classes\Helper::getNextRepeat($oNowDT_UTC, $aBaseEvents[0]);
                                                 if ($oEventStartDT) {
+                                                    $oEventStartDT = $oEventStartDT->setTimezone(new \DateTimeZone($oUser->DefaultTimeZone ?: 'UTC'));
                                                     $sEventStart = $oEventStartDT->format('Y-m-d H:i:s');
                                                     if ($bAllDay) {
                                                         $sDate = $oEventStartDT->format('d m Y');
