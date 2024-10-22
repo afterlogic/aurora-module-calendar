@@ -116,6 +116,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'AllowDefaultReminders' => $this->oModuleSettings->AllowDefaultReminders,
             'DefaultReminders' => [],
             'CalendarColors' => $this->oModuleSettings->CalendarColors,
+            'ShowTasksInCalendars' => $this->oModuleSettings->ShowTasksInCalendars,
         );
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();

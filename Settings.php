@@ -25,6 +25,7 @@ use Aurora\System\SettingsProperty;
  * @property bool $AllowSubscribedCalendars
  * @property array $CalendarColors
  * @property bool $ShowWeekNumbers
+ * @property bool $ShowTasksInCalendars
  */
 
 class Settings extends \Aurora\System\Module\Settings
@@ -135,6 +136,12 @@ class Settings extends \Aurora\System\Module\Settings
                 "bool",
                 null,
                 "Setting to true will make the system display week numbers in calendar-related dates",
+            ),
+            "ShowTasksInCalendars" => new SettingsProperty(
+                true,
+                "bool",
+                null,
+                "Setting to true enables display tasks in calendars",
             ),
         ];
     }
