@@ -974,13 +974,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
             $oSettings = &\Aurora\System\Api::GetSettings();
             if (($oSettings->CacheCtrl && isset($_COOKIE['aft-cache-ctrl']))) {
-                @\setcookie(
+                \Aurora\System\Api::setCookie(
                     'aft-cache-ctrl',
                     '',
-                    \strtotime('-1 hour'),
-                    \Aurora\System\Api::getCookiePath(),
-                    null,
-                    \Aurora\System\Api::getCookieSecure()
+                    \strtotime('-1 hour')
                 );
                 \MailSo\Base\Http::NewInstance()->StatusHeader(304);
                 exit();
