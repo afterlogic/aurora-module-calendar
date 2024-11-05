@@ -655,19 +655,6 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         return $this->updateCalendar($sUserPublicId, $sCalendarId, null, null, null, $sColor);
     }
 
-    /**
-     * @param string $sCalendarId
-     * @param int $iVisible
-     */
-    public function updateCalendarVisible($sCalendarId, $iVisible)
-    {
-        Api::setCookie(
-            $sCalendarId,
-            $iVisible,
-            \strtotime('+1 day')
-        );
-    }
-
     public function deletePrincipalCalendars($sUserPublicId)
     {
         $oBackend = $this->getBackend();

@@ -321,25 +321,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     }
 
     /**
-     * @param string $sCalendarId
-     * @param int $iVisible
-     *
-     * @return bool
-     */
-    public function updateCalendarVisible($sCalendarId, $iVisible)
-    {
-        $oResult = null;
-        try {
-            $this->oStorage->updateCalendarVisible($sCalendarId, $iVisible);
-            $oResult = true;
-        } catch (\Exception $oException) {
-            $oResult = false;
-            $this->setLastException($oException);
-        }
-        return $oResult;
-    }
-
-    /**
      * Change color of the calendar.
      *
      * @param string $sUserPublicId
