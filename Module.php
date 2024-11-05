@@ -977,7 +977,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 \Aurora\System\Api::setCookie(
                     'aft-cache-ctrl',
                     '',
-                    \strtotime('-1 hour')
+                    \strtotime('-1 hour'),
+                    false
                 );
                 \MailSo\Base\Http::NewInstance()->StatusHeader(304);
                 exit();
