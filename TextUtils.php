@@ -12,19 +12,24 @@ class TextUtils
     public static function clearHtml($sText)
     {
         $oDom = \MailSo\Base\HtmlUtils::GetDomFromText($sText);
-        $aNodes = $oDom->getElementsByTagName('*');
 
         $bHasExternals = false;
         $aFoundCIDs = [];
         $aContentLocationUrls = [];
         $aFoundedContentLocationUrls = [];
 
-        foreach ($aNodes as /* @var $oElement \DOMElement */ $oElement) {
-            $sTagNameLower = \strtolower($oElement->tagName);
-            if ('img' === $sTagNameLower) {
-                $oElement->parentNode->removeChild($oElement);
+        // Removing img tags properly
+        $aImgNodes = $oDom->getElementsByTagName('img');
+        for ($i = $aImgNodes->length - 1; $i >= 0; $i--) {
+            $oNode = $aImgNodes->item($i);
+            if ($oNode) {
+                $oNode->parentNode->removeChild($oNode);
             }
+        }
 
+        $aNodes = $oDom->getElementsByTagName('*');
+
+        foreach ($aNodes as /* @var $oElement \DOMElement */ $oElement) {
             $sBackground = $oElement->hasAttribute('background') ? \trim($oElement->getAttribute('background')) : '';
             $sBackgroundColor = $oElement->hasAttribute('bgcolor') ? \trim($oElement->getAttribute('bgcolor')) : '';
 
