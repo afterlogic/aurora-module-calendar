@@ -1178,6 +1178,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                             $oIcs->Description = $mResult['Description'];
                             $oIcs->Summary = !empty($mResult['Summary']) ? $mResult['Summary'] : '';
                             $oIcs->When = !empty($mResult['When']) ? $mResult['When'] : '';
+                            $oIcs->Start = !empty($mResult['Start']) ? $mResult['Start'] : '';
+                            $oIcs->End = !empty($mResult['End']) ? $mResult['End'] : '';
                             $oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
                             $oIcs->AttendeeList = $mResult['AttendeeList'];
                             $oIcs->Organizer = $mResult['Organizer'];

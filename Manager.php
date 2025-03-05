@@ -1456,8 +1456,9 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         }
                     }
 
-                    //
                     $sWhen = '';
+                    $sStart = '';
+                    $sEnd = '';
                     if (isset($newBaseVEvent->DTSTART)) {
                         /** @var \Sabre\VObject\Property\ICalendar\DateTime */
                         $newDTStart = $newBaseVEvent->DTSTART;
@@ -1469,7 +1470,23 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                             $sWeek = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($newDTStart, $oUser->DefaultTimeZone, 'W');
                             $sWhen .= ' (' . $this->oModule->i18n('LABEL_WEEK_SHORT') . $sWeek . ')';
                         }
+
+                        if (isset($newBaseVEvent->DTEND)) {
+                            /** @var \Sabre\VObject\Property\ICalendar\DateTime */
+                            $newDTEnd = $newBaseVEvent->DTEnd;
+                            $sDateTimeFormat = $newDTEnd->hasTime() ? 'D, M d, Y, H:i' : 'D, M d, Y';
+
+                            $sEnd = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($newDTEnd, $oUser->DefaultTimeZone, $sDateTimeFormat);
+
+                            if ($this->oModule->oModuleSettings->ShowWeekNumbers) {
+                                $sWeek = \Aurora\Modules\Calendar\Classes\Helper::getStrDate($newDTEnd, $oUser->DefaultTimeZone, 'W');
+                                $sEnd .= ' (' . $this->oModule->i18n('LABEL_WEEK_SHORT') . $sWeek . ')';
+                            }
+
+                            $sStart = $sWhen;
+                        }
                     }
+
 
                     $organizerEmail = '';
                     $organizer = [];
@@ -1523,6 +1540,8 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         'Description' => isset($newBaseVEvent->DESCRIPTION) ? (string)$newBaseVEvent->DESCRIPTION : '',
                         'Summary' => isset($newBaseVEvent->SUMMARY) ? (string)$newBaseVEvent->SUMMARY : '',
                         'When' => $sWhen,
+                        'Start' => $sStart,
+                        'End' => $sEnd,
                         'Sequence' => $newSequence,
                         'Organizer' => $organizer,
                         'AttendeeList' => $ateendeeList,

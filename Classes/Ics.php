@@ -88,6 +88,20 @@ class Ics
     public $When;
 
     /**
+     * Moment when event starts.
+     *
+     * @var string
+     */
+    public $Start;
+
+    /**
+     * Moment when event ends.
+     *
+     * @var string
+     */
+    public $End;
+
+    /**
      * Identifier of calendar in wich the event will be added.
      *
      * @var string
@@ -116,6 +130,8 @@ class Ics
         $this->Description = '';
         $this->Summary = '';
         $this->When = '';
+        $this->Start = '';
+        $this->End = '';
         $this->CalendarId = '';
         $this->Calendars = array();
         $this->AttendeeList = [];
@@ -144,6 +160,8 @@ class Ics
             'Description' => $this->Description,
             'Summary' => $this->Summary,
             'When' => $this->When,
+            'Start' => $this->Start,
+            'End' => $this->End,
             'CalendarId' => $this->CalendarId,
             'AttendeeList' => $this->AttendeeList,
             'Organizer' => $this->Organizer,
