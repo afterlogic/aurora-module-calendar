@@ -61,7 +61,8 @@ class Reminder
      */
     private function i18n($sKey, $oUser = null, $aParams = null, $iMinutes = null)
     {
-        return $this->oCalendarModule->I18N($sKey, $aParams, $iMinutes, $oUser->UUID);
+        $iUserId = $oUser ? $oUser->Id : 0;
+        return $this->oCalendarModule->i18N($sKey, $aParams, $iMinutes, $iUserId);
     }
 
     /**
