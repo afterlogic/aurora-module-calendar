@@ -992,9 +992,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                         @\header('X-Frame-Options: ' . $sFrameOptions);
                     }
 
-                    $sAuthToken = isset($_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY]) ? $_COOKIE[\Aurora\System\Application::AUTH_TOKEN_KEY] : '';
                     $sResult = strtr($sResult, array(
-                        '{{AppVersion}}' => \Aurora\System\Application::GetVersion(),
                         '{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
                         '{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
                         '{{IntegratorBody}}' => $oApiIntegrator->buildBody(
