@@ -1095,6 +1095,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             if (isset($oVCal->VTODO->DUE)) {
                 $oVCal->VTODO->DTEND = $oVCal->VTODO->DUE->getDateTime();
             }
+            // temporary convert VTODO to VEVENT to allow correctly process rrule property
             /** @var \Sabre\VObject\Component\VCalendar */
             $oVCal = \Sabre\VObject\Reader::read(
                 str_replace('VTODO', 'VEVENT', $oVCal->serialize())
@@ -1102,14 +1103,16 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $bIsTodo = true;
         }
 
-        if ($bExpand && !$bIsTodo) {
-            $oExpandedVCal = null;
-
+        if ($bIsTodo) {
             foreach ($oVCal->VEVENT as $vEvent) {
                 if (!isset($vEvent->DTSTART)) {
-                    return []; // skip invalid repeat rrule instance without DTSTART
+                    $bExpand = false;
                 }
             }
+        }
+
+        if ($bExpand) {
+            $oExpandedVCal = null;
 
             if (isset($oVCal->VEVENT->DTSTART)) {
                 try {
@@ -1123,23 +1126,21 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             } else {
                 return [];
             }
-
-            if ($bIsTodo && $oExpandedVCal) {
-                $oVCal = \Sabre\VObject\Reader::read(
-                    str_replace('VEVENT', 'VTODO', $oVCal->serialize())
-                );
-
-                $oExpandedVCal = \Sabre\VObject\Reader::read(
-                    str_replace('VEVENT', 'VTODO', $oExpandedVCal->serialize())
-                );
-            }
         } else {
-            if ($bIsTodo) {
-                $oVCal = \Sabre\VObject\Reader::read(
-                    str_replace('VEVENT', 'VTODO', $oVCal->serialize())
-                );
-            }
             $oExpandedVCal = clone $oVCal;
+        }
+
+        // revert convert VTODO to VEVENT
+        if ($bIsTodo) {
+            $oVCal = \Sabre\VObject\Reader::read(
+                str_replace('VEVENT', 'VTODO', $oVCal->serialize())
+            );
+        }
+
+        if ($bIsTodo && $oExpandedVCal) {
+            $oExpandedVCal = \Sabre\VObject\Reader::read(
+                str_replace('VEVENT', 'VTODO', $oExpandedVCal->serialize())
+            );
         }
 
         return \Aurora\Modules\Calendar\Classes\Parser::parseEvent($sUserPublicId, $oCalendar, $oExpandedVCal, $oVCal, $sDefaultTimeZone);
