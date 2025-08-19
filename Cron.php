@@ -284,7 +284,7 @@ class Reminder
                 return false;
             }
             return $this->oApiMailManager->sendMessage($oAccount, $oMessage);
-        } catch (Exception $oException) {
+        } catch (\Exception $oException) {
             \Aurora\System\Api::Log('MessageSend Exception', \Aurora\System\Enums\LogLevel::Error, 'cron-');
             \Aurora\System\Api::LogException($oException, \Aurora\System\Enums\LogLevel::Error, 'cron-');
         }
@@ -292,6 +292,17 @@ class Reminder
         return false;
     }
 
+    /**
+     * @param \Aurora\Modules\Core\Classes\User $oUser
+     * @param string $sEventStart
+     * @param int $iEventStartTS
+     * @param string $sEventName
+     * @param string $sDate
+     * @param int $iNowTS
+     * @param bool $bAllDay = false
+     *
+     * @return string
+     */
     private function getSubject($oUser, $sEventStart, $iEventStartTS, $sEventName, $sDate, $iNowTS, $bAllDay = false)
     {
         $sSubject = '';
@@ -338,6 +349,11 @@ class Reminder
         return $sSubject;
     }
 
+    /**
+     * @param \Aurora\Modules\Core\Classes\User $oUser
+     *
+     * @return string
+     */
     private function getDateTimeFormat($oUser)
     {
         $sDateFormat = 'm/d/Y';
@@ -362,6 +378,14 @@ class Reminder
         return $sDateFormat.' '.$sTimeFormat;
     }
 
+    /**
+     * Get reminders for events that are starting in the next 30 minutes.
+     *
+     * @param int $iStart
+     * @param int $iEnd
+     *
+     * @return array
+     */
     public function GetReminders($iStart, $iEnd)
     {
         $aReminders = $this->oApiCalendarManager->getReminders($iStart, $iEnd);
@@ -420,6 +444,38 @@ class Reminder
         return $aEvents;
     }
 
+    /**
+     * Check if a reminder exists for a specific user and event.
+     *
+     * @param array $aReminders
+     * @param string $sUserPublicId
+     * @param string $sEventId
+     *
+     * @return bool
+     */
+    public function hasReminderForUser($aReminders, $sUserPublicId, $sEventId)
+    {
+        foreach ($aReminders as $sEmail => $aUserCalendars) {
+            foreach ($aUserCalendars as $sCalendarUri => $aUserEvents) {
+                foreach ($aUserEvents as $sUserEventId => $aUserEvent) {
+                    if ($sEmail === $sUserPublicId && $sUserEventId === $sEventId) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the event has a reminder set for the specified time.
+     *
+     * @param array $aEvent
+     * @param int $iReminderTime
+     *
+     * @return bool
+     */
     public function EventHasReminder($aEvent, $iReminderTime)
     {
         foreach ($aEvent['alarms'] as $iAlarm) {
@@ -435,12 +491,13 @@ class Reminder
         \Aurora\System\Api::Log('---------- Start cron script', \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
         $oTimeZoneUTC = new \DateTimeZone('UTC');
-        $oNowDT_UTC = new \DateTimeImmutable('now', $oTimeZoneUTC);
+        $oNowDT_UTC = new \DateTimeImmutable('19.08.2025 13:10:00', $oTimeZoneUTC);
+
         $iNowTS = $oNowDT_UTC->getTimestamp();
 
-        $oStartDT_UTC = clone $oNowDT_UTC;
-        $oStartDT_UTC = $oStartDT_UTC->sub(new \DateInterval('PT30M'));
+        $oStartDT_UTC = $oNowDT_UTC->sub(new \DateInterval('PT30M'));
 
+        // Check if the current run file exists and read the timestamp from it
         if (file_exists($this->sCurRunFilePath)) {
             $handle = fopen($this->sCurRunFilePath, 'r');
             $sCurRunFileTS = fread($handle, 10);
@@ -451,10 +508,12 @@ class Reminder
 
         $iStartTS = $oStartDT_UTC->getTimestamp();
 
+        // If the current time is greater than or equal to the start time, proceed with reminders
         if ($iNowTS >= $iStartTS) {
             \Aurora\System\Api::Log('Start time: ' . $iStartTS . ' ' . $oStartDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
             \Aurora\System\Api::Log('End time:   ' . $iNowTS . ' ' . $oNowDT_UTC->format('r'), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
+            // Get reminders for events that are starting in the next 30 minutes
             $aEvents = $this->GetReminders($iStartTS, $iNowTS);
             
             \Aurora\System\Api::Log('Events found: ' . count($aEvents), \Aurora\System\Enums\LogLevel::Full, 'cron-');
@@ -484,6 +543,7 @@ class Reminder
                                         // attendees list is needed later to check if particular user is an attendee
                                         $aAttendees = [];
 
+                                        // getting attendees from the event
                                         $aBaseEvents = $vCal->getBaseComponents('VEVENT');
                                         if (isset($aBaseEvents[0]) && isset($aBaseEvents[0]->ATTENDEE)) {
                                             foreach ($aBaseEvents[0]->ATTENDEE as $attendee) {
@@ -509,6 +569,8 @@ class Reminder
                                         $aUsers = array();
 
                                         // getting users for sending message to
+
+                                        // getting the list of users whom this calendar is shared with
                                         $aCalendarUsers = $this->oApiCalendarManager->getCalendarUsers($oUser->PublicId, $oCalendar);
 
                                         // filtering out user who muted 
@@ -519,8 +581,14 @@ class Reminder
                                                     // check if calendar is muted for the user
                                                     $bCaledarMuted = $this->isCalendarMutedForUser($oCalendarUser, $oCalendar->Id);
 
+                                                    // check if user is an attendee of the event
+                                                    $bUserIsAttendee = $oUser->PublicId !== $oCalendarUser->PublicId && in_array(strtolower($oCalendarUser->PublicId), $aAttendees);
+
+                                                    // check if user already has the event with reminder in own calendar
+                                                    $bHasReminderForUser = $this->hasReminderForUser($aEvents, $oCalendarUser->PublicId, $sEventId);
+
                                                     // add user to the list if calendar isn't muted or user is on the list of attendees
-                                                    if ( !$bCaledarMuted || in_array(strtolower($oCalendarUser->PublicId), $aAttendees) ) {
+                                                    if (!$bCaledarMuted && (!$bUserIsAttendee || ($bUserIsAttendee && !$bHasReminderForUser))) {
                                                         $aUsers[$oCalendarUser->EntityId] = $oCalendarUser;
                                                     }
                                                 }
