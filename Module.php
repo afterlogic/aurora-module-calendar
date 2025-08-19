@@ -63,6 +63,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 'DefaultTab'			=> array('int', $this->getConfig('DefaultTab', 3)),
                 'DefaultCalendar'       => array('string', ''),
                 'MutedCalendarIds'      => array('text', ''),
+                'DefaultReminders'      => array('string', '[]'),
             ]
         );
 
@@ -94,6 +95,8 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'WorkdayStarts' => $this->getConfig('WorkdayStarts', 9),
             'AllowSubscribedCalendars' => $this->getConfig('AllowSubscribedCalendars', false),
             'CalendarColors' => $this->getConfig('CalendarColors', []),
+            'AllowDefaultReminders' => $this->getConfig('AllowDefaultReminders', false),
+            'DefaultReminders' => [],
         );
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
@@ -116,12 +119,15 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             if (isset($oUser->{self::GetName().'::DefaultTab'})) {
                 $aSettings['DefaultTab'] = $oUser->{self::GetName().'::DefaultTab'};
             }
+            if (isset($oUser->{self::GetName() . '::DefaultReminders'})) {
+                $aSettings['DefaultReminders'] = @json_decode($oUser->{self::GetName() . '::DefaultReminders'});
+            }
         }
 
         return $aSettings;
     }
 
-    public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab)
+    public function UpdateSettings($HighlightWorkingDays, $HighlightWorkingHours, $WorkdayStarts, $WorkdayEnds, $WeekStartsOn, $DefaultTab, $DefaultReminders)
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -135,6 +141,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                 $oUser->{self::GetName().'::WorkdayEnds'} = $WorkdayEnds;
                 $oUser->{self::GetName().'::WeekStartsOn'} = $WeekStartsOn;
                 $oUser->{self::GetName().'::DefaultTab'} = $DefaultTab;
+                $oUser->{self::GetName().'::DefaultReminders'} = @json_encode($DefaultReminders);
                 return $oCoreDecorator->UpdateUserObject($oUser);
             }
             if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin) {
