@@ -491,7 +491,7 @@ class Reminder
         \Aurora\System\Api::Log('---------- Start cron script', \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
         $oTimeZoneUTC = new \DateTimeZone('UTC');
-        $oNowDT_UTC = new \DateTimeImmutable('19.08.2025 13:10:00', $oTimeZoneUTC);
+        $oNowDT_UTC = new \DateTimeImmutable('now', $oTimeZoneUTC);
 
         $iNowTS = $oNowDT_UTC->getTimestamp();
 
