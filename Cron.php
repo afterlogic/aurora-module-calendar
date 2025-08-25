@@ -456,7 +456,7 @@ class Reminder
     public function hasReminderForUser($aReminders, $sUserPublicId, $sEventId)
     {
         foreach ($aReminders as $sEmail => $aUserCalendars) {
-            foreach ($aUserCalendars as $sCalendarUri => $aUserEvents) {
+            foreach ($aUserCalendars as $aUserEvents) {
                 foreach ($aUserEvents as $sUserEventId => $aUserEvent) {
                     if ($sEmail === $sUserPublicId && $sUserEventId === $sEventId) {
                         return true;
@@ -491,7 +491,7 @@ class Reminder
         \Aurora\System\Api::Log('---------- Start cron script', \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
         $oTimeZoneUTC = new \DateTimeZone('UTC');
-        $oNowDT_UTC = new \DateTimeImmutable('now', $oTimeZoneUTC);
+        $oNowDT_UTC = new \DateTimeImmutable('new', $oTimeZoneUTC);
 
         $iNowTS = $oNowDT_UTC->getTimestamp();
 
@@ -582,13 +582,12 @@ class Reminder
                                                     $bCaledarMuted = $this->isCalendarMutedForUser($oCalendarUser, $oCalendar->Id);
 
                                                     // check if user is an attendee of the event
-                                                    $bUserIsAttendee = $oUser->PublicId !== $oCalendarUser->PublicId && in_array(strtolower($oCalendarUser->PublicId), $aAttendees);
+                                                    $bUserIsAttendee = in_array(strtolower($oCalendarUser->PublicId), $aAttendees);
 
                                                     // check if user already has the event with reminder in own calendar
-                                                    $bHasReminderForUser = $this->hasReminderForUser($aEvents, $oCalendarUser->PublicId, $sEventId);
+                                                    $bHasReminderForUser = $oUser->PublicId !== $oCalendarUser->PublicId && $this->hasReminderForUser($aEvents, $oCalendarUser->PublicId, $sEventId);
 
-                                                    // add user to the list if calendar isn't muted or user is on the list of attendees
-                                                    if (!$bCaledarMuted && (!$bUserIsAttendee || ($bUserIsAttendee && !$bHasReminderForUser))) {
+                                                    if (!$bHasReminderForUser && (!$bCaledarMuted || $bUserIsAttendee)) {
                                                         $aUsers[$oCalendarUser->EntityId] = $oCalendarUser;
                                                     }
                                                 }
@@ -598,7 +597,7 @@ class Reminder
                                         foreach ($aUsers as $oUserItem) {
                                             $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
                                             if ($bIsMessageSent) {
-                                                $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
+                                               $this->oApiCalendarManager->updateReminder($oUserItem->PublicId, $sCalendarUri, $sEventId . '.ics', $vCal->serialize());
                                                 \Aurora\System\Api::Log('Send reminder for event: \''.$sEventName.'\' started on \''.$sDate.'\' to \''.$oUserItem->PublicId.'\'', \Aurora\System\Enums\LogLevel::Full, 'cron-');
                                             } else {
                                                 \Aurora\System\Api::Log('Send reminder for event: FAILED!', \Aurora\System\Enums\LogLevel::Full, 'cron-');
