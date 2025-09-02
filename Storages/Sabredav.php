@@ -447,6 +447,26 @@ class Sabredav extends Storage
 
     /**
      * @param string $sUserPublicId
+     *
+     * @return array
+     */
+    public function GetOwnCalendarNames($sUserPublicId)
+    {
+        $aCalendarNames = array();
+        $aCalendars = $this->getCalendars($sUserPublicId);
+        if (is_array($aCalendars)) {
+            /* @var $oCalendar \Aurora\Modules\Calendar\Classes\Calendar */
+            foreach ($aCalendars as $oCalendar) {
+                if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
+                    $aCalendarNames[$oCalendar->Id] = $oCalendar->DisplayName;
+                }
+            }
+        }
+        return $aCalendarNames;
+    }
+
+    /**
+     * @param string $sUserPublicId
      * @param string $sName
      * @param string $sDescription
      * @param int $iOrder

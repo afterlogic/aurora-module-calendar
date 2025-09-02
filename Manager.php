@@ -1549,7 +1549,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
                     $sEventId = (string)$oVEventResult->UID;
 
-                    $aCalendars = $this->oStorage->GetCalendarNames($sUserPublicId);
+                    $aCalendars = $this->oStorage->GetOwnCalendarNames($sUserPublicId);
                     $aCalendarIds = $this->oStorage->findEventInCalendars($sUserPublicId, $sEventId, $aCalendars);
 
                     if (is_array($aCalendarIds) && isset($aCalendarIds[0])) {

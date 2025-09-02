@@ -107,6 +107,16 @@ class Storage extends \Aurora\System\Managers\AbstractStorage
 
     /**
      * @param string $sUserPublicId
+     *
+     * @return array
+     */
+    public function GetOwnCalendarNames($sUserPublicId)
+    {
+        return array();
+    }
+
+    /**
+     * @param string $sUserPublicId
      * @param string $sName
      * @param string $sDescription
      * @param int $iOrder
