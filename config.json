@@ -60,5 +60,9 @@
             "#000"
 		],
 		"array"
+	],
+	"AllowDefaultReminders": [
+		true,
+		"bool"
 	]
 }
