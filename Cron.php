@@ -464,7 +464,8 @@ class Reminder
                                                                 "From" => "",
                                                                 "To" => $sEmail,
                                                                 "Subject" => $sSubject,
-                                                                "EventId" => $sEventId,
+                                                                "EventUid" => $sEventId,
+                                                                "EventId" => $sEventId, // fallback for older versions
                                                                 "CalendarId" => $sEventCalendarId
                                                             )
                                                         )
