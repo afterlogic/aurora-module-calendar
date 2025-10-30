@@ -1432,6 +1432,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     $oldSequence = 0;
                     $newSequence = isset($newBaseVEvent->{'SEQUENCE'}) && $newBaseVEvent->{'SEQUENCE'}->getValue() ? $newBaseVEvent->{'SEQUENCE'}->getValue() : 0 ;
                     $sCalendarId = $this->oStorage->findEventInCalendars($sUserPublicId, $sEventId);
+                    $delivered = false;
                     if ($sCalendarId) {
                         $oldEventData = $this->oStorage->getEvent($sUserPublicId, $sCalendarId, $sEventId);
                         if ($oldEventData !== false) {
@@ -1444,13 +1445,35 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                 }
                             }
 
-                            $broker = new ITipBroker();
-                            $messages = $broker->parseEvent($newVCal, $aAccountEmails, $oldVCal);
+                            // Process only if SEQUENCE is same
+                            if ($newSequence === $oldSequence) {
 
-                            $schedulePlugin = Server::getInstance()->getPlugin('caldav-schedule');
-                            if ($schedulePlugin instanceof \Afterlogic\DAV\CalDAV\Schedule\Plugin) {
-                                foreach ($messages as $message) {
-                                    $schedulePlugin->scheduleLocalDeliveryParent($message);
+                                $attendeeReply = strtolower((string) $newBaseVEvent->ATTENDEE);
+                                $newPartstat = strtoupper((string) $newBaseVEvent->ATTENDEE['PARTSTAT']);
+
+                                foreach ($oldBaseVEvent->ATTENDEE as $att) {
+                                    // Find the attendee that matches the reply sender
+                                    if (strtolower((string)$att) === $attendeeReply) {
+                                        $oldPartstat = strtoupper((string)$att['PARTSTAT']);
+
+                                        // Status has been changed
+                                        if ($oldPartstat !== $newPartstat) {
+                                            $broker = new ITipBroker();
+                                            // Create a new VCAL with updated PARTSTAT
+                                            $messages = $broker->parseEvent($newVCal, $aAccountEmails, $oldVCal);
+
+                                            $schedulePlugin = Server::getInstance()->getPlugin('caldav-schedule');
+                                            if ($schedulePlugin instanceof \Afterlogic\DAV\CalDAV\Schedule\Plugin) {
+                                                foreach ($messages as $message) {
+                                                    // Schedule the delivery of the message
+                                                    $schedulePlugin->scheduleLocalDeliveryParent($message);
+                                                    if ($message->getScheduleStatus() === '1.2') {
+                                                        $delivered = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1545,6 +1568,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         'Sequence' => $newSequence,
                         'Organizer' => $organizer,
                         'AttendeeList' => $ateendeeList,
+                        'Delivered' => $delivered,
                     ];
 
                     if ($oldSequence && $oldSequence >= $newSequence) {

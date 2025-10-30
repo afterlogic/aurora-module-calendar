@@ -119,6 +119,8 @@ class Ics
 
     public $AttendeeList;
 
+    public $Delivered;
+
     private function __construct()
     {
         $this->Uid = '';
@@ -136,6 +138,7 @@ class Ics
         $this->Calendars = array();
         $this->AttendeeList = [];
         $this->Organizer = '';
+        $this->Delivered = false;
     }
 
     /**
@@ -165,6 +168,7 @@ class Ics
             'CalendarId' => $this->CalendarId,
             'AttendeeList' => $this->AttendeeList,
             'Organizer' => $this->Organizer,
+            'Delivered' => $this->Delivered,
         );
     }
 }

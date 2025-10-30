@@ -1181,6 +1181,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
                             $oIcs->CalendarId = !empty($mResult['CalendarId']) ? $mResult['CalendarId'] : '';
                             $oIcs->AttendeeList = $mResult['AttendeeList'];
                             $oIcs->Organizer = $mResult['Organizer'];
+                            $oIcs->Delivered = $mResult['Delivered'];
 
                             $this->broadcastEvent(
                                 'CreateIcs',
