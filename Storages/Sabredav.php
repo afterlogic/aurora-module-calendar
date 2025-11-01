@@ -981,10 +981,10 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
             // You can either pass a readable stream, or a string.
             $h = fopen($sTempFileName, 'r');
-            $splitter = new \Sabre\VObject\Splitter\ICalendar($h, \Sabre\VObject\Reader::OPTION_IGNORE_INVALID_LINES);
+            $oSplitter= new \Afterlogic\DAV\VObjectSplitter('ICalendar', $h, \Sabre\VObject\Reader::OPTION_IGNORE_INVALID_LINES);
 
             $iCount = 0;
-            while ($oVCalendar = $splitter->getNext()) {
+            while ($oVCalendar = $oSplitter->getNext()) {
                 if ($oVCalendar instanceof VCalendar) {
                     $oVEvents = $oVCalendar->VEVENT;
                     if (!$oVEvents || 0 === count($oVEvents)) {
