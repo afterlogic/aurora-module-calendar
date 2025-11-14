@@ -231,9 +231,9 @@ class Sabredav extends Storage
             '{http://sabredav.org/ns}owner-principal',
             '{'.\Sabre\CalDAV\Plugin::NS_CALENDARSERVER.'}source'
         ]);
-        if (isset($aProps['id']) && isset($aProps['id'][0])) {
-            $oCalendar->IntId = $aProps['id'][0];
-        }
+
+        $oCalendar->IntId = $oCalDAVCalendar->getBaseCalendarId();
+
         if (isset($aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'])) {
             $oCalendar->Description = $aProps['{'.\Sabre\CalDAV\Plugin::NS_CALDAV.'}calendar-description'];
         }
