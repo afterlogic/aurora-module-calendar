@@ -517,6 +517,7 @@ class Reminder
             $aEvents = $this->GetReminders($iStartTS, $iNowTS);
             
             \Aurora\System\Api::Log('Events found: ' . count($aEvents), \Aurora\System\Enums\LogLevel::Full, 'cron-');
+            \Aurora\System\Api::LogObject($aEvents, \Aurora\System\Enums\LogLevel::Full, 'cron-');
             \Aurora\System\Api::Log('Recipients: ' . implode(',', array_keys($aEvents)), \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
             foreach ($aEvents as $sEmail => $aUserCalendars) {
@@ -575,6 +576,10 @@ class Reminder
 
                                         // filtering out user who muted 
                                         if (0 < count($aCalendarUsers)) {
+
+                                            \Aurora\System\Api::Log('Calendar users:', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                            \Aurora\System\Api::LogObject($aCalendarUsers, \Aurora\System\Enums\LogLevel::Full, 'cron-');
+
                                             foreach ($aCalendarUsers as $aCalendarUser) {
                                                 $oCalendarUser = $this->getUser($aCalendarUser['email']);
                                                 if ($oCalendarUser) {
@@ -593,6 +598,9 @@ class Reminder
                                                 }
                                             }
                                         }
+
+                                        \Aurora\System\Api::Log('Users:', \Aurora\System\Enums\LogLevel::Full, 'cron-');
+                                        \Aurora\System\Api::LogObject($aUsers, \Aurora\System\Enums\LogLevel::Full, 'cron-');
 
                                         foreach ($aUsers as $oUserItem) {
                                             $bIsMessageSent = $this->sendMessage($oUserItem, $sSubject, $sEventName, $sDate, $oCalendar->DisplayName, $sEventText, $oCalendar->Color);
