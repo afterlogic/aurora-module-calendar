@@ -154,6 +154,80 @@ class Parser
         return $aResult;
     }
 
+
+    /**
+     * Normalize ISO8601 duration for RFC 5545
+     * 
+     * @param string $value
+     *
+     * @return string
+     */
+    protected static function normalizeDuration(string $value): string
+    {
+        $value = strtoupper(trim($value));
+
+        if (preg_match('/^\d{8}T\d{6}Z?$/', $value)) {
+            return $value;
+        }
+
+        $sign = '';
+        if (strpos($value, '-') === 0) {
+            $sign = '-';
+            $value = substr($value, 1);
+        }
+
+        if (strpos($value, 'P') !== 0) {
+            return $sign . $value;
+        }
+
+        preg_match(
+            '/P
+              (?:(\d+)Y)?      # years
+              (?:(\d+)M)?      # months
+              (?:(\d+)W)?      # weeks
+              (?:(\d+)D)?      # days
+              (?:T
+                  (?:(\d+)H)?  # hours
+                  (?:(\d+)M)?  # minutes
+                  (?:(\d+)S)?  # seconds
+              )?
+            /x',
+            $value,
+            $parts
+        );
+
+        $years   = $parts[1] ?? null;
+        $months  = $parts[2] ?? null;
+        $weeks   = $parts[3] ?? null;
+        $days    = $parts[4] ?? null;
+        $hours   = $parts[5] ?? null;
+        $minutes = $parts[6] ?? null;
+        $seconds = $parts[7] ?? null;
+
+        $result = 'P';
+
+        if ($years)  $result .= $years . 'Y';
+        if ($months) $result .= $months . 'M';
+        if ($weeks)  $result .= $weeks . 'W';
+        if ($days)   $result .= $days . 'D';
+
+        $timePart = '';
+
+        if ($hours)   $timePart .= $hours . 'H';
+        if ($minutes) $timePart .= $minutes . 'M';
+        if ($seconds) $timePart .= $seconds . 'S';
+
+        if ($timePart !== '') {
+            $result .= 'T' . $timePart;
+        }
+
+        if ($result === 'P') {
+            return $sign . $value;
+        }
+
+        return $sign . $result;
+    }   
+
     /**
      * @param \Sabre\VObject\Component $oVComponent
      *
@@ -166,6 +240,9 @@ class Parser
         if ($oVComponent->VALARM) {
             foreach ($oVComponent->VALARM as $oVAlarm) {
                 if (isset($oVAlarm->TRIGGER) && $oVAlarm->TRIGGER instanceof \Sabre\VObject\Property\ICalendar\Duration) {
+                    $triggerValue = $oVAlarm->TRIGGER->getValue();
+                    $triggerValue = self::normalizeDuration($triggerValue);
+                    $oVAlarm->TRIGGER->setValue($triggerValue);
                     $aResult[] = \Aurora\Modules\Calendar\Classes\Helper::getOffsetInMinutes($oVAlarm->TRIGGER->getDateInterval());
                 }
             }
