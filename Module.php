@@ -1212,13 +1212,26 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function CheckIfHasEventOverlap($UserId, $uid, $startTS, $endTS)
     {
         $mResult = false;
+    
+        $oManager = $this->getManager();
+        $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
+        $aCalendars = $oManager->getCalendars($sUserPublicId);
 
-        $aCalendars = $this->GetCalendars($UserId);
-        if (isset($aCalendars['Calendars']) && count($aCalendars['Calendars']) > 0) {
-            $aCalendarIds = array_keys($aCalendars['Calendars']);
+        // Get shared calendars but only include those where user is the owner
+        $aSharedCalendars = $oManager->getSharedCalendars($sUserPublicId);
+        if (is_array($aSharedCalendars)) {
+            foreach ($aSharedCalendars as $key => $oSharedCalendar) {
+                if ($oSharedCalendar->Owner === $sUserPublicId) {
+                    $aCalendars[$key] = $oSharedCalendar;
+                }
+            }
+        }
+
+        if (count($aCalendars) > 0) {
+            $aCalendarIds = array_keys($aCalendars);
             $sUserPublicId = \Aurora\System\Api::getUserPublicIdById($UserId);
             \Aurora\System\Logger::Log('$startTS = ' . $startTS . '; $endTS = ' . $endTS);
-            $aEvents = $this->getManager()->getEventsByPeriod($sUserPublicId, $aCalendarIds, $startTS, $endTS);
+            $aEvents = $oManager->getEventsByPeriod($sUserPublicId, $aCalendarIds, $startTS, $endTS);
             if (is_array($aEvents) && isset($uid)) {
                 foreach ($aEvents as $iKey => $aEvent) {
                     if ($aEvent['uid'] === $uid) {

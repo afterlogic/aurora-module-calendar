@@ -387,14 +387,13 @@ class Sabredav extends Storage
 
                 foreach ($oCalendarHome->getChildren() as $oCalDAVCalendar) {
                     $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-                    if ($oCalendar && !$oCalendar->Shared) {
+                    if ($oCalendar && !($oCalendar->Shared || $oCalendar->SharedToAll)) {
                         $aCalendars[$oCalendar->Id] = $oCalendar;
                     }
                 }
                 $this->CalendarsCache[$sUserPublicId] = $aCalendars;
             }
         }
-
         return $aCalendars;
     }
 
@@ -411,7 +410,7 @@ class Sabredav extends Storage
 
                 foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
                     $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-                    if ($oCalendar && $oCalendar->Shared) {
+                    if ($oCalendar && ($oCalendar->Shared || $oCalendar->SharedToAll)) {
                         $aCalendars[$oCalendar->Id] = $oCalendar;
                     }
                 }
