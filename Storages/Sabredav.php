@@ -308,12 +308,6 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         $oCalendar->RealUrl = 'calendars/' . $oCalDAVCalendar->getName();
         $oCalendar->SyncToken = $oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar ? (string) $oCalDAVCalendar->getSyncToken() : '';
 
-        $sPrincipalUri = '';
-        $aProperties = $oCalDAVCalendar->getProperties(['principaluri']);
-        if (isset($aProperties['principaluri'])) {
-            $sPrincipalUri = $aProperties['principaluri'];
-        }
-
         $oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
         $oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
 
@@ -431,7 +425,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
                 foreach ($oCalendarHome->getChildren() as $oCalDAVCalendar) {
                     $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-                    if ($oCalendar && !($oCalendar->Shared || $oCalendar->SharedToAll)) {
+                    if ($oCalendar && $oCalendar->Shared) {
                         $aCalendars[$oCalendar->Id] = $oCalendar;
                     }
                 }
@@ -454,7 +448,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
                 foreach ($oUserCalendars->getChildren() as $oCalDAVCalendar) {
                     $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-                    if ($oCalendar && ($oCalendar->Shared || $oCalendar->SharedToAll)) {
+                    if ($oCalendar && $oCalendar->Shared) {
                         $aCalendars[$oCalendar->Id] = $oCalendar;
                     }
                 }
