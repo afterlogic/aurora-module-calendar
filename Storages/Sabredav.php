@@ -425,7 +425,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
                 foreach ($oCalendarHome->getChildren() as $oCalDAVCalendar) {
                     $oCalendar = $this->parseCalendar($oCalDAVCalendar);
-                    if ($oCalendar && $oCalendar->Shared) {
+                    if ($oCalendar && !$oCalendar->Shared) {
                         $aCalendars[$oCalendar->Id] = $oCalendar;
                     }
                 }
