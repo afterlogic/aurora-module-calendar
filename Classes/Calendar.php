@@ -91,16 +91,6 @@ class Calendar
         return $sResult;
     }
 
-    /**
-     * @deprecated since version 9.7.6
-     * @param mixed $oAccount
-     * @return bool
-     */
-    public function IsCalendarOwner($oAccount)
-    {
-        return ($oAccount === $this->Owner);
-    }
-
     public function toResponseArray($aParameters = array())
     {
         return array(
