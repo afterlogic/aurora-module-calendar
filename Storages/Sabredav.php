@@ -455,6 +455,17 @@ class Sabredav extends Storage
         $aCalendarNames = array();
         $aCalendars = $this->getCalendars($sUserPublicId);
         if (is_array($aCalendars)) {
+
+
+            $aSharedCalendars = $this->getSharedCalendars($sUserPublicId);
+            if (is_array($aSharedCalendars)) {
+                foreach ($aSharedCalendars as $key => $oSharedCalendar) {
+                    if ($oSharedCalendar->Owner === $sUserPublicId) {
+                        $aCalendars[$key] = $oSharedCalendar;
+                    }
+                }
+            }
+
             /* @var $oCalendar \Aurora\Modules\Calendar\Classes\Calendar */
             foreach ($aCalendars as $oCalendar) {
                 if ($oCalendar instanceof \Aurora\Modules\Calendar\Classes\Calendar) {
