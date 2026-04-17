@@ -75,7 +75,7 @@ class TextUtils
                 );
             }
         }
-        $sText = $oDom->saveHTML();
+        $sText = \MailSo\Base\HtmlUtils::GetTextFromDom($oDom);
         unset($oDom);
 
         $sText = \MailSo\Base\HtmlUtils::ClearTags($sText);
