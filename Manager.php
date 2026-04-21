@@ -1422,10 +1422,6 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     return false;
                 }
 
-                if ($sMethod === 'REPLY') {
-                    $aAccountEmails = ['mailto:' . $mFromEmail];
-                }
-
                 if ($newBaseVEvent) {
                     $oldBaseVEvent = null;
                     $sEventId = (string)$newBaseVEvent->UID;
@@ -1450,6 +1446,10 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 
                                 $attendeeReply = strtolower((string) $newBaseVEvent->ATTENDEE);
                                 $newPartstat = strtoupper((string) $newBaseVEvent->ATTENDEE['PARTSTAT']);
+
+                                if ($sMethod === 'REPLY') {
+                                    $aAccountEmails = /*['mailto:' . $mFromEmail];*/ [$attendeeReply];
+                                }
 
                                 foreach ($oldBaseVEvent->ATTENDEE as $att) {
                                     // Find the attendee that matches the reply sender
