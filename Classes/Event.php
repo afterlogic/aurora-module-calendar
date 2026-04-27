@@ -87,7 +87,7 @@ class Event
 
         // Location
         $this->Location = isset($oVEvent->LOCATION) ? (string)$oVEvent->LOCATION : '';
-        
+
         // Summary / Name
         $this->Name = isset($oVEvent->SUMMARY) ? (string)$oVEvent->SUMMARY : '';
 
@@ -144,7 +144,7 @@ class Event
         if ($oUser) {
             $sDefaultTimeZone = $oUser->getDefaultTimeZone();
         }
-        // Recurrence rule 
+        // Recurrence rule
         $this->RRule = Parser::parseRRule($sDefaultTimeZone, $oVEvent);
 
         // Attendees
