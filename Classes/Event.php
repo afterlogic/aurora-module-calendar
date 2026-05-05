@@ -6,6 +6,9 @@
 
 namespace Aurora\Modules\Calendar\Classes;
 
+use Sabre\VObject\Property\ICalendar\DateTime as VDateTime;
+use Sabre\VObject\Property\ICalendar\Duration as VDuration;
+
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2023, Afterlogic Corp.
@@ -97,7 +100,7 @@ class Event
         }
 
         // Last modified
-        if (isset($oVEvent->{'LAST-MODIFIED'})) {
+        if (isset($oVEvent->{'LAST-MODIFIED'}) && $oVEvent->{'LAST-MODIFIED'} instanceof VDateTime) {
             try {
                 $dt = $oVEvent->{'LAST-MODIFIED'}->getDateTime();
                 $this->Modified = $dt->getTimestamp();
@@ -107,28 +110,31 @@ class Event
         }
 
         // DTSTART / DTEND / All day
-        if (isset($oVEvent->DTSTART)) {
+        if (isset($oVEvent->DTSTART) && $oVEvent->DTSTART instanceof VDateTime) {
             try {
-                $dtStart = $oVEvent->DTSTART->getDateTime();
-                $this->Start = $dtStart->getTimestamp();
-                // detect all-day: value type DATE (no time) -> treat as all day
-                $this->AllDay = (strpos((string)$oVEvent->DTSTART->getDateTime()->format('H:i:s'), '00:00:00') === 0)
-                    && (!isset($oVEvent->DTSTART['VALUE']) || (string)$oVEvent->DTSTART['VALUE'] === 'DATE');
+                $dtStartObj = $oVEvent->DTSTART->getDateTime();
+                $this->Start = $dtStartObj->getTimestamp();
+
+                $dtStartValueParam = $oVEvent->DTSTART['VALUE'] ?? null;
+
+                $this->AllDay =
+                    $dtStartValueParam instanceof \Sabre\VObject\Parameter &&
+                    $dtStartValueParam->getValue() === 'DATE';
+
             } catch (\Exception $e) {
                 $this->Start = null;
                 $this->AllDay = false;
             }
         }
 
-        if (isset($oVEvent->DTEND)) {
+        if (isset($oVEvent->DTEND) && $oVEvent->DTEND instanceof VDateTime) {
             try {
                 $dtEnd = $oVEvent->DTEND->getDateTime();
                 $this->End = $dtEnd->getTimestamp();
             } catch (\Exception $e) {
                 $this->End = null;
             }
-        } elseif (isset($this->Start) && isset($oVEvent->DURATION)) {
-            // calculate end from DURATION if provided
+        } elseif (isset($this->Start) && isset($oVEvent->DURATION) && $oVEvent->DURATION instanceof VDuration) {
             try {
                 $interval = $oVEvent->DURATION->getDateInterval();
                 $dt = (new \DateTime())->setTimestamp($this->Start);
