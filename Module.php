@@ -7,6 +7,7 @@
 namespace Aurora\Modules\Calendar;
 
 use Aurora\System\Exceptions\ApiException;
+use Aurora\System\Facades\Route;
 
 /**
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
@@ -77,12 +78,10 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             Enums\ErrorCodes::InvalidSubscribedIcs => $this->i18N('ERROR_INVALID_SUBSCRIBED_ICS')
         ];
 
-        $this->AddEntries(
-            array(
-                'calendar-pub' => 'EntryCalendarPub',
-                'calendar-download' => 'EntryCalendarDownload'
-            )
-        );
+        Route::add($this, [
+            'calendar-pub' => 'EntryCalendarPub',
+            'calendar-download' => 'EntryCalendarDownload'
+        ]);
 
         $this->subscribeEvent('Mail::GetBodyStructureParts', array($this, 'onGetBodyStructureParts'));
         $this->subscribeEvent('MobileSync::GetInfo', array($this, 'onGetMobileSyncInfo'));
