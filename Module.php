@@ -98,6 +98,26 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     public function GetSettings()
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
+        $oUser = \Aurora\System\Api::getAuthenticatedUser();
+
+        // For anonymous (public) requests return only the minimal set
+        // of settings required to render public calendar view. User- and
+        // admin-specific settings are returned only for authenticated users.
+        if (!$oUser) {
+            return array(
+                'AddDescriptionToTitle' => $this->oModuleSettings->AddDescriptionToTitle,
+                'DefaultTab' => $this->oModuleSettings->DefaultTab,
+                'HighlightWorkingDays' => $this->oModuleSettings->HighlightWorkingDays,
+                'HighlightWorkingHours' => $this->oModuleSettings->HighlightWorkingHours,
+                'ShowWeekNumbers' => $this->oModuleSettings->ShowWeekNumbers,
+                'WeekStartsOn' => $this->oModuleSettings->WeekStartsOn,
+                'WorkdayEnds' => $this->oModuleSettings->WorkdayEnds,
+                'WorkdayStarts' => $this->oModuleSettings->WorkdayStarts,
+                'AllowPrivateEvents' => $this->oModuleSettings->AllowPrivateEvents,
+                'CalendarColors' => $this->oModuleSettings->CalendarColors,
+                'ShowTasksInCalendars' => $this->oModuleSettings->ShowTasksInCalendars,
+            );
+        }
 
         $aSettings = array(
             'AddDescriptionToTitle' => $this->oModuleSettings->AddDescriptionToTitle,
@@ -106,7 +126,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'HighlightWorkingDays' => $this->oModuleSettings->HighlightWorkingDays,
             'HighlightWorkingHours' => $this->oModuleSettings->HighlightWorkingHours,
             'ShowWeekNumbers' => $this->oModuleSettings->ShowWeekNumbers,
-            'PublicCalendarId' => $this->oHttp->GetQuery('calendar-pub', ''),
             'WeekStartsOn' => $this->oModuleSettings->WeekStartsOn,
             'WorkdayEnds' => $this->oModuleSettings->WorkdayEnds,
             'WorkdayStarts' => $this->oModuleSettings->WorkdayStarts,
@@ -118,7 +137,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             'ShowTasksInCalendars' => $this->oModuleSettings->ShowTasksInCalendars,
         );
 
-        $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
             if (null !== $oUser->getExtendedProp(self::GetName() . '::HighlightWorkingDays')) {
                 $aSettings['HighlightWorkingDays'] = $oUser->getExtendedProp(self::GetName() . '::HighlightWorkingDays');
