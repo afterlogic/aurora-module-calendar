@@ -115,11 +115,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      *
      * @return string|false
      */
-    public function getPublicCalendarHash($sCalendarId)
+    public function getPublicCalendarHash($UserPublicId, $sCalendarId)
     {
         $oResult = null;
         try {
-            $oResult = $this->oStorage->getPublicCalendarHash($sCalendarId);
+            $oResult = $this->oStorage->getPublicCalendarHash($UserPublicId, $sCalendarId);
         } catch (\Exception $oException) {
             $oResult = false;
             $this->setLastException($oException);

@@ -308,7 +308,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         $oCalendar->RealUrl = 'calendars/' . $oCalDAVCalendar->getName();
         $oCalendar->SyncToken = $oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar ? (string) $oCalDAVCalendar->getSyncToken() : '';
 
-        $oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Id);
+        $oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Owner, $oCalendar->Id);
         $oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
 
         if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription) {
@@ -386,21 +386,39 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
      *
      * @return string
      */
-    public function getPublicCalendarHash($sCalendarId)
+    public function getPublicCalendarHash($UserPublicId, $sCalendarId)
     {
-        return $sCalendarId;
+        $mResult = '';
+
+        $sID = \Aurora\Modules\Min\Module::generateHashId([$UserPublicId, $sCalendarId]);
+
+        $oMin = \Aurora\Modules\Min\Module::getInstance();
+        $mMin = $oMin->GetMinByID($sID);
+        if (!empty($mMin['__hash__'])) {
+            $mResult = $mMin['__hash__'];
+        }
+
+        return $mResult;
     }
 
     public function getPublicCalendar($sCalendar)
     {
         $oCalendar = false;
 
-        $oBackend = $this->getBackend();
+        $oMin = \Aurora\Modules\Min\Module::getInstance();
+        $mMin = $oMin->GetMinByHash($sCalendar);
+        if (!empty($mMin['__hash__'])) {
 
-        if ($oBackend instanceof PDO) {
-            $aCalendar = $oBackend->getPublicCalendar($sCalendar);
-            if ($aCalendar) {
-                $oCalendar = new \Afterlogic\DAV\CalDAV\PublicCalendar($oBackend, $aCalendar);
+            $oBackend = $this->getBackend();
+
+            $PublicUserId = $mMin['PublicUserId'] ?? null;
+            $CalendarId = $mMin['CalendarId'] ?? null;
+
+            if (!empty($PublicUserId) && !empty($CalendarId) && $oBackend instanceof PDO) {
+                $aCalendar = $oBackend->getPublicCalendar($CalendarId, $PublicUserId);
+                if ($aCalendar) {
+                    $oCalendar = new \Afterlogic\DAV\CalDAV\PublicCalendar($oBackend, $aCalendar);
+                }
             }
         }
 
@@ -858,7 +876,45 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
      */
     public function publicCalendar($sCalendarId, $bIsPublic = false, $oUser = null)
     {
-        return $this->getBackend()->setPublishStatus($sCalendarId, $bIsPublic, $oUser);
+        $oResult = null;
+
+        $oUser = $oUser ? $oUser : Api::getAuthenticatedUser();
+        $oResult = $this->getBackend()->setPublishStatus($sCalendarId, $bIsPublic, $oUser);
+
+        if ($oResult && $oUser instanceof \Aurora\Modules\Core\Models\User) {
+            $sID = \Aurora\Modules\Min\Module::generateHashId([$oUser->PublicId, $sCalendarId]);
+
+            $iUserId = ($oUser instanceof \Aurora\Modules\Core\Models\User) ? $oUser->Id : null;
+
+            $oMin = \Aurora\Modules\Min\Module::getInstance();
+            $mMin = $oMin->GetMinByID($sID);
+
+            if (!$bIsPublic) {
+                if ($mMin) {
+                    return $oMin->DeleteMinByID($sID);
+                } else {
+                    return true;
+                }
+            } else {
+                if (!empty($mMin['__hash__'])) {
+                    $mResult = $mMin['__hash__'];
+                } else {
+
+                    $mResult = $oMin->CreateMin(
+                        $sID,
+                        array(
+                            'PublicUserId' => $oUser->PublicId,
+                            'CalendarId' => $sCalendarId,
+                        ),
+                        $iUserId
+                    );
+                }
+
+                return $mResult;
+            }
+        }
+
+        return $oResult;
     }
 
     /**
