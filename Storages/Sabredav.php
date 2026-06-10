@@ -1253,27 +1253,30 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         ];
     }
 
-    public function getNotCompletedFilterForTasks()
+    public function getStatusFilterForTasks($showCompleted)
     {
+        $negate = ($showCompleted === false);
         return  [
             'name'           => 'STATUS',
             'is-not-defined' => false,
             'time-range'     => null,
             'param-filters' => [],
             'text-match'     => [
-                'negate-condition' => true,
+                'negate-condition' => $negate,
                 'collation'        => 'i;ascii-casemap',
                 'value'            => 'COMPLETED',
             ],
         ];
     }
 
-    public function getTasksUrls($oCalendar, $bShowCompleted = true, $sSearch = '')
+    public function getTasksUrls($oCalendar, $bShowCompleted = null, $sSearch = '')
     {
         $aFilter = [];
-        if (!$bShowCompleted) {
-            $aFilter[] = $this->getNotCompletedFilterForTasks();
+
+        if ($bShowCompleted !== null) {
+            $aFilter[] = $this->getStatusFilterForTasks($bShowCompleted);
         }
+
         if (!empty($sSearch)) {
             $aFilter[] = $this->getSerchFilterForTasks($sSearch);
         }
@@ -1281,7 +1284,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         $aFilter = $this->getFilterForTasks($aFilter);
         $aResult = $oCalendar->calendarQuery($aFilter);
 
-        if (!$bShowCompleted) {
+        if ($bShowCompleted === false) {
             $aFilter = [[
                 'name'           => 'STATUS',
                 'is-not-defined' => true,
@@ -1546,10 +1549,16 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
                 $mResult = $this->getItemsByUrls($sUserPublicId, $oCalDAVCalendar, $aUrls, $dStart, $dEnd, $bExpand);
             }
 
-            if (is_array($mResult) && !$bCompeted) {
-                $mResult = array_filter($mResult, function ($task) {
-                    return $task['status'] === false;
-                });
+            if (is_array($mResult)) {
+                if ($bCompeted) {
+                    $mResult = array_filter($mResult, function ($task) {
+                        return isset($task['status']) && $task['status'] === true;
+                    });
+                } else {
+                    $mResult = array_filter($mResult, function ($task) {
+                        return !isset($task['status']) || $task['status'] === false;
+                    });
+                }
             }
         }
 
