@@ -309,7 +309,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
         $oCalendar->SyncToken = $oCalDAVCalendar instanceof \Sabre\CalDAV\Calendar ? (string) $oCalDAVCalendar->getSyncToken() : '';
 
         $oCalendar->PubHash = $this->getPublicCalendarHash($oCalendar->Owner, $oCalendar->Id);
-        $oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Id);
+        $oCalendar->IsPublic = $this->getPublishStatus($oCalendar->Owner, $oCalendar->Id);
 
         if ($oCalDAVCalendar instanceof \Sabre\CalDAV\Subscriptions\Subscription) {
             $oCalendar->Subscribed = true;
@@ -918,13 +918,14 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     }
 
     /**
+     * @param string $sOwnerPublicId
      * @param string $sCalendarId
      *
      * @return bool
      */
-    public function getPublishStatus($sCalendarId)
+    public function getPublishStatus($sOwnerPublicId, $sCalendarId)
     {
-        return $this->getBackend()->getPublishStatus($sCalendarId);
+        return $this->getBackend()->getPublishStatus('principals/' . $sOwnerPublicId, $sCalendarId);
     }
 
     /**

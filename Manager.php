@@ -479,15 +479,16 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     /**
      * Set/unset calendar as public.
      *
+     * @param string $sOwnerPublicId Owner's public ID
      * @param string $sCalendarId Calendar ID
      *
      * @return bool
      */
-    public function getPublishStatus($sCalendarId)
+    public function getPublishStatus($sOwnerPublicId, $sCalendarId)
     {
         $oResult = null;
         try {
-            $oResult = $this->oStorage->getPublishStatus($sCalendarId);
+            $oResult = $this->oStorage->getPublishStatus($sOwnerPublicId, $sCalendarId);
         } catch (\Exception $oException) {
             $oResult = false;
             $this->setLastException($oException);
