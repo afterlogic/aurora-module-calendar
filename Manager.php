@@ -950,7 +950,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                         unset($oVCalResult->{$sComponent});
                         if (isset($oVCal->{$sComponent})) {
                             foreach ($oVCal->{$sComponent} as $oVComponent) {
-                                $oVComponent->SEQUENCE = (int) $oVComponent->SEQUENCE->getValue() + 1;
+                                if (isset($oVComponent->SEQUENCE)) {
+                                    $oVComponent->SEQUENCE = (int) $oVComponent->SEQUENCE->getValue() + 1;
+                                } else {
+                                    $oVComponent->add('SEQUENCE', 1);
+                                }
                                 if (!isset($oVComponent->{'RECURRENCE-ID'})) {
                                     $oVCalResult->add($oVComponent);
                                 }
