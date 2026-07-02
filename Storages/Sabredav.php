@@ -1325,37 +1325,44 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             ],
         ];
     }
-
     public function getTasksUrls($oCalendar, $bShowCompleted = null, $sSearch = '')
     {
-        $aFilter = [];
-
-        if ($bShowCompleted !== null) {
-            $aFilter[] = $this->getStatusFilterForTasks($bShowCompleted);
-        }
-
-        if (!empty($sSearch)) {
-            $aFilter[] = $this->getSerchFilterForTasks($sSearch);
-        }
-
-        $aFilter = $this->getFilterForTasks($aFilter);
-        $aResult = $oCalendar->calendarQuery($aFilter);
-
-        if ($bShowCompleted === false) {
-            $aFilter = [[
-                'name'           => 'STATUS',
-                'is-not-defined' => true,
-            ]];
+        // true  -> show all tasks
+        // false or null -> show only incomplete tasks
+        if ($bShowCompleted === true) {
+            $aFilter = [];
             if (!empty($sSearch)) {
                 $aFilter[] = $this->getSerchFilterForTasks($sSearch);
             }
             $aFilter = $this->getFilterForTasks($aFilter);
 
-            $aResult = array_merge(
-                $aResult,
-                $oCalendar->calendarQuery($aFilter)
-            );
+            return $oCalendar->calendarQuery($aFilter);
         }
+
+        // branch "hide completed" (for false and null)
+
+        // 1) tasks, thet have no STATUS property or STATUS is not COMPLETED
+        $aFilter = [$this->getStatusFilterForTasks(false)];
+        if (!empty($sSearch)) {
+            $aFilter[] = $this->getSerchFilterForTasks($sSearch);
+        }
+        $aFilter = $this->getFilterForTasks($aFilter);
+        $aResult = $oCalendar->calendarQuery($aFilter);
+
+        // 2) tasks, that have no STATUS property (is-not-defined)
+        $aFilterNoStatus = [[
+            'name'           => 'STATUS',
+            'is-not-defined' => true,
+        ]];
+        if (!empty($sSearch)) {
+            $aFilterNoStatus[] = $this->getSerchFilterForTasks($sSearch);
+        }
+        $aFilterNoStatus = $this->getFilterForTasks($aFilterNoStatus);
+
+        $aResult = array_merge(
+            $aResult,
+            $oCalendar->calendarQuery($aFilterNoStatus)
+        );
 
         return $aResult;
     }
@@ -1607,11 +1614,7 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             }
 
             if (is_array($mResult)) {
-                if ($bCompeted) {
-                    $mResult = array_filter($mResult, function ($task) {
-                        return isset($task['status']) && $task['status'] === true;
-                    });
-                } else {
+                if (!$bCompeted) {
                     $mResult = array_filter($mResult, function ($task) {
                         return !isset($task['status']) || $task['status'] === false;
                     });
