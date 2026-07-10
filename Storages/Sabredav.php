@@ -1079,6 +1079,9 @@ class Sabredav extends Storage
                     \Sabre\VObject\DateTimeParser::parse($dStart),
                     \Sabre\VObject\DateTimeParser::parse($dEnd)
                 );
+            } else if (isset($oVCal->VEVENT) && count($oVCal->VEVENT) > 0) {
+                // No base VEVENT (only exceptions or single events with RECURRENCE-ID)
+                $oExpandedVCal = clone $oVCal;
             } else {
                 return [];
             }
