@@ -157,7 +157,10 @@ class Parser
 
     /**
      * Normalize ISO8601 duration for RFC 5545
-     * 
+     *
+     * Handles non-standard durations from clients like Apple Calendar and Outlook
+     * that may place date components (e.g. D) after the T separator, e.g. -PT7D.
+     *
      * @param string $value
      *
      * @return string
@@ -170,6 +173,12 @@ class Parser
             return $value;
         }
 
+        $delimiter = ',';
+        if (strpos($value, $delimiter) !== false) {
+            $parts = explode($delimiter, $value);
+            return implode($delimiter, array_map([self::class, 'normalizeDuration'], $parts));
+        }
+
         $sign = '';
         if (strpos($value, '-') === 0) {
             $sign = '-';
@@ -180,29 +189,51 @@ class Parser
             return $sign . $value;
         }
 
-        preg_match(
-            '/P
-              (?:(\d+)Y)?      # years
-              (?:(\d+)M)?      # months
-              (?:(\d+)W)?      # weeks
-              (?:(\d+)D)?      # days
-              (?:T
-                  (?:(\d+)H)?  # hours
-                  (?:(\d+)M)?  # minutes
-                  (?:(\d+)S)?  # seconds
-              )?
-            /x',
+        preg_match_all(
+            '/(\d+)([YMDWHNS])/',
             $value,
-            $parts
+            $matches,
+            PREG_SET_ORDER
         );
 
-        $years   = $parts[1] ?? null;
-        $months  = $parts[2] ?? null;
-        $weeks   = $parts[3] ?? null;
-        $days    = $parts[4] ?? null;
-        $hours   = $parts[5] ?? null;
-        $minutes = $parts[6] ?? null;
-        $seconds = $parts[7] ?? null;
+        $years   = null;
+        $months  = null;
+        $weeks   = null;
+        $days    = null;
+        $hours   = null;
+        $minutes = null;
+        $seconds = null;
+
+        $tPos = strpos($value, 'T');
+
+        foreach ($matches as $match) {
+            $num  = $match[1];
+            $unit = $match[2];
+            switch ($unit) {
+                case 'Y':
+                    $years = $num;
+                    break;
+                case 'M':
+                    if ($tPos !== false && strpos($value, $match[0]) > $tPos) {
+                        $minutes = $num;
+                    } else {
+                        $months = $num;
+                    }
+                    break;
+                case 'W':
+                    $weeks = $num;
+                    break;
+                case 'D':
+                    $days = $num;
+                    break;
+                case 'H':
+                    $hours = $num;
+                    break;
+                case 'S':
+                    $seconds = $num;
+                    break;
+            }
+        }
 
         $result = 'P';
 
@@ -226,7 +257,7 @@ class Parser
         }
 
         return $sign . $result;
-    }   
+    }
 
     /**
      * @param \Sabre\VObject\Component $oVComponent
@@ -240,10 +271,16 @@ class Parser
         if ($oVComponent->VALARM) {
             foreach ($oVComponent->VALARM as $oVAlarm) {
                 if (isset($oVAlarm->TRIGGER) && $oVAlarm->TRIGGER instanceof \Sabre\VObject\Property\ICalendar\Duration) {
-                    $triggerValue = $oVAlarm->TRIGGER->getValue();
-                    $triggerValue = self::normalizeDuration($triggerValue);
-                    $oVAlarm->TRIGGER->setValue($triggerValue);
-                    $aResult[] = \Aurora\Modules\Calendar\Classes\Helper::getOffsetInMinutes($oVAlarm->TRIGGER->getDateInterval());
+                    $triggerValue = $oVAlarm->TRIGGER->getRawMimeDirValue();
+                    $normalizedValue = self::normalizeDuration($triggerValue);
+                    if ($normalizedValue !== $triggerValue) {
+                        $oVAlarm->TRIGGER->setValue($normalizedValue);
+                    }
+                    try {
+                        $aResult[] = \Aurora\Modules\Calendar\Classes\Helper::getOffsetInMinutes($oVAlarm->TRIGGER->getDateInterval());
+                    } catch (\Exception $e) {
+                        // Skip alarms with unparseable trigger values
+                    }
                 }
             }
             rsort($aResult);
