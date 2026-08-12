@@ -190,6 +190,9 @@ class Helper
     public static function getOffsetInMinutes($oInterval)
     {
         $iMinutes = 0;
+        if ($oInterval === null) {
+            return $iMinutes;
+        }
         try {
             $iMinutes = $oInterval->i + $oInterval->h * 60 + $oInterval->d * 24 * 60;
         } catch (\Exception $ex) {

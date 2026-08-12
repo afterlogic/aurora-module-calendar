@@ -177,13 +177,102 @@ class Parser
         if ($oVComponent->VALARM) {
             foreach ($oVComponent->VALARM as $oVAlarm) {
                 if (isset($oVAlarm->TRIGGER) && $oVAlarm->TRIGGER instanceof \Sabre\VObject\Property\ICalendar\Duration) {
-                    $aResult[] = \Aurora\Modules\Calendar\Classes\Helper::getOffsetInMinutes($oVAlarm->TRIGGER->getDateInterval());
+                    $aResult[] = \Aurora\Modules\Calendar\Classes\Helper::getOffsetInMinutes(
+                        self::getTriggerDateInterval($oVAlarm->TRIGGER)
+                    );
                 }
             }
             rsort($aResult);
         }
 
         return $aResult;
+    }
+
+    /**
+     * Parses a TRIGGER duration property into a DateInterval, handling
+     * non-standard duration values produced by some calendar clients
+     * (e.g. "-PT7D" or "PT7D" instead of "-P7D").
+     *
+     * @param \Sabre\VObject\Property\ICalendar\Duration $oDuration
+     *
+     * @return \DateInterval|null
+     */
+    public static function getTriggerDateInterval($oDuration)
+    {
+        try {
+            return $oDuration->getDateInterval();
+        } catch (\Exception $ex) {
+            $aParts = $oDuration->getParts();
+            $sRawValue = isset($aParts[0]) ? $aParts[0] : '';
+            if ($sRawValue === '') {
+                return null;
+            }
+
+            $sNormalized = self::normalizeDuration($sRawValue);
+            if ($sNormalized !== $sRawValue) {
+                try {
+                    return \Sabre\VObject\DateTimeParser::parseDuration($sNormalized);
+                } catch (\Exception $ex2) {
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Normalizes non-standard iCalendar duration values by moving date
+     * components (W, D) that appear after the "T" separator to before it.
+     *
+     * For example: "-PT7D" becomes "-P7D".
+     *
+     * @param string $sDuration
+     *
+     * @return string
+     */
+    public static function normalizeDuration($sDuration)
+    {
+        if (strpos($sDuration, 'T') === false) {
+            return $sDuration;
+        }
+
+        $sSign = '';
+        if ($sDuration !== '' && ($sDuration[0] === '-' || $sDuration[0] === '+')) {
+            $sSign = $sDuration[0];
+            $sDuration = substr($sDuration, 1);
+        }
+
+        if ($sDuration === '' || $sDuration[0] !== 'P') {
+            return $sSign . 'P' . $sDuration;
+        }
+
+        $sBody = substr($sDuration, 1);
+
+        $aParts = explode('T', $sBody, 2);
+        $sDatePart = $aParts[0];
+        $sTimePart = isset($aParts[1]) ? $aParts[1] : '';
+
+        if ($sTimePart === '') {
+            return $sSign . 'P' . $sBody;
+        }
+
+        $sDateAdd = '';
+        $sTimeKeep = preg_replace_callback('/(\d+)([WDHMS])/', function ($aMatch) use (&$sDateAdd) {
+            if ($aMatch[2] === 'W' || $aMatch[2] === 'D') {
+                $sDateAdd .= $aMatch[0];
+                return '';
+            }
+            return $aMatch[0];
+        }, $sTimePart);
+
+        $sDatePart .= $sDateAdd;
+
+        $sResult = $sSign . 'P' . $sDatePart;
+        if ($sTimeKeep !== '') {
+            $sResult .= 'T' . $sTimeKeep;
+        }
+
+        return $sResult;
     }
 
     /**
