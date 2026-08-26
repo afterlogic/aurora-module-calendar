@@ -1420,12 +1420,26 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
             $aTodoUrls = $this->getTasksUrls($oCalendar);
             $aUrls = array_merge($aEventUrls, $aTodoUrls);
 
+            $aUncachedUrls = array();
+            foreach ($aUrls as $sUrl) {
+                if (!isset($this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserPublicId])) {
+                    $aUncachedUrls[] = $sUrl;
+                }
+            }
+
+            if (!empty($aUncachedUrls)) {
+                $aBatchObjects = $oCalendar->getMultipleChildren($aUncachedUrls);
+                foreach ($aBatchObjects as $oEvent) {
+                    $sUrl = $oEvent->getName();
+                    $this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserPublicId] = $oEvent;
+                }
+            }
+
             foreach ($aUrls as $sUrl) {
                 if (isset($this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserPublicId])) {
                     $oEvent = $this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserPublicId];
                 } else {
-                    $oEvent = $oCalendar->getChild($sUrl);
-                    $this->CalDAVCalendarObjectsCache[$oCalendar->getName()][$sUrl][$this->UserPublicId] = $oEvent;
+                    continue;
                 }
 
                 $aEventInfo = array(
@@ -1451,15 +1465,25 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
         $oCalendar->IsPublic = ($sUserPublicId === \Afterlogic\DAV\Constants::DAV_PUBLIC_PRINCIPAL);
 
+        $aUncachedUrls = array();
+        foreach ($aUrls as $sUrl) {
+            if (!isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId])) {
+                $aUncachedUrls[] = $sUrl;
+            }
+        }
+
+        if (!empty($aUncachedUrls)) {
+            $aBatchObjects = $oCalDAVCalendar->getMultipleChildren($aUncachedUrls);
+            foreach ($aBatchObjects as $oCalDAVCalendarObject) {
+                $sUrl = $oCalDAVCalendarObject->getName();
+                $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId] = $oCalDAVCalendarObject;
+            }
+        }
+
         foreach ($aUrls as $sUrl) {
             $oCalDAVCalendarObject = null;
             if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId])) {
                 $oCalDAVCalendarObject = $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId];
-            } else {
-                if ($oCalDAVCalendar->childExists($sUrl)) {
-                    $oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
-                    $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$this->UserPublicId] = $oCalDAVCalendarObject;
-                }
             }
             if ($oCalDAVCalendarObject) {
                 $oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
@@ -1546,12 +1570,26 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
 
         $oCalendar->IsPublic = true;
 
+        $aUncachedUrls = array();
+        foreach ($aUrls as $sUrl) {
+            if (!isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner])) {
+                $aUncachedUrls[] = $sUrl;
+            }
+        }
+
+        if (!empty($aUncachedUrls)) {
+            $aBatchObjects = $oCalDAVCalendar->getMultipleChildren($aUncachedUrls);
+            foreach ($aBatchObjects as $oCalDAVCalendarObject) {
+                $sUrl = $oCalDAVCalendarObject->getName();
+                $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner] = $oCalDAVCalendarObject;
+            }
+        }
+
         foreach ($aUrls as $sUrl) {
             if (isset($this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner])) {
                 $oCalDAVCalendarObject = $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner];
             } else {
-                $oCalDAVCalendarObject = $oCalDAVCalendar->getChild($sUrl);
-                $this->CalDAVCalendarObjectsCache[$oCalDAVCalendar->getName()][$sUrl][$oCalendar->Owner] = $oCalDAVCalendarObject;
+                continue;
             }
             $oVCal = \Sabre\VObject\Reader::read($oCalDAVCalendarObject->get());
             $iUserId = \Aurora\System\Api::getAuthenticatedUserId();
