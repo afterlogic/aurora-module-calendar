@@ -92,9 +92,12 @@ class RRule
             }
 
             $sUntil = '';
-            if (null !== $this->Until) {
-                $oDTUntil = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($this->Until, $this->GetTimeZone());
-                $sUntil = $oDTUntil->format('Ymd\T235959\Z');
+            if (null !== $this->Until && null !== $this->End && (int)$this->End === \Aurora\Modules\Calendar\Enums\RepeatEnd::Date) {
+                $sUserTz = $this->GetTimeZone();
+                $oUserTz = !empty($sUserTz) ? new \DateTimeZone($sUserTz) : new \DateTimeZone('UTC');
+                $oDTUntil = (new \DateTimeImmutable('@' . (int)$this->Until))->setTimezone($oUserTz);
+                $oDTUntil = $oDTUntil->setTime(23, 59, 59);
+                $sUntil = $oDTUntil->setTimezone(new \DateTimeZone('UTC'))->format('Ymd\THis\Z');
             }
 
             $iInterval = (null !== $this->Interval) ? (int)$this->Interval : 0;
@@ -103,7 +106,8 @@ class RRule
             $sFreq = strtoupper($aPeriods[$this->Period + 2]);
             $sRule = 'FREQ=' . $sFreq . ';INTERVAL=' . $iInterval;
             if ($iEnd === \Aurora\Modules\Calendar\Enums\RepeatEnd::Count) {
-                $sRule .= ';COUNT=' . (null !== $this->Count) ? (int)$this->Count : 0;
+                $sCount = (null !== $this->Count) ? (int)$this->Count : 0;
+                $sRule .= ';COUNT=' . $sCount;
             } elseif ($iEnd === \Aurora\Modules\Calendar\Enums\RepeatEnd::Date) {
                 $sRule .= ';UNTIL=' . $sUntil;
             }
