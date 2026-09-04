@@ -18,6 +18,12 @@ namespace Aurora\Modules\Calendar\Classes;
 class Parser
 {
     /**
+     * Static cache for GetUserByPublicId results to avoid repeated calls.
+     * @var array<string, \Aurora\Modules\Core\Models\User|null>
+     */
+    protected static $UserCache = [];
+
+    /**
      * @param \Aurora\Modules\Calendar\Classes\Calendar $oCalendar
      * @param \Sabre\VObject\Component\VCalendar $oExpandedVCal
      * @param \Sabre\VObject\Component\VCalendar $oVCal Default value is **null**.
@@ -31,7 +37,10 @@ class Parser
         $aRules = array();
         $aExcludedRecurrences = array();
 
-        $oUser = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
+        if (!isset(self::$UserCache[$sUserPublicId])) {
+            self::$UserCache[$sUserPublicId] = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sUserPublicId);
+        }
+        $oUser = self::$UserCache[$sUserPublicId];
         if ($oUser instanceof \Aurora\Modules\Core\Models\User) {
             $sTimeZone = $oUser->DefaultTimeZone;
         } elseif ($sDefaultTimeZone) {
@@ -56,6 +65,7 @@ class Parser
         }
 
         if (isset($oExpandedVCal->{$sComponent}) && ($oUser instanceof \Aurora\Modules\Core\Models\User || $oCalendar->IsPublic)) {
+            $oAuthenticatedUser = \Aurora\Api::getAuthenticatedUser();
             /** @var \Sabre\VObject\Component $oVComponent */
             foreach ($oExpandedVCal->{$sComponent} as $oVComponent) {
                 $sOwnerEmail = $oCalendar->Owner;
@@ -85,7 +95,10 @@ class Parser
                         $aEvent
                     );
                     $sOwnerEmail = $aArgs['sOwnerEmail'];
-                    $oOwner = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sOwnerEmail);
+                    if (!isset(self::$UserCache[$sOwnerEmail])) {
+                        self::$UserCache[$sOwnerEmail] = \Aurora\Modules\Core\Module::Decorator()->GetUserByPublicId($sOwnerEmail);
+                    }
+                    $oOwner = self::$UserCache[$sOwnerEmail];
                     $sOwnerName = ($oOwner instanceof \Aurora\Modules\Core\Models\User) ? $oOwner->Name : '';
                     /** @var \Sabre\VObject\Property\ICalendar\DateTime $oDTSTART */
                     $oDTSTART = $oVComponent->DTSTART;
@@ -150,7 +163,6 @@ class Parser
                     $aEvent['status'] = $bStatus;
                     $aEvent['withDate'] = isset($oVComponent->DTSTART) && $oDTEND;
                     $aEvent['isPrivate'] = isset($oVComponent->CLASS) && (string) $oVComponent->CLASS === 'PRIVATE';
-                    $oAuthenticatedUser = \Aurora\Api::getAuthenticatedUser();
                     if ($aEvent['isPrivate'] && $sOwnerEmail !== $oAuthenticatedUser->PublicId) {
                         //						$aEvent['subject'] = '';
                         $aEvent['description'] = '';
