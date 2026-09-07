@@ -34,14 +34,6 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
     }
 
     /**
-     * @return Module
-     */
-    public static function Decorator()
-    {
-        return parent::Decorator();
-    }
-
-    /**
      * @return Settings
      */
     public function getModuleSettings()
