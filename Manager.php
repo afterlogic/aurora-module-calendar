@@ -1061,30 +1061,19 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                     $oVComponent->{'LAST-MODIFIED'} = new \DateTime('now', new \DateTimeZone('UTC'));
 
                     $oDTExdate = \Aurora\Modules\Calendar\Classes\Helper::prepareDateTime($sRecurrenceId, $oUser->DefaultTimeZone);
-                    /** @var \Sabre\VObject\Property\ICalendar\DateTime */
-                    $DTSTART = $oVComponent->DTSTART;
-                    $oDTStart = $DTSTART->getDatetime();
 
                     $mIndex = \Aurora\Modules\Calendar\Classes\Helper::isRecurrenceExists($oVCal->{$sComponent}, $sRecurrenceId);
                     if ($bDelete) {
-                        // if exclude first event in occurrence
-                        if ($oDTExdate === $oDTStart) {
-                            $it = new \Sabre\VObject\Recur\EventIterator($oVCal, (string) $oVCal->{$sComponent}[$iIndex]->UID);
-                            $it->fastForward($oDTStart);
-                            $it->next();
-
-                            if ($it->valid()) {
-                                $oEventObj = $it->getEventObject();
-                                $oVComponent->DTSTART = $oEventObj->DTSTART;
-                                $oVComponent->DTEND = $oEventObj->DTEND;
-                            }
-                        }
-
+                        // Note: DTSTART/DTEND are intentionally left untouched here, even when
+                        // excluding the occurrence that currently sits on DTSTART. For a COUNT-based
+                        // RRULE, COUNT is evaluated relative to DTSTART, so moving DTSTART forward
+                        // would re-base the count and generate extra occurrences past the end of the
+                        // original series. EXDATE alone correctly removes the occurrence.
                         if (isset($oVComponent->EXDATE)) {
                             $oEXDATE = clone $oVComponent->EXDATE;
                             unset($oVComponent->EXDATE);
                             foreach ($oEXDATE as $oExDate) {
-                                if ($oExDate->getDateTime() !== $oDTExdate) {
+                                if ($oExDate->getDateTime() != $oDTExdate) {
                                     $oVComponent->add('EXDATE', $oExDate->getDateTime());
                                 }
                             }
@@ -1104,6 +1093,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
                                 }
                                 $oVCal->add($oVEvent);
                             }
+                        }
+
+                        // Excluding this occurrence may leave no valid occurrence in the
+                        // series at all (e.g. deleting the last remaining instance). Such a
+                        // recurring master is rejected by EventIterator (and by other CalDAV
+                        // clients) on the next read, so delete the whole event instead of
+                        // persisting a series with zero valid instances.
+                        try {
+                            new \Sabre\VObject\Recur\EventIterator($oVCal, (string) $oVComponent->UID);
+                        } catch (\Sabre\VObject\Recur\NoInstancesException $oNoInstancesException) {
+                            return $this->deleteEvent($sUserPublicId, $oEvent->IdCalendar, $oEvent->Id);
                         }
                     } else {
                         $oVEventRecur = null;
