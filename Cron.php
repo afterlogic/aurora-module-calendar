@@ -99,7 +99,7 @@ class Reminder
      */
     private function createBodyHtml($oUser, $sEventName, $sDateStr, $sCalendarName, $sEventText, $sCalendarColor)
     {
-        $sEventText = nl2br($sEventText);
+        $sEventText = nl2br(htmlspecialchars((string) $sEventText));
 
         return sprintf(
             '
@@ -112,16 +112,16 @@ class Reminder
 				</div>
 				<p style="color:#667766; width: 400px; font-size: 10px;">%s</p>
 			</div>',
-            $sCalendarColor,
-            $sEventName,
+            htmlspecialchars((string) $sCalendarColor),
+            htmlspecialchars((string) $sEventName),
             ucfirst($this->i18n('EVENT_BEGIN', $oUser)),
-            $sDateStr,
+            htmlspecialchars((string) $sDateStr),
             $this->i18n('CALENDAR', $oUser),
-            $sCalendarName,
+            htmlspecialchars((string) $sCalendarName),
             $sEventText,
             $this->i18n('EMAIL_EXPLANATION', $oUser, array(
-                'EMAIL' => '<a href="mailto:' . $oUser->PublicId . '">' . $oUser->PublicId . '</a>',
-                'CALENDAR_NAME' => $sCalendarName
+                'EMAIL' => '<a href="mailto:' . htmlspecialchars((string) $oUser->PublicId) . '">' . htmlspecialchars((string) $oUser->PublicId) . '</a>',
+                'CALENDAR_NAME' => htmlspecialchars((string) $sCalendarName)
             ))
         );
     }
