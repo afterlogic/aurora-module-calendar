@@ -645,7 +645,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
         $oEvent = new Classes\Event();
         $oEvent->IdCalendar = $newCalendarId;
-        $oEvent->Name = $subject;
+        $oEvent->Name = TextUtils::isHtml($subject) ? TextUtils::clearHtml($subject) : $subject;
         $oEvent->Description = TextUtils::isHtml($description) ? TextUtils::clearHtml($description) : $description;
         $oEvent->Location = TextUtils::isHtml($location) ? TextUtils::clearHtml($location) : $location;
         $oEvent->IsPrivate = $isPrivate;
@@ -729,7 +729,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
 
             $oEvent = new Classes\Event();
             $oEvent->IdCalendar = $CalendarId;
-            $oEvent->Name = $Subject;
+            $oEvent->Name = TextUtils::isHtml($Subject) ? TextUtils::clearHtml($Subject) : $Subject;
             $oEvent->Start = \time();
             $oEvent->End = \time();
             $oEvent->Type = 'VTODO';
@@ -762,7 +762,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
             $oEvent = new Classes\Event();
             $oEvent->IdCalendar = $CalendarId;
             $oEvent->Id = $TaskId;
-            $oEvent->Name = $Subject;
+            $oEvent->Name = TextUtils::isHtml($Subject) ? TextUtils::clearHtml($Subject) : $Subject;
             $oEvent->Type = 'VTODO';
             $oEvent->Status = $Status ? 'COMPLETED' : '';
 
@@ -849,7 +849,7 @@ class Module extends \Aurora\System\Module\AbstractLicensedModule
         $oEvent = new Classes\Event();
         $oEvent->IdCalendar = $calendarId;
         $oEvent->Id = $uid;
-        $oEvent->Name = $subject;
+        $oEvent->Name = TextUtils::isHtml($subject) ? TextUtils::clearHtml($subject) : $subject;
         $oEvent->Description = TextUtils::isHtml($description) ? TextUtils::clearHtml($description) : $description;
         $oEvent->Location = TextUtils::isHtml($location) ? TextUtils::clearHtml($location) : $location;
         $oEvent->IsPrivate = $isPrivate;
