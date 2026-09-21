@@ -32,7 +32,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     /**
      * @param \Aurora\System\Module\AbstractModule $oModule
      */
-    public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
+    public function __construct(?\Aurora\System\Module\AbstractModule $oModule = null)
     {
         parent::__construct($oModule, new Storages\Sabredav($this));
     }
