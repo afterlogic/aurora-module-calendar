@@ -1074,6 +1074,29 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     }
 
     /**
+     * Returns the file name of the event in the calendar. Events delivered
+     * by CalDAV scheduling (e.g. "sabredav-<uuid>.ics") are not named after
+     * their UID, so they are looked up by UID.
+     *
+     * @param \Sabre\CalDAV\Calendar|false $oCalDAVCalendar
+     * @param string $sEventId
+     *
+     * @return string
+     */
+    protected function getEventUrl($oCalDAVCalendar, $sEventId)
+    {
+        $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
+        if ($oCalDAVCalendar && !$oCalDAVCalendar->childExists($sEventUrl)) {
+            $oCalDAVCalendarObject = $this->getCalDAVCalendarObject($oCalDAVCalendar, $sEventId);
+            if ($oCalDAVCalendarObject) {
+                $sEventUrl = $oCalDAVCalendarObject->getName();
+            }
+        }
+
+        return $sEventUrl;
+    }
+
+    /**
      * @param \Sabre\CalDAV\Calendar $oCalDAVCalendar
      * @param string $sEventId
      *
@@ -1710,9 +1733,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     {
         $this->init($sUserPublicId);
 
-        $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
-
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+        $sEventUrl = $this->getEventUrl($oCalDAVCalendar, $sEventId);
         if ($oCalDAVCalendar) {
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
             if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
@@ -1749,9 +1771,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     {
         $this->init($sUserPublicId);
 
-        $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
-
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+        $sEventUrl = $this->getEventUrl($oCalDAVCalendar, $sEventId);
         if ($oCalDAVCalendar) {
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
             if (($oCalendar->Shared || $oCalendar->SharedToAll) && isset($oVCal->VEVENT) && isset($oVCal->VEVENT->CLASS) && (string) $oVCal->VEVENT->CLASS === 'PRIVATE') {
@@ -1786,9 +1807,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     {
         $this->init($sUserPublicId);
 
-        $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
-
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+        $sEventUrl = $this->getEventUrl($oCalDAVCalendar, $sEventId);
         if ($oCalDAVCalendar) {
             $oCalDAVCalendarNew = $this->getCalDAVCalendar($sNewCalendarId);
             if ($oCalDAVCalendarNew) {
@@ -1825,9 +1845,8 @@ class Sabredav extends \Aurora\System\Managers\AbstractStorage
     {
         $this->init($sUserPublicId);
 
-        $sEventUrl = (substr(strtolower($sEventId), -4) !== '.ics') ? $sEventId . '.ics' : $sEventId;
-
         $oCalDAVCalendar = $this->getCalDAVCalendar($sCalendarId);
+        $sEventUrl = $this->getEventUrl($oCalDAVCalendar, $sEventId);
         if ($oCalDAVCalendar) {
             $oCalendar = $this->parseCalendar($oCalDAVCalendar);
             if ($oCalendar->Access !== \Aurora\Modules\Calendar\Enums\Permission::Read) {
